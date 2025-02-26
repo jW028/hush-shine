@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luxe Jewelry - Premium Handcrafted Jewelry</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        body {
+            line-height: 1.6;
+            background-color: #ffffff;
+            color: #000000;
+        }
+
+        /* Header Styles */
+        .header {
+            background-color: #ffffff;
+            padding: 15px;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            color: #000000;
+            font-size: 20px;
+            text-decoration: none;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+
+        .nav-links a {
+            color: #000000;
+            text-decoration: none;
+            margin-left: 25px;
+            font-size: 14px;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 90vh;
+            background: linear-gradient(rgba(255,255,255,0.8), rgba(255,255,255,0.8)), 
+                        url('https://images.unsplash.com/photo-1600721391689-2564bb8055de');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: black;
+            margin-top: 60px;
+        }
+
+        .hero-content h1 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            font-weight: 300;
+            letter-spacing: 3px;
+        }
+
+        .hero-content p {
+            font-size: 16px;
+            margin-bottom: 30px;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        .cta-button {
+            padding: 10px 25px;
+            background-color: transparent;
+            border: 1px solid #000000;
+            color: #000000;
+            text-decoration: none;
+            font-weight: 300;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+        }
+
+        .cta-button:hover {
+            background-color: #000000;
+            color: #ffffff;
+        }
+
+        /* Featured Products */
+        .featured-products {
+            padding: 70px 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 40px;
+            color: #000000;
+            font-weight: 300;
+            letter-spacing: 3px;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .product-card {
+            background-color: #ffffff;
+            overflow: hidden;
+            transition: transform 0.3s;
+            border: none;
+        }
+
+        .product-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            filter: grayscale(100%);
+        }
+
+        .product-info {
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        .product-name {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #000000;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        .product-price {
+            color: #000000;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        /* About Section */
+        .about-section {
+            background-color: #ffffff;
+            padding: 70px 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .about-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 50px;
+        }
+
+        .about-image {
+            width: 50%;
+            filter: grayscale(100%) contrast(105%);
+        }
+
+        .about-text {
+            width: 50%;
+        }
+        
+        .about-text h2 {
+            font-weight: 300;
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .about-text p {
+            font-weight: 300;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        /* Footer */
+        .footer {
+            background-color: #ffffff;
+            color: #000000;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 300;
+            letter-spacing: 1px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        @media (max-width: 768px) {
+            .about-content {
+                flex-direction: column;
+            }
+            
+            .about-image, .about-text {
+                width: 100%;
+            }
+            
+            .hero-content h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <a href="#" class="logo">LUXE</a>
+            <div class="nav-links">
+                <a href="#">Home</a>
+                <a href="#">Shop</a>
+                <a href="#">About</a>
+                <a href="#">Contact</a>
+            </div>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>TIMELESS DESIGN</h1>
+            <p>Handcrafted jewelry with exceptional attention to detail</p>
+            <a href="#" class="cta-button">Explore Collection</a>
+        </div>
+    </section>
+
+    <section class="featured-products">
+        <h2 class="section-title">FEATURED PIECES</h2>
+        <div class="products-grid">
+            <div class="product-card">
+                <img src="https://images.unsplash.com/photo-1602173574767-37ac01994b2a" alt="Diamond Ring" class="product-image">
+                <div class="product-info">
+                    <h3 class="product-name">Diamond Elegance</h3>
+                    <p class="product-price">$1,299.00</p>
+                    <a href="#" class="cta-button">View</a>
+                </div>
+            </div>
+            <!-- Add more product cards here -->
+        </div>
+    </section>
+
+    <section class="about-section">
+        <div class="about-content">
+            <img src="https://images.unsplash.com/photo-1588449668365-d15e397f6787" alt="Jewelry Workshop" class="about-image">
+            <div class="about-text">
+                <h2>ARTISANAL CRAFTSMANSHIP</h2>
+                <p>For over three decades, our master jewelers have been creating exquisite pieces using traditional techniques combined with modern innovation. Each piece is carefully crafted to tell its own unique story.</p>
+                <br>
+                <p>We source only the finest materials and conflict-free diamonds to ensure the highest quality and ethical standards.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <p>&copy; 2023 Luxe Jewelry. All rights reserved.</p>
+    </footer>
+</body>
+</html>
