@@ -1,0 +1,35 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f8f8;
+}
+.navbar {
+    background-color: #222;
+    overflow: hidden;
+    padding: 15px;
+}
+.navbar a {
+    color: white;
+    text-decoration: none;
+    padding: 14px 20px;
+    display: inline-block;
+}
+.container {
+    width: 80%;
+    margin: auto;
+    padding: 20px;
+    text-align: center;
+}
+.product {
+    display: inline-block;
+    margin: 20px;
+    padding: 15px;
+    background: white;
+    box-shadow: 0px 0px 10px #ccc;
+    border-radius: 10px;
+}
+.product img {
+    width: 200px;
+    height: auto;
+}
