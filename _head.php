@@ -10,18 +10,15 @@
     <script src="/js/app.js"></script>
 </head>
 <body>
-    <header>
-        
+    <header class="header">
+        <nav class="nav">
+            <a href="#"><img class="logo" src="images/Hush & Shine.svg"></a>
+            <div class="nav-links">
+                <a href="index.php">Home</a>
+                <a href="products.php">Products</a>
+                <a href="contact.php">Contact</a>
+            </div>
+        </nav>
     </header>
-
-    <nav>
-        <a href="/">Index</a>
-        <div class="navbar">
-        <a href="index.php">Home</a>
-        <a href="products.php">Products</a>
-        <a href="contact.php">Contact</a>
-</div>
-    </nav>
-
     <main>
         <h1><?= $_title ?? 'Untitled' ?></h1>
