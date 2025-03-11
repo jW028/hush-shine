@@ -17,7 +17,7 @@
                 <a href="index.php">Home</a>
                 <a href="page\products.php">Products</a>
                 <a href="page\contact.php">Contact</a>
-                <a href="page\login.php">Login</a>
+                <a href="login.php">Login</a>
             </div>
         </nav>
     </header>
