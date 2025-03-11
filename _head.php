@@ -14,7 +14,7 @@
         <nav class="nav">
             <a href="#"><img class="logo" src="images/Hush & Shine.svg"></a>
             <div class="nav-links">
-                <a href="page\index.php">Home</a>
+                <a href="index.php">Home</a>
                 <a href="page\products.php">Products</a>
                 <a href="page\contact.php">Contact</a>
                 <a href="page\login.php">Login</a>
