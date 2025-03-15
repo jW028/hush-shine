@@ -5,6 +5,8 @@ session_start();
 $valid_username = "1";
 $valid_password = "1";
 
+
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST["username"];
     $password = $_POST["password"];
@@ -19,68 +21,69 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Page</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .login-container {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-        h2 {
-            margin-bottom: 20px;
-        }
-        .error {
-            color: red;
-        }
-        input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        button {
-            background-color: #28a745;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #218838;
-        }
-    </style>
-</head>
-<body>
-    <div class="login-container">
-        <h2>Login</h2>
-        <?php if (isset($error)) echo "<p class='error'>$error</p>"; ?>
-        <form method="POST">
-            <label for="username">Username</label>
-            <input type="text" name="username" id="username" required>
+    <br>
+    <h1>Create an Account</h1>
+    <div class="registration-container">
+        <?php if (!empty($errors)): ?>
+            <div class="error-container">
+                <ul>
+                    <?php foreach ($errors as $error): ?>
+                        <li><?= htmlspecialchars($error) ?></li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php endif; ?>
+        
+        <form action="register.php" method="post">
+            <h3>Already have an account?<a href="login.php">Login here ></a></h3>
+            <div class="form-group">
+                <label class="form-label" for="name">Full Name</label>
+                <input class="form-input" type="text" id="name" name="name" value="<?= htmlspecialchars($name ?? '') ?>">
+            </div>
             
-            <label for="password">Password</label>
-            <input type="password" name="password" id="password" required>
+            <div class="form-group">
+                <label class="form-label" for="email">Email</label>
+                <input class="form-input" type="email" id="email" name="email" value="<?= htmlspecialchars($email ?? '') ?>">
+            </div>
             
-            <button type="submit">Login</button>
+            <div class="form-group">
+                <label class="form-label" for="contact">Contact Number</label>
+                <input class="form-input" type="tel" id="contact" name="contact" value="<?= htmlspecialchars($contact ?? '') ?>">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="password">Password</label>
+                <input class="form-input" type="password" id="password" name="password">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="confirm_password">Confirm Password</label>
+                <input class="form-input" type="password" id="confirm_password" name="confirm_password">
+            </div>
+
+            <fieldset>
+                <legend>Gender</legend>
+                <div class="radio">
+                    <input value="radFemale" name="gender" type="radio" id="radFemale">
+                    <label for="radFemale">Female</label>
+                </div>
+
+                <div class="radio">
+                    <input value="radMale" name="gender" type="radio" id="radMale">
+                    <label for="radMale">Male</label>
+                </div>
+            </fieldset>
+            
+            <div class="form-group">
+                <button class="submit-button" type="submit" class="btn">Register</button>
+            </div>
+
+            
         </form>
+        <div class="img-wrapper">
+            <img src="images/Hush & Shine.svg">
+        </div>
+        
     </div>
 </body>
 </html>

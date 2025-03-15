@@ -12,6 +12,7 @@
 
 body {
     font-family: 'Santral', sans-serif;
+    font-size: 12px;;
 
 }
 
@@ -44,7 +45,7 @@ footer {
     max-height: 40px;
 }
 
-.nav-links a{
+.nav-links a, form a{
     position: relative;  
     color: #000000;
     text-decoration: none;
@@ -59,6 +60,10 @@ footer {
     transition: .3s cubic-bezier(0, 0.5, 0, 1);
 }
 
+form a:hover {
+    transition: .5s cubic-bezier(0, 0.5, 0, 0.1);
+}
+
 .nav-links a::after {
     content: '';
     position: absolute;
@@ -70,16 +75,33 @@ footer {
     transition: .3s cubic-bezier(0, 0.5, 0, 1);
 }
 
-.nav-links a:hover:after {
+form a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0; /* Aligns the underline just below the text */
+    width: 0%;
+    height: 2px;
+    background: #aaa;
+    transition: .3s cubic-bezier(0.74, -0.01, 0.26, 1.07);
+}
+
+.nav-links a:hover:after, form a:hover:after{
     width: 100%;
 }
 
 .container {
-    width: 80%;
     margin: auto;
-    padding: 20px;
-    text-align: center;
+    width: 100%;
+    padding: 0 20px;
+    max-width: 1240px;
+    min-width: 984px;
+    position: relative;
+    background: #fff;
+    display: block;
+    align-content: center;
 }
+
 .product {
     display: inline-block;
     margin: 20px;
@@ -92,3 +114,134 @@ footer {
     width: 200px;
     height: auto;
 }
+
+form {
+    width: 33%;
+    margin: 0 20px;
+}
+
+/* Registration page styles */
+.registration-container {
+    margin: auto;
+    width: 70%;
+    padding: 0 20px;
+    max-width: 1240px;
+    min-width: 984px;
+    position: relative;
+    background: #fff;
+    display: flex;
+    flex-direction: row;
+    align-content: center;
+}
+
+.registration-title {
+    font-size: 24px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: 700;
+}
+
+.form-group {
+    display: block;
+    position: relative;
+    margin: 24px 0 0;
+    padding-bottom: 8px;
+    width:100%;
+    max-width: 400px;
+}
+
+.form-label {
+    position: absolute;
+    color: #767676;
+    cursor: text;
+    top: 10px;
+    left: 0;
+    font-size: 1rem;
+    backface-visibility: hidden;
+    transition: 200ms ease-in-out;
+    z-index: 0;
+    transform-origin: left;
+    pointer-events: none;
+    font-size: 1em;
+}
+
+.form-input {
+    display: block;
+    width: 100%;
+    position: relative;
+    background-color: transparent;
+    border: none;
+    padding: 10px 0;
+    font-size: 1rem;
+    line-height: 1.5;
+    min-width: 150px;
+    color: #000;
+    transition: border-bottom 1s cubic-bezier(0.25, 0.8, 0.5, 1);
+    border-bottom: 1px solid #c1c1c1;
+    height: 40px;
+    box-sizing: border-box;
+}
+
+.form-input:focus {
+    border-bottom: 1px solid #000;
+    outline: none;
+}
+
+.form-input:focus + .form-label {
+    top: -12px;
+    left: 0;
+    transform: none;
+    font-size: 0.7rem;
+}
+
+.form-label.active {
+    top: -12px;
+    left: 0;
+    font-size: 0.7rem;
+}
+
+.radio {
+    padding: 5px 0;
+    line-height: 25px;
+}
+
+fieldset {
+    padding-top: 10px;
+    margin-top: 20px;
+}
+
+.img-wrapper {
+    padding-left: 15%;
+    width: 50%;
+}
+
+.img-wrapper img {
+    min-width: 1px;
+    width: 100%;
+    height: auto;
+}
+
+.submit-button {
+    width: 100%;
+    padding: 12px;
+    background-color: #000000;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-family: 'Santral', sans-serif;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 300ms cubic-bezier(0.25, 0.8, 0.5, 1);
+}
+
+.submit-button:hover {
+    background-color: #ccc;
+    color: #000;
+}
+
+.form-footer {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 14px;
+}
+
