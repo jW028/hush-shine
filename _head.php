@@ -10,7 +10,7 @@
     <script src="/js/app.js"></script>
 </head>
 <body>
-    <!--<header class="header">
+    <header class="header">
         <nav class="nav">
             <a href="#"><img class="logo" src="images/Hush & Shine.svg"></a>
             <div class="nav-links">
@@ -20,17 +20,7 @@
                 <a href="login.php">Login</a>
             </div>
         </nav>
-    </header>-->
-
-    <nav>
-        <a href="/">Index</a>
-        <div class="navbar">
-            <a href="index.php">Home</a>
-            <a href="page\products.php">Products</a>
-            <a href="page\contact.php">Contact</a>
-            <a href="login.php">Login</a>
-        </div>
-    </nav>
+    </header>
 
     <main>
         <h1><?= $_title ?? 'Untitled' ?></h1>
