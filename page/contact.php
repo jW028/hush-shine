@@ -35,6 +35,7 @@ include '../_head.php';
 ?>
 
 <div class="InformationContainer">
+    <h1>Contact Us</h1>
     <p><strong>Address: </strong> 123 SuperIdol Lane, Setapak, Kuala Lumpur</p>
     <p><strong>Phone  :</strong> 012-345-6789</p>
     <p><strong>Email  :</strong> sigma@gmail.com</p>
