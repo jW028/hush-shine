@@ -15,6 +15,11 @@ body {
 
 }
 
+footer {
+    padding: 10px 50px;
+    background: #ccc;
+}
+
 .header {
     background-color: #ffffff;
     padding: 15px;
