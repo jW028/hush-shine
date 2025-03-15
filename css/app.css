@@ -1,20 +1,74 @@
+@font-face {
+    font-family: 'Santral';
+    src: url('../fonts/Santral/Santral-Light.otf');
+    font-weight: 400;
+}
+
+@font-face {
+    font-family: 'Santral';
+    src: url('../fonts/santral-blackitalic/SantralBold.ttf');
+    font-weight: 700;
+}
+
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f8f8f8;
+    font-family: 'Santral', sans-serif;
+
 }
-.navbar {
-    background-color: #222;
-    overflow: hidden;
+
+.header {
+    background-color: #ffffff;
     padding: 15px;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+    border-bottom: 1px solid #e0e0e0;
 }
-.navbar a {
-    color: white;
+
+.nav {
+    display: flex;
+    font-size: .875rem;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.logo {
+    max-width: 40px;
+    max-height: 40px;
+}
+
+.nav-links a{
+    position: relative;  
+    color: #000000;
     text-decoration: none;
-    padding: 14px 20px;
-    display: inline-block;
+    margin-left: 25px;
+    font-size: 14px;
+    letter-spacing: 0.05em;
+    min-width: 100px;
+    padding-bottom: 5px;
 }
+
+.nav-links a:hover {
+    transition: .3s cubic-bezier(0, 0.5, 0, 1);
+}
+
+.nav-links a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0; /* Aligns the underline just below the text */
+    width: 0%;
+    height: 2px;
+    background: #aaa;
+    transition: .3s cubic-bezier(0, 0.5, 0, 1);
+}
+
+.nav-links a:hover:after {
+    width: 100%;
+}
+
 .container {
     width: 80%;
     margin: auto;
