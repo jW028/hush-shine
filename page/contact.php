@@ -9,7 +9,7 @@ if (is_post()) {
     //Validate name
     if ($name == '') {
         $_err['name'] = 'Required';
-    } else if (!array_key_exists($name)) {
+    } else if (strlen($name) > 100) {
         $_err['name'] = 'Invalid value';
     }
 
@@ -23,7 +23,7 @@ if (is_post()) {
     //Validate Phone Number
     if ($phone == '') {
         $_err['phone'] = 'Required';
-    } else if (!array_key_exists($_countrycode) &&!preg_match("/^[0-9]{7,15}$/", $phone)) {
+    } else if (!array_key_exists($phone, $_countrycode) && !preg_match("/^[0-9]{7,15}$/", $phone)) {
         $_err['phone'] = 'Invalid value';
     }
 }
@@ -31,11 +31,10 @@ if (is_post()) {
 
 
 $_title = 'Contact Us';
-include '_head.php';
+include '../_head.php';
 ?>
 
 <div class="InformationContainer">
-    <h1>Contact Us</h1>
     <p><strong>Address: </strong> 123 SuperIdol Lane, Setapak, Kuala Lumpur</p>
     <p><strong>Phone  :</strong> 012-345-6789</p>
     <p><strong>Email  :</strong> sigma@gmail.com</p>
@@ -55,6 +54,7 @@ include '_head.php';
     <?= err('phone') ?>
 
     <button>Submit</button>
+    <button type="reset">Reset</button>
 </form>
 
 <?php
