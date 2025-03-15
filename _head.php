@@ -17,10 +17,10 @@
     <nav>
         <a href="/">Index</a>
         <div class="navbar">
-        <a href="index.php">Home</a>
-        <a href="products.php">Products</a>
-        <a href="contact.php">Contact</a>
-</div>
+            <a href="index.php">Home</a>
+            <a href="products.php">Products</a>
+            <a href="contact.php">Contact</a>
+        </div>
     </nav>
 
     <main>
