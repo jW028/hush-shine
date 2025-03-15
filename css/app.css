@@ -56,6 +56,7 @@ footer {
     padding-bottom: 5px;
 }
 
+
 .nav-links a:hover {
     transition: .3s cubic-bezier(0, 0.5, 0, 1);
 }
@@ -81,8 +82,8 @@ form a::after {
     left: 0;
     bottom: 0; /* Aligns the underline just below the text */
     width: 0%;
-    height: 2px;
-    background: #aaa;
+    height: 1px;
+    background: #2a2a2a;
     transition: .3s cubic-bezier(0.74, -0.01, 0.26, 1.07);
 }
 
@@ -132,6 +133,7 @@ form {
     display: flex;
     flex-direction: row;
     align-content: center;
+    margin-top: 10vh;
 }
 
 .registration-title {

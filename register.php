@@ -5,13 +5,6 @@ require '_base.php';
 $_title = 'Create an Account';
 include '_head.php';
 
-
-// Database connection parameters
-$db_host = 'localhost';
-$db_name = 'hushandshine';
-$db_user = 'root';
-$db_pass = '';
-
 // Error messages
 $errors = [];
 
@@ -58,11 +51,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_returning) {
     // If no errors, proceed with registration
     if (empty($errors)) {
         try {
-            // Connect to database
-            $pdo = new PDO("mysql:host=$db_host;dbname=$db_name", $db_user, $db_pass, [
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
-            ]);
-            
             // Check if email already exists
             $stmt = $pdo->prepare("SELECT customer_id FROM customer WHERE customer_email = ?");
             $stmt->execute([$email]);
@@ -98,7 +86,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_returning) {
 }
 ?>
     <br>
-    <h1>Create an Account</h1>
     <div class="registration-container">
         <?php if (!empty($errors)): ?>
             <div class="error-container">
@@ -111,7 +98,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_returning) {
         <?php endif; ?>
         
         <form action="register.php" method="post">
-            <h3>Already have an account?<a href="login.php">Login here ></a></h3>
+            <h1>Create an Account</h1>
+            <h3>Already have an account?</h3><a href="login.php">Login here ></a>
             <div class="form-group">
                 <label class="form-label" for="name">Full Name</label>
                 <input class="form-input" type="text" id="name" name="name" value="<?= htmlspecialchars($name ?? '') ?>">
