@@ -26,8 +26,8 @@
         <a href="/">Index</a>
         <div class="navbar">
             <a href="index.php">Home</a>
-            <a href="products.php">Products</a>
-            <a href="contact.php">Contact</a>
+            <a href="page\products.php">Products</a>
+            <a href="page\contact.php">Contact</a>
             <a href="login.php">Login</a>
         </div>
     </nav>
