@@ -1,9 +1,9 @@
 <?php
 
-require '_base.php';
+require '../_base.php';
 
 $_title = 'Create an Account';
-include '_head.php';
+include '../_head.php';
 
 // Error messages
 $errors = [];
@@ -153,4 +153,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_returning) {
 </html>
 
 <?php
-include '_foot.php';
+include '../_foot.php';

@@ -1,9 +1,9 @@
 <?php
 
-require '_base.php';
+require '../_base.php';
 
 $_title = 'Create an Account';
-include '_head.php';
+include '../_head.php';
 
 
 
@@ -68,3 +68,5 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
 </body>
 </html>
+<?php
+include '../_foot.php';
