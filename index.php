@@ -1,12 +1,12 @@
 <?php
-require '../_base.php';
+require '_base.php';
 //-----------------------------------------------------------------------------
 
 
 
 // ----------------------------------------------------------------------------
 $_title = 'Hush & Shine';
-include '../_head.php';
+include '_head.php';
 ?>
 
 <div class="container">
@@ -17,4 +17,4 @@ include '../_head.php';
 
 
 <?php
-include '../_foot.php';
+include '_foot.php';
