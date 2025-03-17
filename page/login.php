@@ -62,7 +62,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             
         </form>
         <div class="img-wrapper">
-            <img src="images/Hush & Shine.svg">
+            <img src="../images/Hush & Shine.svg">
         </div>
         
     </div>
