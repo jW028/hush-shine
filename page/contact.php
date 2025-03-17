@@ -1,7 +1,7 @@
 <?php
 require '../_base.php';
 
-if (is_post()) {
+/*if (is_post()) {
     $name       = req('name');
     $email      = req('Email');
     $phone      = req('phone');
@@ -26,7 +26,7 @@ if (is_post()) {
     } else if (!array_key_exists($phone, $_countrycode) && !preg_match("/^[0-9]{7,15}$/", $phone)) {
         $_err['phone'] = 'Invalid value';
     }
-}
+}*/
 
 
 
@@ -34,29 +34,81 @@ $_title = 'Contact Us';
 include '../_head.php';
 ?>
 
-<div class="InformationContainer">
-    <h1>Contact Us</h1>
-    <p><strong>Address: </strong> 123 SuperIdol Lane, Setapak, Kuala Lumpur</p>
-    <p><strong>Phone  :</strong> 012-345-6789</p>
-    <p><strong>Email  :</strong> sigma@gmail.com</p>
-    <p><strong>Business Hours :</strong> Mon-Fri: 9 AM - 6 PM, Sat-Sun: 10 AM - 4 PM</p>
+<div class="contact-us">
+    <div class="contact-container">
+        <h1>Contact Us</h1>
+        <div class="contact-links">
+            <a href="appointment.php">Book an Appointment With Us</a>
+            <a href="">Contact a Jewelry Expert</a>
+            <a href="">Email hush&shine123@gmail.com</a>
+            <a href="">Call 012-345-6789</a>
+        </div>
+    </div>
+
+    <div class="businesshours">
+        <h1>Business Hours :</h1><p>Mon-Fri: 9 AM - 6 PM </p>
+        <p>  Sat-Sun: 10 AM - 4 PM</p>
+    </div>
 </div>
 
-<form method="post" class="form">
+<div class="aboutus">
+    <h1>About Us</h1>
+    <p>
+        At <strong>Hush &amp; Shine</strong>, 
+        we believe that jewelry is more than just an 
+        accessory—it&rsquo;s a reflection of your personality, 
+        a symbol of love, and a timeless keepsake.  
+        Our passion lies in crafting elegant, 
+        high-quality pieces that blend sophistication with meaning. 
+        Each creation is designed to complement your unique style, whether it's a delicate everyday piece or a bold statement for special occasions.  
+    </p>
+
+    <p>
+        We are committed to using ethically sourced diamonds, 
+        premium metals, and expert craftsmanship to ensure that 
+        every piece is not just beautiful, but also responsibly made.  
+        Our artisans bring together traditional techniques 
+        and modern innovation to create jewelry that stands 
+        the test of time. Whether you&rsquo;re looking 
+        for a meaningful gift, a custom design, or the 
+        perfect engagement ring, we are here to make every 
+        moment shine.  
+    </p>
+
+    <p>
+        Discover the elegance of <strong>Hush &amp; 
+        Shine</strong>—where luxury meets artistry, 
+        and every piece tells a story.  
+    </p>
+
+</div>
+
+<div class="map">
+    <h1>Find Us At:</h1>
+    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3983.5377912546205!2d101.72398754032146!3d3.2152605527542732!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31cc3843bfb6a031%3A0x2dc5e067aae3ab84!2sTunku%20Abdul%20Rahman%20University%20of%20Management%20and%20Technology%20(TAR%20UMT)!5e0!3m2!1sen!2smy!4v1742222020351!5m2!1sen!2smy" 
+        width="400" height="400" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+</div>
+<!--<form method="post" class="form">
     <label for="name">Name</label>
     <?= html_text('name', 'maxlength="100"') ?>
     <?= err('name') ?>
+
     <label for="email">Email</label>
     <?= html_text('email', 'maxlength="100"') ?>
     <?= err('email') ?>
-    <label for="phone">Phone Number</label>
-    <?= html_select('phone', $_countrycode) ?>
-    <?= html_text('phone', 'maxlength="15"') ?>
-    <?= err('phone') ?>
 
-    <button>Submit</button>
-    <button type="reset">Reset</button>
-</form>
+    <label for="phone">Phone Number</label>
+    <div class="phoneinput">
+        <?= html_select('phone', $_countrycode) ?>
+        <?= html_text('phone', 'maxlength="15"') ?>
+    </div>
+    
+    <?= err('phone') ?>
+    <div class="formbuttons">
+        <button>Submit</button>
+        <button type="reset">Reset</button>
+    </div>
+</form>-->
 
 <?php
 include '../_foot.php';
