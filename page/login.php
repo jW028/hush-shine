@@ -11,14 +11,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST["email"];
     $password = $_POST["password"];
 
-    $stmt = $pdo->prepare("SELECT customer_id, customer_password FROM customer WHERE customer_email = ?");
+    $stmt = $pdo->prepare("SELECT cust_id, cust_password FROM customer WHERE cust_email = ?");
     $stmt->execute([$email]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($user && password_verify($password, $user["customer_password"])) {
+    if ($user && password_verify($password, $user["cust_password"])) {
         // Password is correct, start a session
-        $_SESSION["customer_id"] = $user["customer_id"];
-        $_SESSION["email"] = $email;
+        $_SESSION["cust_id"] = $user["cust_id"];
+        $_SESSION["cust_email"] = $email;
 
         header("Location: menu.php");
         exit();
