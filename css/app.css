@@ -95,7 +95,6 @@ form a::after {
     width: 100%;
 }
 
-
 /*.drop-login {
     display: none;
     min-width: 150px;
@@ -153,6 +152,24 @@ form {
 }
 
 /*Contact Page styles*/
+
+/*Contact Banner Style*/
+.contact-banner {
+    position: relative;
+    width: 100%;
+    height: 50vh; /* Adjust this for taller/shorter banners */
+    overflow: hidden;
+}
+
+.contact-banner-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: #000;
+}
+
 .contact-links a {
     position: relative;  
     color: #000000;
@@ -160,7 +177,7 @@ form {
     font-size: 14px;
     letter-spacing: 0.05em;
     min-width: 100px;
-    padding-bottom: 15px;
+    padding-bottom: 20px;
     display: grid;
 }
 
@@ -196,6 +213,7 @@ form {
 
 .map {
     margin: 5% 15%;
+    width: 20%;
 }
 
 /*.form {

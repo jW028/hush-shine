@@ -33,12 +33,22 @@ require '../_base.php';
 $_title = 'Contact Us';
 include '../_head.php';
 ?>
+<div class="contact-banner">
+    <img src="/images/contact-banner.png">
+    <div class="contact-banner-text">
+        <h1>Hush & Shine Jewelry</h1>
+        <p>There&rsquo;s no question too small or request
+          too big for our Tiffany client advisors. 
+          From choosing an engagement ring or gift to 
+          providing in-store or virtual appointments, 
+          we&rsquo;re always at your service. </p>
+    </div>
+</div>
 
 <div class="contact-us">
     <div class="contact-container">
         <h1>Contact Us</h1>
         <div class="contact-links">
-            <a href="appointment.php">Book an Appointment With Us</a>
             <a href="">Contact a Jewelry Expert</a>
             <a href="">Email hush&shine123@gmail.com</a>
             <a href="">Call 012-345-6789</a>
@@ -82,12 +92,18 @@ include '../_head.php';
     </p>
 
 </div>
-
-<div class="map">
-    <h1>Find Us At:</h1>
-    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3983.5377912546205!2d101.72398754032146!3d3.2152605527542732!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31cc3843bfb6a031%3A0x2dc5e067aae3ab84!2sTunku%20Abdul%20Rahman%20University%20of%20Management%20and%20Technology%20(TAR%20UMT)!5e0!3m2!1sen!2smy!4v1742222020351!5m2!1sen!2smy" 
-        width="400" height="400" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+<div class="map-questions">
+    <div class="map">
+        <h1>Find Us At:</h1>
+        <p>Ground Floor, Bangunan Tan Sri Khaw Kai Boh (Block A), Jalan Genting Kelang, Setapak, 53300 Kuala Lumpur, Federal Territory of Kuala Lumpur</p>
+        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3983.5377912546205!2d101.72398754032146!3d3.2152605527542732!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31cc3843bfb6a031%3A0x2dc5e067aae3ab84!2sTunku%20Abdul%20Rahman%20University%20of%20Management%20and%20Technology%20(TAR%20UMT)!5e0!3m2!1sen!2smy!4v1742222020351!5m2!1sen!2smy" 
+            width="400" height="400" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </div>
+    <div class="questions">
+            
+    </div>
 </div>
+
 <!--<form method="post" class="form">
     <label for="name">Name</label>
     <?= html_text('name', 'maxlength="100"') ?>
