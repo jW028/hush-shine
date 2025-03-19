@@ -18,6 +18,13 @@
                 <a href="/page/products.php">Products</a>
                 <a href="/page/contact.php">Contact</a>
                 <a href="/page/login.php">Login</a>
+                <!--<div class="loginicon">
+                    <a href="/page/login.php">Login</a>
+                    <div class="drop-login">
+                        <a href="">Register</a>
+                    </div>
+                </div>-->
+                
             </div>
         </nav>
     </header>
