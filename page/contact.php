@@ -1,11 +1,17 @@
 <?php
 require '../_base.php';
 
-/*if (is_post()) {
+if (is_post()) {
+    $expert     = req('expert');
     $name       = req('name');
     $email      = req('Email');
     $phone      = req('phone');
-
+    //Validate Expert
+    if ($expert == '') {
+        $_err['name'] = 'Required';
+    } else if (!array_key_exists($expert, $_expert)) {
+        $_err['phone'] = 'Invalid value';
+    }
     //Validate name
     if ($name == '') {
         $_err['name'] = 'Required';
@@ -26,7 +32,7 @@ require '../_base.php';
     } else if (!array_key_exists($phone, $_countrycode) && !preg_match("/^[0-9]{7,15}$/", $phone)) {
         $_err['phone'] = 'Invalid value';
     }
-}*/
+}
 
 
 
@@ -49,7 +55,38 @@ include '../_head.php';
     <div class="contact-container">
         <h1>Contact Us</h1>
         <div class="contact-links">
-            <a href="">Contact a Jewelry Expert</a>
+            <div class="expert">
+                <a href="" class="toggle-form">Contact a Jewelry Expert</a>
+                <div class="dropdown-form">
+                    <form method="post" class="form">
+                        <label for="expert">Expert Type</label>
+                        <?= html_select('expert', $_expert) ?>
+                        <?= err('expert') ?>
+
+                        <label for="name">Name</label>
+                        <?= html_text('name', 'maxlength="100"') ?>
+                        <?= err('name') ?>
+
+                        <label for="email">Email</label>
+                        <?= html_text('email', 'maxlength="100"') ?>
+                        <?= err('email') ?>
+
+                        <label for="phone">Phone Number</label>
+                        <div class="phoneinput">
+                            <?= html_select('phone', $_countrycode) ?>
+                            <?= html_text('phone', 'maxlength="15"') ?>
+                        </div>
+                            
+                        <?= err('phone') ?>
+                        <div class="formbuttons">
+                            <button>Submit</button>
+                            <button type="reset">Reset</button>
+                        </div>
+                    </form>
+                </div>
+                
+            </div>
+            
             <a href="">Email hush&shine123@gmail.com</a>
             <a href="">Call 012-345-6789</a>
         </div>
@@ -103,28 +140,6 @@ include '../_head.php';
             
     </div>
 </div>
-
-<!--<form method="post" class="form">
-    <label for="name">Name</label>
-    <?= html_text('name', 'maxlength="100"') ?>
-    <?= err('name') ?>
-
-    <label for="email">Email</label>
-    <?= html_text('email', 'maxlength="100"') ?>
-    <?= err('email') ?>
-
-    <label for="phone">Phone Number</label>
-    <div class="phoneinput">
-        <?= html_select('phone', $_countrycode) ?>
-        <?= html_text('phone', 'maxlength="15"') ?>
-    </div>
-    
-    <?= err('phone') ?>
-    <div class="formbuttons">
-        <button>Submit</button>
-        <button type="reset">Reset</button>
-    </div>
-</form>-->
 
 <?php
 include '../_foot.php';

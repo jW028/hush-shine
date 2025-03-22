@@ -54,3 +54,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+$(document).ready(function(){
+    $(".dropdown-form").hide(); // Hide the form by default
+
+    $(".toggle-form").click(function(event){
+        event.preventDefault(); // Prevent page reload
+        $(".dropdown-form").slideToggle(); // Toggle dropdown with animation
+    });
+});

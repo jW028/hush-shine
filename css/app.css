@@ -216,24 +216,71 @@ form {
     width: 20%;
 }
 
-/*.form {
-    display: grid;
-    grid: auto / auto auto auto;
-    margin-left: 8%;
-    gap: 5px;
-    place-content: start;
-    place-items: center start;
+.expert {
+    position: relative;
+    display: inline-block;
 }
+
+.toggle-form {
+    cursor: pointer;
+    font-size: 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-form {
+    display: none; /* Hidden initially */
+    position: absolute;
+    background: white;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    padding: 15px;
+    width: 400px;
+    z-index: 100;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+}
+
+.form label {
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.form input, .form select {
+    width: 300px;
+    margin-top: 5px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.formbuttons {
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+}
+
+button {
+    background: #333;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #555;
+}
+
 
 .phoneinput {
     display: flex;
     gap: 10px;
     align-items: center;
 }
-
-.formbuttons {
-
-}*/
 
 /* Registration page styles */
 .registration-container {

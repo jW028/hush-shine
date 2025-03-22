@@ -141,3 +141,11 @@ $_countrycode = [
     '+81' => 'Japan(+81)',
     '+60' => 'Malaysia(+60)'
 ];
+
+$_expert = [
+    'Pendant' => 'Pendant Expert',
+    'Ring' => 'Ring Expert',
+    'Brooch' => 'Brooch Expert',
+    'Earring' => 'Earring Expert',
+    'Watch' => 'Watch Expert'
+];
