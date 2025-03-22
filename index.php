@@ -145,7 +145,9 @@ include '_head.php';
         <h1>Timeless Elegance</h1>
         <p>Hush & Shine blends quiet luxury with striking brilliance, offering finely 
             crafted jewelry that&apos;s both sophisticated and effortlessly graceful.</p>
-        <button class="cta-button">About Us</button>
+        <a href="/page/contact.php">
+            <button class="cta-button">About Us</button>
+        </a>
     </div>
     <div class="video-right"data-aos="fade-left" data-aos-delay="500">
         <video id="ban"  autoplay muted loop playsinline
