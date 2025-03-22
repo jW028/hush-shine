@@ -7,6 +7,83 @@ $(() => {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
+
+    AOS.init({
+        duration: 800,
+        once: true,
+        offset: 100
+      });
+    // Index JS
+    let counter = 1;
+    let interval = setInterval(autoSlide, 3000);
+
+    function autoSlide() {
+        document.getElementById('radio' + counter).checked = true;
+        counter = counter === 4 ? 1 : counter + 1;
+    }
+
+    document.querySelectorAll('.manual-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            clearInterval(interval);
+            counter = parseInt(btn.getAttribute('for').replace('radio', ''));
+            interval = setInterval(autoSlide, 3000);
+        });
+    });
+
+  class SimpleCarousel {
+      constructor() {
+        this.slides = document.querySelectorAll('.hover-slide');
+        this.textItems = document.querySelectorAll('.text-item');
+        this.currentIndex = 0;
+        this.autoPlayInterval = null;
+        this.init();
+      }
+      
+      init() {
+        this.startAutoPlay();
+        
+        this.textItems.forEach(item => {
+          item.addEventListener('mouseenter', (e) => {
+            const index = parseInt(e.currentTarget.dataset.index);
+            this.goTo(index);
+            this.stopAutoPlay(); 
+          });
+          
+          item.addEventListener('mouseleave', () => {
+            this.startAutoPlay(); 
+          });
+        });
+      }
+      
+      goTo(index) {
+        this.currentIndex = index;
+        
+        this.slides.forEach(slide => slide.classList.remove('active'));
+        this.slides[this.currentIndex].classList.add('active');
+        
+        this.textItems.forEach(item => item.classList.remove('active'));
+        this.textItems[this.currentIndex].classList.add('active');
+      }
+      
+      next() {
+        this.goTo((this.currentIndex + 1) % this.slides.length);
+      }
+      
+      startAutoPlay() {
+        if (this.autoPlayInterval) this.stopAutoPlay();
+        this.autoPlayInterval = setInterval(() => this.next(), 3000);
+      }
+      
+      stopAutoPlay() {
+        if (this.autoPlayInterval) {
+          clearInterval(this.autoPlayInterval);
+          this.autoPlayInterval = null;
+        }
+      }
+    }
+    
+    new SimpleCarousel();
+
     // Get all form inputs
     const inputs = document.querySelectorAll('.form-input');
     
