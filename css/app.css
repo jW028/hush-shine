@@ -896,7 +896,7 @@ form {
 }
 
 /* Applying to all buttons? */
-button {
+/* button {
     background: #333;
     color: white;
     border: none;
@@ -913,7 +913,7 @@ button:hover {
     display: flex;
     gap: 10px;
     align-items: center;
-}
+} */
 
 /* Registration page styles */
 .registration-container {
