@@ -52,14 +52,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_returning) {
     if (empty($errors)) {
         try {
             // Check if email already exists
-            $stmt = $pdo->prepare("SELECT cust_id FROM customer WHERE cust_email = ?");
+            $stmt = $_db->prepare("SELECT cust_id FROM customer WHERE cust_email = ?");
             $stmt->execute([$email]);
             
             if ($stmt->rowCount() > 0) {
                 $errors[] = "Email already exists";
             } else {
                 // Generate customer_id
-                $stmt = $pdo->query("SELECT cust_id FROM customer ORDER BY cust_id DESC LIMIT 1");
+                $stmt = $_db->query("SELECT cust_id FROM customer ORDER BY cust_id DESC LIMIT 1");
                 if ($stmt->rowCount() > 0) {
                     $last_id = $stmt->fetchColumn();
                     $numeric_part = intval(substr($last_id, 1));
@@ -71,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_returning) {
                 
                 // Insert new user
                 $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-                $stmt = $pdo->prepare("INSERT INTO customer (cust_id, cust_name, cust_contact, cust_email, cust_gender, cust_password) VALUES (?, ?, ?, ?, ?, ?)");
+                $stmt = $_db->prepare("INSERT INTO customer (cust_id, cust_name, cust_contact, cust_email, cust_gender, cust_password) VALUES (?, ?, ?, ?, ?, ?)");
                 $stmt->execute([$customer_id, $name, $contact, $email, $gender, $hashed_password]);
                 
                 // Redirect to login page

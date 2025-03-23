@@ -130,6 +130,149 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+
+  // JS for product details
+  let modal = document.getElementById("product-modal");
+  let modalImage = document.getElementById("modal-image");
+  let modalName = document.getElementById("modal-name");
+  let modalDesc = document.getElementById("modal-desc");
+  let modalPrice = document.getElementById("modal-price");
+  let closeBtn = document.querySelector(".close");
+  // let cancelBtn = document.querySelector(".cancel");
+
+  document.querySelectorAll(".product").forEach(product => {
+    // Hover Effect on Product
+    product.addEventListener("mouseenter", function () {
+      this.classList.add("hovered");
+    });
+    product.addEventListener("mouseleave", function () {
+      this.classList.remove("hovered");
+    });
+    
+
+    // Event when user Click Product    WITHOUT DATABASE
+    product.addEventListener("click", function (event) {
+      event.preventDefault(); // Prevent default link behavior
+
+      // Get product details
+      let name = this.querySelector(".prod-description p").textContent;
+      let price = this.querySelector(".price").textContent;
+      let imageSrc = this.querySelector(".product-image").src;
+
+      // Update modal content
+      modalName.textContent = name;
+      modalDesc.textContent = "Product Description goes here.";
+      modalPrice.textContent = price;
+      modalImage.src = imageSrc;
+
+      // Update the first preview image dynamically
+      let previewImages = document.querySelectorAll(".preview");
+
+      // Remove "active" class from all preview images
+      document.querySelectorAll(".preview").forEach(img => img.classList.remove("active"));
+
+      if (previewImages.length > 0) {
+        previewImages[0].src = imageSrc;
+        previewImages[0].setAttribute("onclick", `changeImage(this, '${imageSrc}')`);
+        previewImages[0].classList.add("active"); // Ensure it's active
+      }
+
+      // Show the modal
+      // modal.style.display = "block";
+      modal.style.display = "flex";
+      setTimeout(() => {
+        modal.classList.add("show");
+      }, 10); // Delay for CSS transition
+    });
+
+    console.log(product.dataset.catId); // Logs the cat_id (e.g., CT04, CT01)
+
+
+/*
+    // Event when user Click Product    WITH DATABASE
+    product.addEventListener("click", function (event) {
+      event.preventDefault(); // Prevent default link behavior
+
+      let name = this.dataset.name;
+      let desc = this.dataset.desc;
+      let price = this.dataset.price;
+      let imageSrc = this.dataset.image;
+      // let imageSrc = this.dataset.image.startsWith("http") ? this.dataset.image : window.location.origin + "/" + this.dataset.image;
+
+      modalName.textContent = name;
+      modalDesc.textContent = desc;  // Now uses database description
+      modalPrice.textContent = "RM " + price;
+      modalImage.src = imageSrc;
+
+      // Update the first preview image dynamically
+      let previewImages = document.querySelectorAll(".preview");
+
+      // Remove "active" class from all preview images
+      document.querySelectorAll(".preview").forEach(img => img.classList.remove("active"));
+
+      if (previewImages.length > 0) {
+        previewImages[0].src = imageSrc;
+        previewImages[0].setAttribute("onclick", `changeImage(this, '${imageSrc}')`);
+        previewImages[0].classList.add("active"); // Ensure it's active
+      }
+      
+      // Show the modal
+      // modal.style.display = "block";
+      modal.style.display = "flex";
+      setTimeout(() => {
+        modal.classList.add("show");
+      }, 10); // Delay for CSS transition
+    });
+*/
+  });
+
+  // Close modal when clicking "X"
+  closeBtn.addEventListener("click", function () {
+    modal.classList.remove("show");
+    setTimeout(() => {
+      modal.style.display = "none";
+    }, 300);
+  });
+
+  // Close modal when clicking outside of it
+  window.addEventListener("click", function (event) {
+    if (event.target == modal) {
+      modal.classList.remove("show");
+      this.setTimeout(() => {
+        modal.style.display = "none";
+      }, 300);
+    }
+  });
+  
+  window.addEventListener("load", function () {
+    const urlParams = new URLSearchParams(window.location.search);
+    const category = urlParams.get("category");
+
+    if (category) {
+      const section = document.getElementById("cat-" + category);
+      setTimeout(() => {
+        if (section) {
+          section.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 400);
+      history.replaceState(null, null, "products.php"); // Clean URL after scrolling
+    }
+  });
+      
+  document.querySelectorAll(".category-link").forEach(link => {
+    link.addEventListener("click", function (event) {
+      event.preventDefault(); // Stop the default link behavior (no page reload)
+
+      let category = this.getAttribute("data-cat");
+      let section = document.getElementById("cat-" + category);
+
+      if (section) {
+        section.scrollIntoView({ behavior: "smooth" });
+      }
+    });
+  });
+    
 });
 
 $(document).ready(function(){
@@ -140,3 +283,24 @@ $(document).ready(function(){
         $(".dropdown-form").slideToggle(); // Toggle dropdown with animation
     });
 });
+
+// Change Preview Image in Products Details 
+function changeImage(selectedImg, imageSrc) {
+  let modalImage = document.getElementById("modal-image");
+
+  // Add fade-out effect
+  modalImage.style.opacity = "0";
+  modalImage.style.transform = "scale(0.95)"; // Slight zoom-out effect
+
+  setTimeout(() => {
+      modalImage.src = imageSrc; // Change the image
+      modalImage.style.opacity = "1"; // Fade-in effect
+      modalImage.style.transform = "scale(1)"; // Return to normal size
+  }, 150); // Match the transition duration
+
+  // Remove "active" class from all previews
+  document.querySelectorAll(".preview").forEach(img => img.classList.remove("active"));
+
+  // Add "active" class to the clicked preview
+  selectedImg.classList.add("active");
+}

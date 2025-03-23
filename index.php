@@ -50,7 +50,7 @@ include '_head.php';
     <div class="index-container">
         <h2 class="cat-title"data-aos="fade-up">SHOP BY CATEGORY</h2>
         <div class="categories">
-            <a href="#" class="category"data-aos="zoom-in" data-aos-delay="100">
+            <a href="/page/products.php?category=CT04" data-cat="CT04" class="category-link category" data-aos="zoom-in" data-aos-delay="100">
                 <div class="circle">
                     <img src="images/prod_icon/Earring_icon.webp" alt="Earrings">
                 </div>
@@ -59,7 +59,7 @@ include '_head.php';
                 </button>
             </a>
 
-            <a href="#" class="category" data-aos="zoom-in" data-aos-delay="200">
+            <a href="/page/products.php?category=CT01   " data-cat="CT01" class="category-link category" data-aos="zoom-in" data-aos-delay="200">
                 <div class="circle">
                     <img src="images/prod_icon/Necklace_icon.webp" alt="Necklaces">
                 </div>
@@ -68,16 +68,16 @@ include '_head.php';
                 </button>
             </a>
 
-            <a href="#" class="category" data-aos="zoom-in" data-aos-delay="300">
+            <a href="/page/products.php?category=CT02" data-cat="CT02" class="category-link category" data-aos="zoom-in" data-aos-delay="300">
                 <div class="circle">
                     <img src="images/prod_icon/Bracelet_icon.webp" alt="Bracelet">
                 </div>
                 <button class="category-btn">
-                    Bracelet
+                    Bracelets
                 </button>
             </a>
 
-            <a href="#" class="category" data-aos="zoom-in" data-aos-delay="400">
+            <a href="/page/products.php?category=CT03" data-cat="CT03" class="category-link category" data-aos="zoom-in" data-aos-delay="400">
                 <div class="circle">
                     <img src="images/prod_icon/Rings_icon.webp" alt="Rings">
                 </div>
@@ -86,7 +86,7 @@ include '_head.php';
                 </button>
             </a>
 
-            <a href="#" class="category" data-aos="zoom-in" data-aos-delay="500">
+            <a href="/page/products.php?category=CT05" data-cat="CT05" class="category-link category" data-aos="zoom-in" data-aos-delay="500">
                 <div class="circle">
                     <img src="images/prod_icon/Watches_icon.webp" alt="Watches">
                 </div>

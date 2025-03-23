@@ -11,7 +11,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST["email"];
     $password = $_POST["password"];
 
-    $stmt = $pdo->prepare("SELECT cust_id, cust_password FROM customer WHERE cust_email = ?");
+    $stmt = $_db->prepare("SELECT cust_id, cust_password FROM customer WHERE cust_email = ?");
     $stmt->execute([$email]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 

@@ -38,12 +38,12 @@
 
         </div>
         <nav class = "bottom-nav">
-            <a href="products.php">Earrings</a>
-            <a href="products.php">Necklaces</a>
-            <a href="products.php">Bracelets</a>
-            <a href="products.php">Rings</a>
-            <a href="products.php">Watches</a>
-            <a href="products.php">Discount</a>
+            <a href="/page/products.php?category=CT04" data-cat="CT04" class="category-link">Earrings</a>
+            <a href="/page/products.php?category=CT01" data-cat="CT01" class="category-link">Necklaces</a>
+            <a href="/page/products.php?category=CT02" data-cat="CT02" class="category-link">Bracelets</a>
+            <a href="/page/products.php?category=CT03" data-cat="CT03" class="category-link">Rings</a>
+            <a href="/page/products.php?category=CT05" data-cat="CT05" class="category-link">Watches</a>
+            <a href="/page/products.php?category=CT06" data-cat="CT06" class="category-link">Discount</a>
         </nav>
     </header>
 
