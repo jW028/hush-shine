@@ -274,15 +274,86 @@ document.addEventListener('DOMContentLoaded', function() {
   });
     
 });
+document.addEventListener('DOMContentLoaded', function() {
+  // Contact Us Banner Slider
+  let items = document.querySelectorAll('.cont-slider .list .cont-item');
+  let next = document.getElementById('next');
+  let prev = document.getElementById('prev');
+  let thumbnails = document.querySelectorAll('.thumbnail .cont-item');
 
-$(document).ready(function(){
-    $(".dropdown-form").hide(); // Hide the form by default
+  // config param
+  let countItem = items.length;
+  let itemActive = 0;
+  // event next click
+  next.onclick = function(){
+      itemActive = itemActive + 1;
+      if(itemActive >= countItem){
+          itemActive = 0;
+      }
+      showSlider();
+  }
+  //event prev click
+  prev.onclick = function(){
+      itemActive = itemActive - 1;
+      if(itemActive < 0){
+          itemActive = countItem - 1;
+      }
+      showSlider();
+  }
+  // auto run slider
+  let refreshInterval = setInterval(() => {
+      next.click();
+  }, 5000)
+  function showSlider(){
+      // remove item active old
+      let itemActiveOld = document.querySelector('.cont-slider .list .cont-item.active');
+      let thumbnailActiveOld = document.querySelector('.thumbnail .cont-item.active');
+      itemActiveOld.classList.remove('active');
+      thumbnailActiveOld.classList.remove('active');
 
-    $(".toggle-form").click(function(event){
-        event.preventDefault(); // Prevent page reload
-        $(".dropdown-form").slideToggle(); // Toggle dropdown with animation
-    });
+      // active new item
+      items[itemActive].classList.add('active');
+      thumbnails[itemActive].classList.add('active');
+      setPositionThumbnail();
+
+      // clear auto time run slider
+      clearInterval(refreshInterval);
+      refreshInterval = setInterval(() => {
+          next.click();
+      }, 5000)
+  }
+  function setPositionThumbnail () {
+      let thumbnailActive = document.querySelector('.thumbnail .cont-item.active');
+      let rect = thumbnailActive.getBoundingClientRect();
+      if (rect.left < 0 || rect.right > window.innerWidth) {
+          thumbnailActive.scrollIntoView({ behavior: 'smooth', inline: 'nearest' });
+      }
+  }
+
+  // click thumbnail
+  thumbnails.forEach((thumbnail, index) => {
+      thumbnail.addEventListener('click', () => {
+          itemActive = index;
+          showSlider();
+      })
+})
+  // Contact Us FAQ
+  document.querySelectorAll('.faq-question').forEach(item => {
+      item.addEventListener('click', () => {
+          const parent = item.parentElement;
+          parent.classList.toggle('active');
+      });
+  });
 });
+
+// $(document).ready(function(){
+//     $(".dropdown-form").hide(); // Hide the form by default
+
+//     $(".toggle-form").click(function(event){
+//         event.preventDefault(); // Prevent page reload
+//         $(".dropdown-form").slideToggle(); // Toggle dropdown with animation
+//     });
+// });
 
 // Change Preview Image in Products Details 
 function changeImage(selectedImg, imageSrc) {
