@@ -1032,7 +1032,7 @@ form {
     position: relative;
 }
 .cont-expert-input select{
-    width: 370px !important;
+    min-width: 370px;
 }
 .cont-form label {
     font-weight: bold;
