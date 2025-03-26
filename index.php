@@ -11,7 +11,7 @@ require '_base.php';
 $_title = '';
 include '_head.php';
 ?>
-<div class = "slider"data-aos="fade-left" data-aos-delay="200">
+<div class = "slider">
     <div class = "slides">
         <input type="radio" name = "radio-btn" id = "radio1" checked>
         <input type="radio" name = "radio-btn" id = "radio2">
