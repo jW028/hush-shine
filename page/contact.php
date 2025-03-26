@@ -43,7 +43,7 @@ include '../_head.php';
                 <img src="/images/banner-image/cont_img2.webp">
                 <div class="content">
                     <p>Hush &amp; Shine</p>
-                    <h2>Timeless Elegance</h2>
+                    <h2>Pure Elegance</h2>
                     <p>
                         Crafted with precision, our jewelry embodies grace and sophistication for every occasion.
                     </p>
