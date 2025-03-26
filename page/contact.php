@@ -82,7 +82,7 @@ include '../_head.php';
             <div class="cont-item">
                 <img src="/images/banner-image/cont_img6.webp">
                 <div class="content">
-                    <p>design</p>
+                    <p>Hush &amp; Shine</p>
                     <h2>Inspired by You</h2>
                     <p>
                         Every design reflects your elegance, empowering confidence with every wear.

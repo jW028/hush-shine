@@ -12,7 +12,7 @@
 
 body {
     font-family: 'Santral', sans-serif;
-    font-size: 12px;;
+    font-size: 12px;
     margin: 20 0 20 0;
     height: 100%;
     display: flex;
@@ -554,12 +554,11 @@ form {
 
 /* Index part 3 */
 .carousel-container {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 40px;
+    display: flex;
+    gap: 400px;
     margin: 50px auto;
     padding: 0 20px;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
   }
   
@@ -569,7 +568,7 @@ form {
     overflow: hidden;
     width: 700px;
     height: 500px;
-    margin-left: 100px;
+    /* margin-left: 100px; */
 }
   
 .slides-wrapper {
@@ -599,7 +598,7 @@ form {
     object-fit: cover;
 }
 .text-section {
-    margin-left: -100px;    
+    margin-left: -200px;    
 }
 .section-title {
     font-size: 50px;
@@ -638,6 +637,7 @@ form {
     color: #000;
     font-weight: bold;
 }
+
 /* Index part 4 */
 .banner-wrapper {
     display: flex;
@@ -647,6 +647,7 @@ form {
     background: #f6f6f6;
     max-width: 1369px;
     justify-content: space-between;
+    margin: 0 auto;
 }
 
 .content-left {
@@ -826,8 +827,15 @@ form {
     text-transform: uppercase;
     letter-spacing: 10px;
 }
+
 .cont-slider .list .cont-item .content h2{
     font-size: 60px;
+    margin: 0;
+    margin-bottom: 40px;
+}
+
+.cont-slider .list .cont-item .content p{
+    font-size: 14px;
     margin: 0;
     margin-bottom: 40px;
 }
@@ -924,6 +932,7 @@ form {
         top: 10%;
     }
 }
+
 /* Contact Us part 2 */
 .aboutus {
     min-height: 100vh;
