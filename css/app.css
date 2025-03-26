@@ -1030,6 +1030,9 @@ form {
     font-size: 1.5rem;
     position: relative;
 }
+.cont-expert-input select{
+    width: 370px !important;
+}
 .cont-form label {
     font-weight: bold;
     margin-top: 10px;
@@ -1037,11 +1040,33 @@ form {
 
 .cont-form input, 
 .cont-form select {
-    width: 300px;
+    width: 350px;
     margin-top: 5px;
     padding: 8px;
     border: 2px solid #e0e0e0;
     border-radius: 8px;
+}
+
+.cont-phoneinput {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 350px; /* Total width must be 300px */
+}
+.phone-country-code select,
+.phone-num input{
+    display: flex;
+}
+.phone-country-code select {
+    /* min-width: 20px;  */
+    width: 120px !important;
+    flex-shrink: 0; /* Prevent shrinking */
+}
+.phone-num input {
+    flex-grow: 1;
+    /* min-width: 50px;  */
+    width: 220px !important;
+    flex-shrink: 0;
 }
 
 .cont-formbuttons {

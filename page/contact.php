@@ -43,7 +43,7 @@ include '../_head.php';
                 <img src="/images/banner-image/cont_img2.webp">
                 <div class="content">
                     <p>Hush &amp; Shine</p>
-                    <h2>Timeless Elegance</h2>
+                    <h2>Pure Elegance</h2>
                     <p>
                         Crafted with precision, our jewelry embodies grace and sophistication for every occasion.
                     </p>
@@ -176,8 +176,10 @@ include '../_head.php';
                     <form method="post" class="cont-form">
                         <div class="cont-form-group">
                             <label for="expert">Expert Type</label>
-                            <?= html_select('expert', $_expert, ['class' => 'cont-form-control']) ?>
-                            <?= err('expert') ?>
+                            <div class="cont-expert-input">
+                                <?= html_select('expert', $_expert, ['class' => 'cont-form-control']) ?>
+                                <?= err('expert') ?>
+                            </div>
                         </div>
 
                         <div class="cont-form-group">
@@ -195,8 +197,15 @@ include '../_head.php';
                         <div class="cont-form-group">
                             <label for="phone">Phone Number</label>
                             <div class="cont-phoneinput">
-                                <?= html_select('phone', $_countrycode, ['class' => 'cont-country-code']) ?>
-                                <?= html_text('phone', 'class="cont-form-control" maxlength="15"') ?>
+                                <!-- <?= html_select('phone', $_countrycode, ['class' => 'cont-country-code']) ?>
+                                <?= html_text('phone', 'class="cont-form-control" maxlength="15"') ?> -->
+
+                                <div class="phone-country-code">
+                                    <?= html_select('phone', $_countrycode, ['class' => 'cont-country-code']) ?>
+                                </div>
+                                <div class="phone-num">
+                                    <?= html_text('phone', 'class="cont-form-control" maxlength="15"') ?>
+                                </div>
                             </div>
                             <?= err('phone') ?>
                         </div>
