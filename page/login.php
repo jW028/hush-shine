@@ -11,21 +11,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST["email"];
     $password = $_POST["password"];
 
-    $stmt = $_db->prepare("SELECT cust_id, cust_password FROM customer WHERE cust_email = ?");
-    $stmt->execute([$email]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    $admin_email = "admin@hushandshine.com";
+    $admin_password = "admin123";
 
-    if ($user && password_verify($password, $user["cust_password"])) {
-        // Password is correct, start a session
-        $_SESSION["cust_id"] = $user["cust_id"];
-        $_SESSION["cust_email"] = $email;
-
-        header("Location: menu.php");
+    if ($email == $admin_email && $password == $admin_password) {
+        $_SESSION["admin"] = true;
+    
+        header("Location: admin_menu.php");
         exit();
     } else {
-        // Invalid credentials
-        $errors[] = "Invalid email or password.";
+        $stmt = $_db->prepare("SELECT cust_id, cust_password FROM customer WHERE cust_email = ?");
+        $stmt->execute([$email]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($user && password_verify($password, $user["cust_password"])) {
+            // Password is correct, start a session
+            $_SESSION["cust_id"] = $user["cust_id"];
+            $_SESSION["cust_email"] = $email;
+            $_SESSION["admin"] = false;
+
+            header("Location: ../index.php");
+            exit();
+        } else {
+            // Invalid credentials
+            $errors[] = "Invalid email or password.";
+        }
     }
+    
 }
 ?>
 

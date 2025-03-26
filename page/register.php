@@ -99,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_returning) {
         
         <form action="register.php" method="post">
             <h1>Create an Account</h1>
-            <h3>Already have an account?</h3><a href="login.php">Login here ></a>
+            <h3>Already have an account?</h3><a href="/page/login.php">Login here ></a>
             <div class="form-group">
                 <label class="form-label" for="name">Full Name</label>
                 <input class="form-input" type="text" id="name" name="name" value="<?= htmlspecialchars($name ?? '') ?>">
@@ -145,7 +145,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_returning) {
             
         </form>
         <div class="img-wrapper">
-            <img src="images/Hush & Shine.svg">
+            <img src="../images/Hush & Shine.svg">
         </div>
         
     </div>

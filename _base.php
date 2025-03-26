@@ -22,13 +22,17 @@ $_db = new PDO("mysql:host=$db_host;dbname=$db_name", $db_user, $db_pass, [
 ]);
 
 // Is GET request?
-function is_get() {
-    return $_SERVER['REQUEST_METHOD'] == 'GET';
+if (!function_exists('is_get')) {
+    function is_get() {
+        return $_SERVER['REQUEST_METHOD'] === 'GET';
+    }
 }
 
 // Is POST request?
-function is_post() {
-    return $_SERVER['REQUEST_METHOD'] == 'POST';
+if (!function_exists('is_post')) {
+    function is_post() {
+        return $_SERVER['REQUEST_METHOD'] === 'POST';
+    }
 }
 
 // Obtain GET parameter
@@ -66,6 +70,10 @@ function temp($key, $value = null) {
         unset($_SESSION["temp_$key"]);
         return $value;
     }
+}
+
+function is_email($value) {
+    return filter_var($value, FILTER_VALIDATE_EMAIL) !== false;
 }
 
 // ============================================================================
