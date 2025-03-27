@@ -1,11 +1,9 @@
 <?php
 require_once '../_base.php';
+include '../_head.php';
 
 // Check if user is logged in and has admin privileges
-if (!isset($_SESSION["admin"]) || $_SESSION["admin"] !== true) {
-    header('Location: /login.php');
-    exit;
-}
+auth('admin');
 
 // Initialize variables
 $name = '';
@@ -171,37 +169,45 @@ try {
     <div class="image-previews" id="imagePreviews"></div>
 
     <script>
-document.getElementById('images').addEventListener('change', function(event) {
-    const previewsContainer = document.getElementById('imagePreviews');
-    previewsContainer.innerHTML = ''; // Clear previous previews
-    
-    if (event.target.files && event.target.files.length > 0) {
-        previewsContainer.style.display = 'flex';
-        previewsContainer.style.flexWrap = 'wrap';
-        previewsContainer.style.gap = '10px';
+$(document).ready(function() {
+    $('#images').on('change', function(event) {
+        const $previewsContainer = $('#imagePreviews');
+        $previewsContainer.empty(); // Clear previous previews
         
-        for (let i = 0; i < event.target.files.length; i++) {
-            const file = event.target.files[i];
-            const reader = new FileReader();
+        if (event.target.files && event.target.files.length > 0) {
+            $previewsContainer.css({
+                'display': 'flex',
+                'flex-wrap': 'wrap',
+                'gap': '10px'
+            });
             
-            const previewDiv = document.createElement('div');
-            previewDiv.className = 'image-preview-item';
-            previewDiv.style.width = '150px';
-            previewDiv.style.marginBottom = '10px';
+            $.each(event.target.files, function(i, file) {
+                const reader = new FileReader();
+                
+                const $previewDiv = $('<div></div>').addClass('image-preview-item').css({
+                    'width': '150px',
+                    'margin-bottom': '10px'
+                });
+                
+                reader.onload = function(e) {
+                    $previewDiv.html(`
+                        <img src="${e.target.result}" class="img-thumbnail" style="width: 100%; height: 150px; object-fit: cover;">
+                        <p class="text-center mt-1 small">Image #${i+1}</p>
+                    `);
+                };
+                
+                reader.readAsDataURL(file);
+                $previewsContainer.append($previewDiv);
+            });
             
-            reader.onload = function(e) {
-                previewDiv.innerHTML = `
-                    <img src="${e.target.result}" class="img-thumbnail" style="width: 100%; height: 150px; object-fit: cover;">
-                    <p class="text-center mt-1 small">Image #${i+1}</p>
-                `;
-            };
-            
-            reader.readAsDataURL(file);
-            previewsContainer.appendChild(previewDiv);
+            // Update file input label to show number of files selected
+            const fileCount = event.target.files.length;
+            $('.custom-file-label').text(fileCount > 1 ? `${fileCount} files selected` : event.target.files[0].name);
+        } else {
+            $previewsContainer.hide();
+            $('.custom-file-label').text('Choose file');
         }
-    } else {
-        previewsContainer.style.display = 'none';
-    }
+    });
 });
 </script>
     

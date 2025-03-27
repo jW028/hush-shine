@@ -8,24 +8,31 @@ include '../_head.php';
 
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $email = $_POST["email"];
-    $password = $_POST["password"];
+    $email = trim($_POST["email"] ?? '');
+    $password = trim($_POST["password"] ?? '');
 
-    $admin_email = "admin@hushandshine.com";
-    $admin_password = "admin123";
+    try {
+        $stmt = $_db->prepare("SELECT * FROM admin WHERE admin_email = ?");
+        $stmt->execute([$email]);
+        $admin = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($email == $admin_email && $password == $admin_password) {
-        $_SESSION["admin"] = true;
-    
-        header("Location: admin_menu.php");
-        exit();
-    } else {
+        if ($admin) {
+            if (password_verify($password, $admin["admin_password"])) {
+                $_SESSION['user'] = "admin";
+                $_SESSION["admin_id"] = $admin["admin_id"];
+                $_SESSION["admin_email"] = $admin["admin_email"];
+                header("Location: admin_menu.php");
+                exit();
+            } 
+        }
+
         $stmt = $_db->prepare("SELECT cust_id, cust_password FROM customer WHERE cust_email = ?");
         $stmt->execute([$email]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($user && password_verify($password, $user["cust_password"])) {
             // Password is correct, start a session
+            $_SESSION['user'] = "customer";
             $_SESSION["cust_id"] = $user["cust_id"];
             $_SESSION["cust_email"] = $email;
             $_SESSION["admin"] = false;
@@ -36,9 +43,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Invalid credentials
             $errors[] = "Invalid email or password.";
         }
-    }
-    
-}
+    } catch (PDOException $e) {
+        $errors[] = "Database error: " . $e->getMessage();
+    }    
+}    
 ?>
 
     <br>

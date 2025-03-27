@@ -1,14 +1,12 @@
 <?php
 require_once '../_base.php';
+include '../_head.php';
 
 // TODO: Display admin role on top right of header
 
 
 // Check if user is logged in and has admin privileges
-if (!isset($_SESSION["admin"]) || $_SESSION["admin"] !== true) {
-    header('Location: login.php');
-    exit;
-}
+auth('admin');
 
 // Get the action from the URL
 $action = isset($_GET['action']) ? $_GET['action'] : 'list';
@@ -16,18 +14,6 @@ $action = isset($_GET['action']) ? $_GET['action'] : 'list';
 // Page header
 ?>
     <div class="admin-container">
-        <header>
-            <h1>Product Administration</h1>
-            <nav>
-                <ul>
-                    <li><a href="admin_menu.php">Products</a></li>
-                    <li><a href="admin_categories.php">Categories</a></li>
-                    <li><a href="admin_orders.php">Orders</a></li>
-                    <li><a href="admin_users.php">Users</a></li>
-                    <li><a href="logout.php">Logout</a></li>
-                </ul>
-            </nav>
-        </header>
         
         <main>
             <div class="actions">

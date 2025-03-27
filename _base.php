@@ -21,6 +21,24 @@ $_db = new PDO("mysql:host=$db_host;dbname=$db_name", $db_user, $db_pass, [
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
 ]);
 
+// Global user object
+$_user = $_SESSION['user'] ?? null;
+
+// Authorization
+function auth(...$roles) {
+    global $_user;
+    if ($_user) {
+        if ($roles) {
+            if (in_array($_user, $roles)) {
+                return;
+            }
+        } else {
+            return;
+        }
+    }
+    redirect('login.php');
+}
+
 // Is GET request?
 if (!function_exists('is_get')) {
     function is_get() {
