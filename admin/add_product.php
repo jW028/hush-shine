@@ -1,11 +1,9 @@
 <?php
 require_once '../_base.php';
+include '../_head.php';
 
 // Check if user is logged in and has admin privileges
-if (!isset($_SESSION["admin"]) || $_SESSION["admin"] !== true) {
-    header('Location: /login.php');
-    exit;
-}
+auth('admin');
 
 // Initialize variables
 $name = '';
@@ -168,42 +166,7 @@ try {
         </div>
     </div>
     
-    <div class="image-previews" id="imagePreviews"></div>
-
-    <script>
-document.getElementById('images').addEventListener('change', function(event) {
-    const previewsContainer = document.getElementById('imagePreviews');
-    previewsContainer.innerHTML = ''; // Clear previous previews
-    
-    if (event.target.files && event.target.files.length > 0) {
-        previewsContainer.style.display = 'flex';
-        previewsContainer.style.flexWrap = 'wrap';
-        previewsContainer.style.gap = '10px';
-        
-        for (let i = 0; i < event.target.files.length; i++) {
-            const file = event.target.files[i];
-            const reader = new FileReader();
-            
-            const previewDiv = document.createElement('div');
-            previewDiv.className = 'image-preview-item';
-            previewDiv.style.width = '150px';
-            previewDiv.style.marginBottom = '10px';
-            
-            reader.onload = function(e) {
-                previewDiv.innerHTML = `
-                    <img src="${e.target.result}" class="img-thumbnail" style="width: 100%; height: 150px; object-fit: cover;">
-                    <p class="text-center mt-1 small">Image #${i+1}</p>
-                `;
-            };
-            
-            reader.readAsDataURL(file);
-            previewsContainer.appendChild(previewDiv);
-        }
-    } else {
-        previewsContainer.style.display = 'none';
-    }
-});
-</script>
+    <div class="image-previews" id="imagePreview"></div>
     
     <div class="form-group mt-4">
         <button type="submit" class="btn btn-primary">Add Product</button>
