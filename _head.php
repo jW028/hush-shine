@@ -14,6 +14,7 @@
 </head>
 <body>
     <?php if ($_SESSION['user'] == "admin"): ?>
+        <script src="/js/admin.js"></script>
         <header class="admin-header">
             <div class="admin-nav">
                 <div class="admin-logo">
@@ -31,13 +32,13 @@
         <div class="admin-container">
             <nav class="admin-sidebar">
                 <ul>
-                    <li><a href="/page/admin_menu.php"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                    <li><a href="/page/admin_products.php"><i class="fas fa-box"></i> Products</a></li>
-                    <li><a href="/page/add_product.php"><i class="fas fa-plus-circle"></i> Add Product</a></li>
-                    <li><a href="/page/admin_categories.php"><i class="fas fa-tags"></i> Categories</a></li>
-                    <li><a href="/page/admin_orders.php"><i class="fas fa-shopping-cart"></i> Orders</a></li>
-                    <li><a href="/page/admin_customers.php"><i class="fas fa-users"></i> Customers</a></li>
-                    <li><a href="/page/admin_reports.php"><i class="fas fa-chart-bar"></i> Reports</a></li>
+                    <li><a href="/admin/admin_menu.php"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li><a href="/admin/admin_products.php"><i class="fas fa-box"></i> Products</a></li>
+                    <li><a href="/admin/add_product.php"><i class="fas fa-plus-circle"></i> Add Product</a></li>
+                    <li><a href="/admin/admin_categories.php"><i class="fas fa-tags"></i> Categories</a></li>
+                    <li><a href="/admin/admin_orders.php"><i class="fas fa-shopping-cart"></i> Orders</a></li>
+                    <li><a href="/admin/admin_customers.php"><i class="fas fa-users"></i> Customers</a></li>
+                    <li><a href="/admin/admin_reports.php"><i class="fas fa-chart-bar"></i> Reports</a></li>
                 </ul>
             </nav>
 
