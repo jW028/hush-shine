@@ -21,7 +21,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION['user'] = "admin";
                 $_SESSION["admin_id"] = $admin["admin_id"];
                 $_SESSION["admin_email"] = $admin["admin_email"];
-                header("Location: admin_menu.php");
+                header("Location: ../admin/admin_menu.php");
                 exit();
             } 
         }

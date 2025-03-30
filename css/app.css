@@ -1874,3 +1874,39 @@ html {
     text-align: center;
     color: #777;
 }
+
+.table {
+    border-collapse: collapse;
+}
+
+.table th, .table td {
+    border: 1px solid #333;
+    padding: 5px;
+}
+
+.table th {
+    color: #fff;
+    background: #666;
+}
+
+.table tr:hover td {
+    background: #ccc;
+}
+
+.table td:has(.popup) {
+    position: relative;
+}
+
+.table .popup {
+    position: absolute;
+    top: 50%;
+    left: 100%;
+    translate: 5px -50%;
+    z-index: 1;
+    border: 1px solid #333;
+    display: none;
+}
+
+.table tr:hover .popup {
+    display: block;
+}
