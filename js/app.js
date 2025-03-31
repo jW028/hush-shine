@@ -375,3 +375,34 @@ function changeImage(selectedImg, imageSrc) {
   // Add "active" class to the clicked preview
   selectedImg.classList.add("active");
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+  // Load cart from localStorage if exists
+  let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+  // Function to add product to cart
+  function addToCart() {
+      let name = document.getElementById("modal-name").textContent;
+      let desc = document.getElementById("modal-desc").textContent;
+      let price = parseFloat(document.getElementById("modal-price").textContent.replace("RM ", ""));
+      let image = document.getElementById("modal-image").src;
+
+      let product = { name, desc, price, image, quantity: 1 };
+
+      // Check if product already exists in cart
+      let existingProduct = cart.find(item => item.name === name);
+      if (existingProduct) {
+          existingProduct.quantity += 1;
+      } else {
+          cart.push(product);
+      }
+
+      // Save updated cart to localStorage
+      localStorage.setItem("cart", JSON.stringify(cart));
+
+      alert("Product added to cart!");
+  }
+
+  // Expose function globally
+  window.addToCart = addToCart;
+});

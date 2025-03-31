@@ -318,13 +318,21 @@ include '../_head.php';
                     <h3 id="modal-price"></h3>
                 </div>
                 <div class="add-or-cancel">
-                    <button class="add-to-cart">Add to Cart</button>
+                <button type="submit" name="add_to_cart" onclick="addToCart()" class="add-to-cart">Add to Cart</button>
                     <!-- <button class="cancel">Cancel</button> -->
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<form action="add_to_cart.php" method="post">
+    <input type="hidden" name="product_id" value="<?= $s->id ?>">
+    <input type="hidden" name="product_name" value="<?= htmlspecialchars($s->prod_name) ?>">
+    <input type="hidden" name="product_price" value="<?= number_format($s->price, 2) ?>">
+    <input type="hidden" name="product_image" value="<?= htmlspecialchars($s->image) ?>">
+    <button type="submit" class="add-to-cart">Add to Cart</button>
+</form>
 
 <?php
 include '../_foot.php';

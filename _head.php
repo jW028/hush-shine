@@ -63,7 +63,7 @@
                 <div class = "right-nav">
                     <a href="/page/login.php"><i class = "fas fa-user"></i></a>
                     <a href="#"><i class = "fas fa-truck-fast"></i></a>
-                    <a href="#"><i class = "fas fa-cart-shopping"></i></a>
+                    <a href="/page/cart.php"><i class = "fas fa-cart-shopping"></i></a>
                 </div>
 
             </div>
