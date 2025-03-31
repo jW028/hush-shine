@@ -80,5 +80,5 @@
     <?php endif; ?>
     
 
-    <main>
-        <h1><?= $_title ?? 'Untitled' ?></h1>
+    <!-- <main>
+        <h1><?= $_title ?? 'Untitled' ?></h1> -->
