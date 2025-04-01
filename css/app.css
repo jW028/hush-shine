@@ -1844,6 +1844,13 @@ html {
     padding: 5px;
 }
 
+.alert {
+    max-width:500px;
+    margin: 40px auto;
+    padding: 15px;
+    border-radius: 5px;
+}
+
 .alert-danger {
     color: #721c24;
     background-color: #f8d7da;
@@ -1851,6 +1858,13 @@ html {
     padding: 12px;
     border-radius: 4px;
     margin-bottom: 15px;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+
 }
 
 

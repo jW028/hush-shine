@@ -47,11 +47,10 @@ if (!function_exists('is_get')) {
 }
 
 // Is POST request?
-if (!function_exists('is_post')) {
-    function is_post() {
-        return $_SERVER['REQUEST_METHOD'] === 'POST';
-    }
+function is_post() {
+    return $_SERVER['REQUEST_METHOD'] === 'POST';
 }
+
 
 // Obtain GET parameter
 function get($key, $value = null) {
