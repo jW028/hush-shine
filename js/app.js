@@ -4,6 +4,12 @@ $(() => {
         e.preventDefault();
         location = location;
     });
+
+    $('[data-get]').on('click', e => {
+      e.preventDefault();
+      const url = e.target.dataset.get;
+      location = url || location;
+    });
 });
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -375,6 +381,8 @@ function changeImage(selectedImg, imageSrc) {
   // Add "active" class to the clicked preview
   selectedImg.classList.add("active");
 }
+
+
 
 document.addEventListener("DOMContentLoaded", function () {
   // Load cart from localStorage if exists

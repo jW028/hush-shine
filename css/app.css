@@ -1355,6 +1355,13 @@ form {
     padding-bottom: 8px;
     width:100%;
     max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.form-group label {
+    margin-bottom: 5px;
 }
 
 .form-label {
@@ -1758,6 +1765,16 @@ html {
     background-color: #c82333;
 }
 
+.admin-content {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+
+}
+
+
+
 .admin-container {
     display: flex;
     min-height: calc(100vh - 140px);
@@ -1813,6 +1830,8 @@ html {
 }
 
 .product-form {
+    width: 100%;
+    height: 100%;
     background-color: white;
     padding: 20px;
     border-radius: 5px;
@@ -1873,4 +1892,44 @@ html {
     border: 1px dashed #ddd;
     text-align: center;
     color: #777;
+}
+
+.table {
+    border-collapse: collapse;
+}
+
+.table th, .table td {
+    border: 1px solid #333;
+    padding: 5px;
+}
+
+.table th {
+    color: #fff;
+    background: #666;
+}
+
+.table tr:hover td {
+    background: #ccc;
+}
+
+.table td:has(.popup) {
+    position: relative;
+}
+
+.table .popup {
+    position: absolute;
+    top: 50%;
+    left: 100%;
+    translate: 5px -50%;
+    z-index: 1;
+    border: 1px solid #333;
+    display: none;
+}
+
+.table tr:hover .popup {
+    display: block;
+}
+
+.back-btn {
+    margin: 20px;
 }

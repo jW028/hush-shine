@@ -131,8 +131,9 @@ try {
 <div class="admin-content">
     <div class="admin-header">
         <h2>Product Details: <?htmlspecialchars($product['prod_name']) ?></h2>
-        <a href="/admin/admin_menu.php" class="btn">Back to Products</a>
 </div>
+
+    <button data-get="admin_products.php" class="back-btn"><- Back to Products</button>
 
     <?php if (!empty($errors)): ?>
         <div class="alert alert-danger">
@@ -208,7 +209,6 @@ try {
     <hr>
     
     <div class="form-group">
-        <a href="../admin/admin_menu.php" class="btn btn-secondary">Cancel</a>
         <button type="submit" name="update_product" class="btn btn-primary">Update Product</button>
     </div>
     </form>
