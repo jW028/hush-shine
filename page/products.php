@@ -1,6 +1,79 @@
 <?php
+// session_start();
 require '../_base.php';
 //-----------------------------------------------------------------------------
+
+// Handle AJAX requests FIRST
+if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+    header('Content-Type: application/json');
+    
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+        $response = ['success' => false, 'message' => '', 'cart_count' => 0];
+        
+        try {
+            switch ($_POST['action']) {
+                case 'add_to_cart':
+                    $productId = $_POST['product_id'];
+                    $quantity = isset($_POST['quantity']) ? (int)$_POST['quantity'] : 1; // Get quantity from POST
+                    
+                    // Validate quantity
+                    if ($quantity < 1) {
+                        $quantity = 1;
+                    } elseif ($quantity > 99) {
+                        $quantity = 99;
+                    }
+                    
+                    // Get product from database
+                    $stmt = $_db->prepare("SELECT * FROM product WHERE prod_id = ?");
+                    $stmt->execute([$productId]);
+                    $product = $stmt->fetch();
+                    
+                    if (!$product) throw new Exception("Product not available (ID: $productId)");
+                    
+                    // FOR TESTING - Always use database storage
+                    $testUserId = "C0001"; // Hardcoded test user ID
+
+                    // Check if test user has an active cart
+                    $stmt = $_db->prepare("SELECT cart_id FROM shopping_cart WHERE cust_id = ?");
+                    $stmt->execute([$testUserId]);
+                    $cart = $stmt->fetch();
+
+                    // Create new cart if doesn't exist
+                    if (!$cart) {
+                        $stmt = $_db->prepare("INSERT INTO shopping_cart (cust_id, created_at) VALUES (?, NOW())");
+                        $stmt->execute([$testUserId]);
+                        $cartId = $_db->lastInsertId();
+                    } else {
+                        $cartId = $cart->cart_id;
+                    }
+                    
+                    // Add/update item in cart
+                    $stmt = $_db->prepare("SELECT * FROM cart_item WHERE cart_id = ? AND prod_id = ?");
+                    $stmt->execute([$cartId, $productId]);
+                    $existingItem = $stmt->fetch();
+                    
+                    if ($existingItem) {
+                        $newQty = $existingItem->quantity + $quantity;
+                        $stmt = $_db->prepare("UPDATE cart_item SET quantity = ? WHERE cart_id = ? AND prod_id = ?");
+                        $stmt->execute([$newQty, $cartId, $productId]);
+                    } else {
+                        $stmt = $_db->prepare("INSERT INTO cart_item (cart_id, prod_id, quantity) VALUES (?, ?, ?)");
+                        $stmt->execute([$cartId, $productId, $quantity]);
+                    }
+                    
+                    $response['success'] = true;
+                    break;
+                    default:
+                    throw new Exception("Invalid action");
+            }
+        } catch (Exception $e) {
+            $response['message'] = $e->getMessage();
+        }
+        
+        echo json_encode($response);
+        exit;
+    }
+}
 
 $arr = $_db->query('SELECT * FROM product')->fetchAll();
 
@@ -20,7 +93,7 @@ usort($arr, function ($a, $b) use ($categories) {
 });
 
 // ----------------------------------------------------------------------------
-$_title = '';
+$_title = 'Products';
 include '../_head.php';
 ?>
 
@@ -214,6 +287,7 @@ include '../_head.php';
 
             <div class="column-container">
                 <a class="product" href="products.php?id=<?= $s->id ?>"
+                    data-id="<?= $productId ?>"
                     data-name="<?= htmlspecialchars($s->prod_name) ?>" 
                     data-desc="<?= htmlspecialchars($s->prod_desc) ?>" 
                     data-price="<?= number_format($s->price, 2) ?>" 
@@ -265,6 +339,7 @@ include '../_head.php';
 
             <div class="column-container">
                 <a class="product" href="products.php?id=<?= $productId ?>&category=<?= $categoryId ?>"
+                    data-id="<?= $productId ?>"
                     <?= $idAttribute ?>
                     data-name="<?= htmlspecialchars($s->prod_name) ?>" 
                     data-desc="<?= htmlspecialchars($s->prod_desc) ?>" 
@@ -316,6 +391,15 @@ include '../_head.php';
                     <h2 id="modal-name"></h2>
                     <p id="modal-desc"></p>
                     <h3 id="modal-price"></h3>
+
+                    <div class="quantity-selector">
+                        <label for="quantity">Quantity: </label>
+                        <div class="product-quantity-control">
+                            <button type="button" class="qty-btn minus">-</button>
+                            <input type="number" id="quantity" name="quantity" value="1" min="1" max="99">
+                            <button type="button" class="qty-btn plus">+</button>
+                        </div>
+                    </div>
                 </div>
                 <div class="add-or-cancel">
                     <button class="add-to-cart">Add to Cart</button>
