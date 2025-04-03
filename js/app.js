@@ -4,6 +4,12 @@ $(() => {
         e.preventDefault();
         location = location;
     });
+
+    $('[data-get]').on('click', e => {
+      e.preventDefault();
+      const url = e.target.dataset.get;
+      location = url || location;
+    });
 });
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -424,6 +430,7 @@ function changeImage(selectedImg, imageSrc) {
   selectedImg.classList.add("active");
 }
 
+<<<<<<< HEAD
 /* Shopping Cart */
 // Calculate and update selected subtotal
 function updateSelectedSubtotal() {
@@ -603,3 +610,5 @@ $.ajax({
       }
   }
 });
+=======
+>>>>>>> 401ecf24550306c51383457cb1f8af312e34574c

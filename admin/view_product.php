@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_product'])) {
     if (empty($errors)) {
         try {
             if (!empty($image_paths)) {
-                $stmt = $_db->prepare("UPDATE products SET 
+                $stmt = $_db->prepare("UPDATE product SET 
                     prod_name = ?,
                     prod_desc = ?,
                     price = ?,
@@ -89,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_product'])) {
                     WHERE prod_id = ?");
                 $stmt->execute([$name, $description, $price, $quantity, $category_id, $image_path, $prod_id]);
             } else {
-                $stmt = $_db->prepare("UPDATE products SET
+                $stmt = $_db->prepare("UPDATE product SET
                     prod_name = ?,
                     prod_desc = ?,
                     price = ?,
@@ -130,9 +130,10 @@ try {
 
 <div class="admin-content">
     <div class="admin-header">
-        <h2>Product Details: <?htmlspecialchars($product['prod_name']) ?></h2>
-        <a href="/admin/admin_menu.php" class="btn">Back to Products</a>
+        <h2>Product Details: <?= htmlspecialchars($product['prod_name']) ?></h2>
 </div>
+
+    <button data-get="admin_products.php" class="back-btn"><- Back to Products</button>
 
     <?php if (!empty($errors)): ?>
         <div class="alert alert-danger">
@@ -144,7 +145,7 @@ try {
         </div>
     <?php endif; ?>
 
-    <form action="view_product.php?id=<?htmlspecialchars($prod_id)?>" method="POST" enctype="multipart/form-data" class="product-form">
+    <form action="view_product.php?id=<?= htmlspecialchars($prod_id)?>" method="POST" enctype="multipart/form-data" class="product-form">
     <div class="form-group">
         <label for="prod_id">Product ID</label>
         <input type="text" id="prod_id" class="form-control" value="<?= htmlspecialchars($product['prod_id']) ?>" readonly>
@@ -208,7 +209,6 @@ try {
     <hr>
     
     <div class="form-group">
-        <a href="../admin/admin_menu.php" class="btn btn-secondary">Cancel</a>
         <button type="submit" name="update_product" class="btn btn-primary">Update Product</button>
     </div>
     </form>

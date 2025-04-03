@@ -1358,6 +1358,13 @@ form {
     padding-bottom: 8px;
     width:100%;
     max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.form-group label {
+    margin-bottom: 5px;
 }
 
 .form-label {
@@ -2071,6 +2078,16 @@ input[type="number"] {
     background-color: #c82333;
 }
 
+.admin-content {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+
+}
+
+
+
 .admin-container {
     display: flex;
     min-height: calc(100vh - 140px);
@@ -2126,6 +2143,8 @@ input[type="number"] {
 }
 
 .product-form {
+    width: 100%;
+    height: 100%;
     background-color: white;
     padding: 20px;
     border-radius: 5px;
@@ -2138,6 +2157,13 @@ input[type="number"] {
     padding: 5px;
 }
 
+.alert {
+    max-width:500px;
+    margin: 40px auto;
+    padding: 15px;
+    border-radius: 5px;
+}
+
 .alert-danger {
     color: #721c24;
     background-color: #f8d7da;
@@ -2145,6 +2171,13 @@ input[type="number"] {
     padding: 12px;
     border-radius: 4px;
     margin-bottom: 15px;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+
 }
 
 
@@ -2224,3 +2257,19 @@ input[type="number"] {
     display: block;
 }
 
+<<<<<<< HEAD
+=======
+.back-btn {
+    margin: 20px;
+}
+
+.delete-confirmation {
+    max-width: 500px;
+    margin: 40px auto;
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    text-align: center;
+}
+>>>>>>> 401ecf24550306c51383457cb1f8af312e34574c

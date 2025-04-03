@@ -52,14 +52,13 @@ $action = isset($_GET['action']) ? $_GET['action'] : 'list';
                                 <tr>
                                     <td><?= htmlspecialchars($product['prod_id']) ?></td>
                                     <td><?= htmlspecialchars($product['prod_name']) ?></td>
-                                    <td>$<?= number_format($product['price'], 2) ?></td>
+                                    <td><?= number_format($product['price'], 2) ?></td>
                                     <td><?= htmlspecialchars($product['quantity']) ?></td>
                                     <td><?= htmlspecialchars($product['category']) ?></td>
                                     <td class="actions">
                                         <button data-get="view_product.php?id=<?= $product['prod_id'] ?>" class="btn btn-sm">View</button>
                                         <button data-get="edit_product.php?id=<?= $product['prod_id'] ?>" class="btn btn-sm btn-secondary">Edit</button>
                                         <button data-get="delete_product.php?id=<?= $product['prod_id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this product?')">Delete</button>
-                                        <img src="<?= htmlspecialchars($product['image']) ?>" class="popup">
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
