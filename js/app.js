@@ -430,7 +430,6 @@ function changeImage(selectedImg, imageSrc) {
   selectedImg.classList.add("active");
 }
 
-<<<<<<< HEAD
 /* Shopping Cart */
 // Calculate and update selected subtotal
 function updateSelectedSubtotal() {
@@ -610,5 +609,3 @@ $.ajax({
       }
   }
 });
-=======
->>>>>>> 401ecf24550306c51383457cb1f8af312e34574c
