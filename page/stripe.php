@@ -1,33 +1,43 @@
 <?php
-require '../vendor/autoload.php'; // Stripe SDK
+require '../_base.php';
+require '../vendor/autoload.php'; // Include Stripe PHP SDK
 
-\Stripe\Stripe::setApiKey('sk_test_51R6kNpFNb65u1viGxsiDLhrmT5wfQNQtzlOhGp6Ldu7uMbQ577pvupwdb1D1dzcYdtvD2O28QevBeriOyNBaOoyJ00DgX8TQNp'); // Use your Secret Key
+// Set your Stripe Secret Key
+\Stripe\Stripe::setApiKey('sk_test_51R6kNpFNb65u1viGxsiDLhrmT5wfQNQtzlOhGp6Ldu7uMbQ577pvupwdb1D1dzcYdtvD2O28QevBeriOyNBaOoyJ00DgX8TQNp');
 
-if (!isset($_GET['amount'])) {
-    die("Invalid request.");
+// Start session
+session_start();
+
+// Retrieve the total price 
+$total_price = $_POST['total'] ?? 0;
+
+// Validate the total price
+if ($total_price <= 0) {
+    die("Invalid Request: Total price is required.");
 }
 
-$amount = $_GET['amount'] * 100; // Convert RM to cents
-
-// Create a Checkout Session
-$session = \Stripe\Checkout\Session::create([
-    'payment_method_types' => ['card'],
-    'line_items' => [[
-        'price_data' => [
-            'currency' => 'myr',
-            'product_data' => [
-                'name' => 'Hush & Shine Jewelry Order',
+// Create a new Stripe Checkout session
+try {
+    $session = \Stripe\Checkout\Session::create([
+        'payment_method_types' => ['card'],
+        'line_items' => [[
+            'price_data' => [
+                'currency' => 'myr',
+                'product_data' => [
+                    'name' => 'Hush & Shine Jewelry Order', // You can dynamically fetch the product name here
+                ],
+                'unit_amount' => intval($total_price * 100), // Amount in cents
             ],
-            'unit_amount' => $amount,
-        ],
-        'quantity' => 1,
-    ]],
-    'mode' => 'payment',
-    'success_url' => 'http://localhost:8000/page/success.php?session_id={CHECKOUT_SESSION_ID}',
-    'cancel_url' => 'http://localhost:8000/page/cancel.php',
-]);
+            'quantity' => 1,
+        ]],
+        'mode' => 'payment',
+        'success_url' => 'http://localhost:8000/page/success.php?session_id={CHECKOUT_SESSION_ID}',
+        'cancel_url' => 'http://localhost:8000/page/cancel.php',
+    ]);
 
-// Redirect to Stripe
-header("Location: " . $session->url);
-exit;
-?>
+    // Redirect to Stripe Checkout page
+    header("Location: " . $session->url);
+    exit;
+} catch (Exception $e) {
+    echo 'Error: ' . $e->getMessage();
+}
