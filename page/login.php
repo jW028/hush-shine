@@ -63,6 +63,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         
         <form action="login.php" method="post">
             <h1>Sign In</h1>
+            <h3>Don't have an account yet?</h3><a href="/page/register.php">Register here</a>
 
             <div class="form-group">
                 <label class="form-label" for="email">Email</label>

@@ -152,7 +152,7 @@ include '_head.php';
     <div class="video-right"data-aos="fade-left" data-aos-delay="500">
         <video id="ban"  autoplay muted loop playsinline
                disablepictureinpicture preload="auto"
-               src="/video/index_video.mp4">
+               src="/page/video/index_video.mp4">
         </video>
     </div>
 </div>

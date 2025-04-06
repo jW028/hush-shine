@@ -3,7 +3,7 @@ require_once '../_base.php';
 include '../_head.php';
 
 // TODO: Display admin role on top right of header
-
+// This page should be a dashboard in the future
 
 // Check if user is logged in and has admin privileges
 auth('admin');

@@ -13,7 +13,6 @@ $(() => {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
-
     AOS.init({
         duration: 800,
         once: true,
@@ -144,8 +143,10 @@ document.addEventListener('DOMContentLoaded', function() {
   let modalName = document.getElementById("modal-name");
   let modalDesc = document.getElementById("modal-desc");
   let modalPrice = document.getElementById("modal-price");
+  let addToCartBtn = document.querySelector('.add-to-cart');
   let closeBtn = document.querySelector(".close");
   // let cancelBtn = document.querySelector(".cancel");
+  let currentProduct = null;
 
   document.querySelectorAll(".product").forEach(product => {
     // Hover Effect on Product
@@ -157,100 +158,147 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
 
-    // Event when user Click Product    WITHOUT DATABASE
-    product.addEventListener("click", function (event) {
-      event.preventDefault(); // Prevent default link behavior
+        // Event when user Click Product    WITH DATABASE
+        product.addEventListener("click", function (event) {
+          event.preventDefault(); // Prevent default link behavior
 
-      // Get product details
-      let name = this.querySelector(".prod-description p").textContent;
-      let price = this.querySelector(".price").textContent;
-      let imageSrc = this.querySelector(".product-image").src;
+          let productId = this.dataset.id;
 
-      // Update modal content
-      modalName.textContent = name;
-      modalDesc.textContent = "Product Description goes here.";
-      modalPrice.textContent = price;
-      modalImage.src = imageSrc;
+          currentProduct = {
+              id: productId,
+              name: this.dataset.name,
+              desc: this.dataset.desc,
+              price: this.dataset.price,
+              image: this.dataset.image
+          };
 
-      // Update the first preview image dynamically
-      let previewImages = document.querySelectorAll(".preview");
+          // Update modal
+          modalName.textContent = currentProduct.name;
+          modalDesc.textContent = currentProduct.desc;
+          modalPrice.textContent = 'RM ' + currentProduct.price;
+          modalImage.src = '/images/prod_img/' + currentProduct.image;
 
-      // Remove "active" class from all preview images
-      document.querySelectorAll(".preview").forEach(img => img.classList.remove("active"));
+          // Update the first preview image dynamically
+          let previewImages = document.querySelectorAll(".preview");
 
-      if (previewImages.length > 0) {
-        previewImages[0].src = imageSrc;
-        previewImages[0].setAttribute("onclick", `changeImage(this, '${imageSrc}')`);
-        previewImages[0].classList.add("active"); // Ensure it's active
+          // Remove "active" class from all preview images
+          document.querySelectorAll(".preview").forEach(img => img.classList.remove("active"));
+
+          if (previewImages.length > 0) {
+              previewImages[0].src = '/images/prod_img/' + currentProduct.image;
+              previewImages[0].setAttribute("onclick", `changeImage(this, '/images/prod_img/${currentProduct.image}')`);
+              previewImages[0].classList.add("active"); // Ensure it's active
+          }
+          
+          // Show the modal
+          // modal.style.display = "block";
+          modal.style.display = "flex";
+          setTimeout(() => {
+              modal.classList.add("show");
+          }, 10); // Delay for CSS transition
+      });
+
+  });
+
+  function resetQuantity() {
+      quantityInput.value = 1;
+  }
+
+  const quantityInput = document.getElementById('quantity');
+  const minusBtn = document.querySelector('.qty-btn.minus');
+  const plusBtn = document.querySelector('.qty-btn.plus');
+  
+  // Quantity buttons functionality
+  minusBtn.addEventListener('click', function() {
+      let value = parseInt(quantityInput.value);
+      if (value > 1) {
+          quantityInput.value = value - 1;
       }
+  });
+  
+  plusBtn.addEventListener('click', function() {
+      let value = parseInt(quantityInput.value);
+      if (value < 99) {
+          quantityInput.value = value + 1;
+      }
+  });
+  
+  // Ensure valid quantity input
+  quantityInput.addEventListener('change', function() {
+      let value = parseInt(this.value);
+      if (isNaN(value) || value < 1) {
+          this.value = 1;
+      } else if (value > 99) {
+          this.value = 99;
+      }
+  });
 
-      // Show the modal
-      // modal.style.display = "block";
-      modal.style.display = "flex";
-      setTimeout(() => {
-        modal.classList.add("show");
-      }, 10); // Delay for CSS transition
-    });
-
-    console.log(product.dataset.catId); // Logs the cat_id (e.g., CT04, CT01)
-
-
-/*
-    // Event when user Click Product    WITH DATABASE
-    product.addEventListener("click", function (event) {
-      event.preventDefault(); // Prevent default link behavior
-
-      let name = this.dataset.name;
-      let desc = this.dataset.desc;
-      let price = this.dataset.price;
-      let imageSrc = this.dataset.image;
-      // let imageSrc = this.dataset.image.startsWith("http") ? this.dataset.image : window.location.origin + "/" + this.dataset.image;
-
-      modalName.textContent = name;
-      modalDesc.textContent = desc;  // Now uses database description
-      modalPrice.textContent = "RM " + price;
-      modalImage.src = imageSrc;
-
-      // Update the first preview image dynamically
-      let previewImages = document.querySelectorAll(".preview");
-
-      // Remove "active" class from all preview images
-      document.querySelectorAll(".preview").forEach(img => img.classList.remove("active"));
-
-      if (previewImages.length > 0) {
-        previewImages[0].src = imageSrc;
-        previewImages[0].setAttribute("onclick", `changeImage(this, '${imageSrc}')`);
-        previewImages[0].classList.add("active"); // Ensure it's active
+  addToCartBtn.addEventListener("click", function() {
+      if (!currentProduct) {
+          alert("Please select a product first");
+          return;
       }
       
-      // Show the modal
-      // modal.style.display = "block";
-      modal.style.display = "flex";
-      setTimeout(() => {
-        modal.classList.add("show");
-      }, 10); // Delay for CSS transition
-    });
-*/
+      const quantity = parseInt(document.getElementById('quantity').value) || 1;
+      
+      const btn = this;
+      btn.disabled = true;
+      btn.textContent = "Adding...";
+      
+      fetch(window.location.href, {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: `product_id=${currentProduct.id}&quantity=${quantity}&action=add_to_cart`
+      })    
+
+      .then(response => response.json())
+      .then(data => {
+          if (data.success) {
+              btn.textContent = "✓ Added!";
+              // Close modal after delay
+              setTimeout(() => {
+                  modal.classList.remove("show");
+                  setTimeout(() => {
+                      modal.style.display = "none";
+                      btn.textContent = "Add to Cart";
+                      btn.disabled = false;
+                  }, 300);
+              }, 1000);
+          } else {
+              throw new Error(data.message || "Failed to add to cart");
+          }
+      })
+      .catch(error => {
+          console.error('Error:', error);
+          alert(error.message);
+          btn.textContent = "Add to Cart";
+          btn.disabled = false;
+      });
   });
 
   // Close modal when clicking "X"
   closeBtn.addEventListener("click", function () {
-    modal.classList.remove("show");
-    setTimeout(() => {
-      modal.style.display = "none";
-    }, 300);
+      modal.classList.remove("show");
+      setTimeout(() => {
+          modal.style.display = "none";
+          resetQuantity();
+      }, 300);    // Match transition duration
   });
 
   // Close modal when clicking outside of it
   window.addEventListener("click", function (event) {
-    if (event.target == modal) {
-      modal.classList.remove("show");
-      this.setTimeout(() => {
-        modal.style.display = "none";
-      }, 300);
-    }
-  });
-  
+      if (event.target == modal) {
+          modal.classList.remove("show");
+          this.setTimeout(() => {
+              modal.style.display = "none";
+              resetQuantity();
+          }, 300);
+      }
+  }); 
+
   window.addEventListener("load", function () {
     const urlParams = new URLSearchParams(window.location.search);
     const category = urlParams.get("category");
@@ -382,35 +430,182 @@ function changeImage(selectedImg, imageSrc) {
   selectedImg.classList.add("active");
 }
 
+/* Shopping Cart */
+// Calculate and update selected subtotal
+function updateSelectedSubtotal() {
+  let subtotal = 0;
+  
+  document.querySelectorAll('.item-checkbox:checked').forEach(checkbox => {
+      const row = checkbox.closest('tr');
+      const totalText = row.querySelector('.item-total').textContent;
+      const totalValue = parseFloat(totalText.replace('RM ', '').replace(',', ''));
+      subtotal += totalValue;
+  });
+  
+  document.getElementById('selected-subtotal').textContent = 'RM ' + subtotal.toFixed(2);
+}
 
-
-document.addEventListener("DOMContentLoaded", function () {
-  // Load cart from localStorage if exists
-  let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
-  // Function to add product to cart
-  function addToCart() {
-      let name = document.getElementById("modal-name").textContent;
-      let desc = document.getElementById("modal-desc").textContent;
-      let price = parseFloat(document.getElementById("modal-price").textContent.replace("RM ", ""));
-      let image = document.getElementById("modal-image").src;
-
-      let product = { name, desc, price, image, quantity: 1 };
-
-      // Check if product already exists in cart
-      let existingProduct = cart.find(item => item.name === name);
-      if (existingProduct) {
-          existingProduct.quantity += 1;
-      } else {
-          cart.push(product);
+// Checkbox change handler
+document.addEventListener('DOMContentLoaded', function() {
+  // Update subtotal when checkboxes change
+  document.querySelectorAll('.item-checkbox').forEach(checkbox => {
+      checkbox.addEventListener('change', updateSelectedSubtotal);
+  });
+  
+  // Initial calculation
+  updateSelectedSubtotal();
+  
+  // Checkout selected items
+  document.querySelector('.checkout-selected').addEventListener('click', function() {
+      const selectedItems = [];
+      
+      document.querySelectorAll('.item-checkbox:checked').forEach(checkbox => {
+          selectedItems.push(checkbox.value);
+      });
+      
+      if (selectedItems.length === 0) {
+          alert('Please select at least one item to checkout');
+          return;
       }
+      
+      // Proceed to checkout with selected items
+      window.location.href = '/page/checkout.php?items=' + selectedItems.join(',');
+  });
+  
+  // Checkout all items
+  document.querySelector('.checkout-all').addEventListener('click', function() {
+      const allItems = Array.from(document.querySelectorAll('.item-checkbox')).map(cb => cb.value);
+      window.location.href = '/page/checkout.php?items=' + allItems.join(',');
+  });
 
-      // Save updated cart to localStorage
-      localStorage.setItem("cart", JSON.stringify(cart));
+  // Quantity control handlers
+  document.querySelectorAll('.quantity-control').forEach(control => {
+      const minusBtn = control.querySelector('.minus');
+      const plusBtn = control.querySelector('.plus');
+      const qtyValue = control.querySelector('.qty-value');
+      const prodId = minusBtn.dataset.id;
+      const row = control.closest('tr');
+      const priceCell = row.querySelector('td:nth-child(5)');
+      const price = parseFloat(priceCell.textContent.replace(/[^\d.-]/g, ''));
 
-      alert("Product added to cart!");
+      // Update button states initially
+      updateButtonStates(qtyValue, minusBtn);
+
+      minusBtn.addEventListener('click', function() {
+          const currentQty = parseInt(qtyValue.textContent);
+          if (currentQty > 1) {
+              updateQuantity(prodId, currentQty - 1, qtyValue, row, price, minusBtn, plusBtn);
+          }
+      });
+
+      plusBtn.addEventListener('click', function() {
+          const currentQty = parseInt(qtyValue.textContent);
+          if (currentQty < 99) {
+              updateQuantity(prodId, currentQty + 1, qtyValue, row, price, minusBtn, plusBtn);
+          }
+      });
+  });
+
+  // Function to update button states
+  function updateButtonStates(qtyElement, minusBtn) {
+      minusBtn.disabled = parseInt(qtyElement.textContent) <= 1;
   }
 
-  // Expose function globally
-  window.addToCart = addToCart;
+  // Function to update quantity via AJAX
+  function updateQuantity(prodId, newQuantity, qtyElement, row, price, minusBtn) {
+      // Show loading state
+      const originalValue = qtyElement.textContent;
+      qtyElement.textContent = '...';
+      
+      fetch('cart.php', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: new URLSearchParams({
+              action: 'update_quantity',
+              product_id: prodId,
+              quantity: newQuantity
+          })
+      })
+      .then(response => {
+          if (!response.ok) throw new Error('Network response was not ok');
+          return response.json();
+      })
+      .then(data => {
+          if (data.success) {
+              // Update the UI
+              qtyElement.textContent = newQuantity;
+              const totalElement = row.querySelector('.item-total');
+              totalElement.textContent = 'RM ' + (price * newQuantity).toFixed(2);
+              updateButtonStates(qtyElement, minusBtn);
+              updateSelectedSubtotal();
+          } else {
+              throw new Error(data.message || 'Update failed');
+          }
+      })
+      .catch(error => {
+          console.error('Error:', error);
+          alert(error.message);
+          qtyElement.textContent = originalValue;
+      });
+  }
+
+  // Handle deletion in cart
+  document.querySelectorAll('.remove-btn').forEach(button => {
+      button.addEventListener('click', function() {
+          if (!confirm('Are you sure you want to remove this item?')) {
+              return;
+          }
+              
+          const cartId = this.getAttribute('data-cart-id');
+          const prodId = this.getAttribute('data-prod-id');
+          const row = this.closest('tr'); // Store reference to row before AJAX call
+          const productName = row.querySelector('td:nth-child(3)').textContent;
+
+          if (!cartId || !prodId) {
+              alert('Missing product or cart ID');
+              return;
+          }
+
+          // AJAX request to delete the cart item
+          $.ajax({
+              url: 'cart.php',
+              type: 'POST',
+              data: {
+                  action: 'delete_item',
+                  cart_id: cartId,
+                  prod_id: prodId
+              },
+              dataType: 'json',
+              success: function(response) {
+                  if (response.success) {
+                      alert("Item removed successfully");
+                      // Optionally, remove the item from the UI without reloading the page
+                      row.remove();
+                      updateSelectedSubtotal();
+                  } else {
+                      alert("Error: " + response.message);
+                  }
+              },
+              error: function(xhr, status, error) {
+                  alert('Error: ' + error);
+              }
+          });
+      });
+  });
+});
+
+$.ajax({
+  url: 'products.php',
+  type: 'POST',
+  data: { action: 'add_to_cart', product_id: productId, quantity: quantity },
+  dataType: 'json',
+  success: function(response) {
+      if (response.success) {
+          alert("Product added to cart!");
+      } else {
+          alert("Error: " + response.message);
+      }
+  }
 });

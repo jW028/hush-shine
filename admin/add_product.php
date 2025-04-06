@@ -77,7 +77,7 @@ if (is_post()) {
             $last_product = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if ($last_product) {
-                $last_id = substr($last_product['prod_id'], 1);
+                $last_id = intval(substr($last_product['prod_id'], 1));
                 $prod_id = 'P' . str_pad($last_id + 1, 3, '0', STR_PAD_LEFT);
             } else {
                 $prod_id = 'P001';
