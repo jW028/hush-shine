@@ -20,6 +20,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
+        //PaymentMethod
+        $paymentMethod = $_POST['payment_method'];
+        $validPaymentMethods = ['Credit Card', 'PayPal', 'Bank Transfer'];
+        if (!in_array($paymentMethod, $validPaymentMethods)) {
+            throw new Exception("Invalid payment method selected");
+        }
+
         // Get cart items
         $stmt = $_db->prepare("
             SELECT ci.prod_id, ci.quantity, p.prod_name, p.price 
@@ -43,6 +50,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $tax = $subtotal * 0.06; // Example 6% tax
         $total = $subtotal + $tax;
 
+        //Stripe
+        if ($paymentMethod === 'Credit Card') {
+            $_SESSION['checkout_total'] = $total;
+            $_SESSION['order_id'] = $orderId;
+
+            header("Location: stripe.php");
+            exit();
+        }
+
         // Start transaction
         $_db->beginTransaction();
 
@@ -56,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $userId,
             $total,
             $_POST['address'],
-            $_POST['payment_method']
+            $payment_method
         ]);
         $orderId = $_db->lastInsertId();
 

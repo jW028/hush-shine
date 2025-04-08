@@ -609,3 +609,60 @@ $.ajax({
       }
   }
 });
+
+//Stripe 
+// Initialize Stripe and Elements
+var stripe = Stripe('pk_test_51R6kNpFNb65u1viG9vJUDnoNiYpdXkNhX5r9NdMMu22THPzkyP87EJZRojWzdENqeNX18A6X3FdkdOv7wqFZXlDZ00utrSGvkV');  // Your Stripe publishable key
+var elements = stripe.elements();
+var card = elements.create('card');
+card.mount('#card-element');
+
+// Handle form submission with jQuery
+$('#payment-form').on('submit', function(event) {
+    event.preventDefault();
+
+    // Disable the submit button to prevent repeated clicks
+    $('#submit').prop('disabled', true);
+
+    // Create a payment intent with the server
+    $.ajax({
+        url: 'stripe.php',
+        method: 'POST',
+        dataType: 'json',
+        success: function(data) {
+            if (data.error) {
+                // Show error message in the payment form
+                $('#card-errors').text(data.error);
+                $('#submit').prop('disabled', false);
+            } else {
+                // Confirm the payment using the client secret
+                stripe.confirmCardPayment(data.clientSecret, {
+                    payment_method: {
+                        card: card,
+                        billing_details: {
+                            name: 'Cardholder',
+                            email: 'cardholder@example.com'
+                        }
+                    }
+                }).then(function(result) {
+                    if (result.error) {
+                        // Show error to the user
+                        $('#card-errors').text(result.error.message);
+                        $('#submit').prop('disabled', false);
+                    } else {
+                        if (result.paymentIntent.status === 'succeeded') {
+                            // Payment succeeded
+                            window.location.href = 'payment_success.php';
+                        }
+                    }
+                });
+            }
+        },
+        error: function(xhr, status, error) {
+            // Handle any errors that occurred during the AJAX request
+            console.error('Error:', error);
+            $('#card-errors').text('An error occurred while creating payment intent. Please try again.');
+            $('#submit').prop('disabled', false);
+        }
+    });
+});
