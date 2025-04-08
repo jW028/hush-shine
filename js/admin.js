@@ -1,4 +1,40 @@
 $(document).ready(function() {
+
+    const modal = document.getElementById("addProductModal");
+    const btn = document.getElementById("openAddProductModal");
+    const span = document.getElementsByClassName("close")[0];
+    const cancelBtn = document.getElementById("close-modal");
+
+    btn.onclick = function() {
+        modal.style.display = "block";
+        setTimeout(() => {
+            modal.classList.add("show");
+        }, 10);
+        document.body.style.overflow = "hidden";
+    }
+
+    span.onclick = function() {
+        closeModal();
+    }
+
+    cancelBtn.onclick = function() {
+        closeModal();
+    }
+
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            closeModal();
+        }
+    }
+
+    function closeModal() {
+        modal.classList.remove("show");
+        setTimeout(() => {
+            modal.style.display = "none";
+            document.body.style.overflow = "auto";
+        }, 300);
+    }
+
     // Image preview functionality
     $('#images').on('change', function(event) {
         const $previewDiv = $('#imagePreview');
@@ -38,6 +74,35 @@ $(document).ready(function() {
             $previewDiv.hide();
         }
     });
+
+    $('#addProductForm').on('submit', function(e) {
+        e.preventDefualt();
+
+        const formData = new FormData(this);
+
+        $.ajax({
+            url: $(this).attr('action'),
+            type: 'POST', 
+            data: formData, 
+            contentType: false,
+            processData: false,
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    alert(response.message);
+                    modal.style.display = "none";
+                    document.body.style.overlfow = "auto";
+
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + response.errors.join('\n'));;
+                }
+            }, 
+            error: function() {
+                alert('An error occured. Please try again.');
+            }
+        });
+    })
 });
 
 // Function to change main image when thumbnail is clicked

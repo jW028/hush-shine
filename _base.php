@@ -52,7 +52,7 @@ function is_post() {
 }
 
 
-// Obtain GET parameter
+ // Obtain GET parameter
 function get($key, $value = null) {
     $value = $_GET[$key] ?? $value;
     return is_array($value) ? array_map('trim', $value) : trim($value);

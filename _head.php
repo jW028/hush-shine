@@ -37,7 +37,7 @@
                     <li><a href="/admin/add_product.php"><i class="fas fa-plus-circle"></i> Add Product</a></li>
                     <li><a href="/admin/admin_category.php"><i class="fas fa-tags"></i> Categories</a></li>
                     <li><a href="/admin/admin_orders.php"><i class="fas fa-shopping-cart"></i> Orders</a></li>
-                    <li><a href="/admin/admin_customers.php"><i class="fas fa-users"></i> Customers</a></li>
+                    <li><a href="/admin/admin_customer.php"><i class="fas fa-users"></i> Customers</a></li>
                     <li><a href="/admin/admin_reports.php"><i class="fas fa-chart-bar"></i> Reports</a></li>
                 </ul>
             </nav>

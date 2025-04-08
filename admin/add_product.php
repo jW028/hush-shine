@@ -108,9 +108,11 @@ try {
 
 ?>
 
-<div class="container mt-4">
-    <h1>Add New Product</h1>
-    
+<div class="modal-content">
+    <div class="modal-header">
+        <h1>Add New Product</h1>
+        <span class="close">&times;</span>
+    </div>
     <?php if (!empty($errors)): ?>
         <div class="alert alert-danger">
             <ul>
@@ -124,23 +126,23 @@ try {
     <form action="add_product.php" method="POST" enctype="multipart/form-data" class="product-form">
     <div class="form-group">
         <label for="name">Product Name</label>
-        <input type="text" id="name" name="name" class="form-control" value="<?= htmlspecialchars($name) ?>" required>
+        <input type="text" id="name" name="name" class="form-control" ?>" required>
     </div>
     
     <div class="form-group">
         <label for="description">Description</label>
-        <textarea id="description" name="description" class="form-control" rows="5"><?= htmlspecialchars($description) ?></textarea>
+        <textarea id="description" name="description" class="form-control" rows="5"></textarea>
     </div>
     
     <div class="form-row">
-        <div class="form-group col-md-6">
+        <div class="form-group">
             <label for="price">Price (RM)</label>
-            <input type="number" id="price" name="price" class="form-control" min="0" step="0.01" value="<?= htmlspecialchars($price) ?>" required>
+            <input type="number" id="price" name="price" class="form-control" min="0" step="0.01" required>
         </div>
         
-        <div class="form-group col-md-6">
+        <div class="form-group">
             <label for="quantity">Quantity</label>
-            <input type="number" id="quantity" name="quantity" class="form-control" min="0" value="<?= htmlspecialchars($quantity) ?>" required>
+            <input type="number" id="quantity" name="quantity" class="form-control" min="0" required>
         </div>
     </div>
     
@@ -162,14 +164,15 @@ try {
         <div class="custom-file">
             <input type="file" class="custom-file-input" id="images" name="images[]" accept="image/*" multiple>
             <label class="custom-file-label" for="images">Choose file</label>
-            <small class="form-text text-muted">Accepted formats: JPG, JPEG, PNG, WEBP. Max size: 2MB</small>
+            <small class="form-text">Accepted formats: JPG, JPEG, PNG, WEBP. Max size: 2MB</small>
         </div>
     </div>
     
     <div class="image-previews" id="imagePreview"></div>
     
-    <div class="form-group mt-4">
-        <button type="submit" class="btn btn-primary">Add Product</button>
-        <a href="admin_menu.php" class="btn btn-secondary ml-2">Cancel</a>
+    <div class="form-group">
+        <button type="submit" class="submit-button">Add Product</button>
+        <a href="admin_menu.php">Cancel</a>
     </div>
 </form>
+</div>
