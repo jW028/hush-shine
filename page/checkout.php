@@ -91,6 +91,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
         }
 
+        //Handle different payment methods
+        if ($paymentMethod === 'Credit Card') {
+            $_SESSION['checkout_total'] = $total;
+            $_SESSION['order_id'] = $orderId;
+            
+            // Commit transaction before redirecting
+            $_db->commit();
+
+            header("Location: stripe.php");
+            exit();
+        }
         // Clear cart
         $cartStmt = $_db->prepare("
             DELETE ci FROM cart_item ci

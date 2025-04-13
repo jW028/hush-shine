@@ -62,6 +62,9 @@
 
                 <div class = "right-nav">
                     <a href="/page/login.php"><i class = "fas fa-user"></i></a>
+                    <?php if (isset($_SESSION['user_id'])): ?>
+                        <a href="/page/order_history.php"><i class="fas fa-clock-rotate-left"></i></a>
+                    <?php endif; ?>
                     <a href="#"><i class = "fas fa-truck-fast"></i></a>
                     <a href="/page/cart.php"><i class = "fas fa-cart-shopping"></i></a>
                 </div>

@@ -750,42 +750,6 @@ form {
     }
 }
 
-/*.drop-login {
-    display: none;
-    min-width: 150px;
-    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
-    z-index: 1;
-    overflow: hidden;
-}
-
-.drop-login a {
-    display: block;
-    padding: 10px;
-    text-decoration: none;
-    color: black;
-    transition: background 0.3s ease;
-}
-
-.drop-login a:hover {
-    background-color: #ddd;
-}
-
-.loginicon:hover .drop-login {
-    display: block;
-}*/
-
-/* .product {
-    display: inline-block;
-    margin: 20px;
-    padding: 15px;
-    background: white;
-    box-shadow: 0px 0px 10px #ccc;
-    border-radius: 10px;
-}
-.product img {
-    width: 200px;
-    height: auto;
-} */
 
 /*Contact Page styles*/
 .cont-slider{
@@ -2033,8 +1997,168 @@ input[type="number"] {
     font-size: 1.1em;
 }
 
+/*Payment Stripe*/
+/* Stripe Payment Page CSS */
+.stripe-container {
+    max-width: 1200px;
+    margin: 150px auto 50px;
+    padding: 30px;
+    display: flex;
+    gap: 40px;
+}
 
+/* Left Column - Order Summary */
+.order-summary {
+    flex: 1.2;
+    background: #f9f9f9;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+}
 
+.items-list {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 15px;
+    margin-bottom: 30px;
+}
+
+.item {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    align-items: center;
+}
+
+.item img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.item-details {
+    flex: 1;
+}
+
+.item-details h3 {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 16px;
+}
+
+.total-summary {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.row {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+    color: #666;
+}
+
+.row.total {
+    font-weight: bold;
+    font-size: 1.2em;
+    border-top: 1px solid #ddd;
+    padding-top: 10px;
+    margin-top: 15px;
+    color: #333;
+}
+
+/* Right Column - Payment Form */
+.payment-form {
+    flex: 1;
+    background: #f9f9f9;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    position: sticky;
+    top: 30px;
+    align-self: flex-start;
+    height: fit-content;
+    min-width: 400px;
+}
+
+#payment-form {
+    width: 100%;
+}
+
+#payment-element {
+    margin-bottom: 24px;
+    min-height: 250px;
+    width: 100%;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.payment-button {
+    background: #4CAF50;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 1.1em;
+    transition: all 0.2s ease;
+}
+
+.payment-button:hover {
+    background: #45a049;
+}
+
+.payment-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.spinner {
+    margin-left: 8px;
+}
+
+.hidden {
+    display: none;
+}
+
+#payment-message {
+    color: #dc3545;
+    padding: 12px;
+    border-radius: 4px;
+    margin-top: 15px;
+    text-align: center;
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+}
+
+/* Responsive Design */
+@media (max-width: 968px) {
+    .stripe-container {
+        flex-direction: column;
+        margin-top: 100px;
+        padding: 15px;
+    }
+
+    .order-summary,
+    .payment-form {
+        width: 100%;
+        min-width: auto;
+    }
+
+    .payment-form {
+        position: relative;
+        top: 0;
+    }
+}
 
 /*Admin*/
 .admin-body {
