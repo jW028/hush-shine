@@ -1820,6 +1820,7 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 /* Hide arrows for Firefox */
 input[type="number"] {
+    appearance: textfield;
     -moz-appearance: textfield;
 }
 
