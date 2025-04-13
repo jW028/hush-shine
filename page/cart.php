@@ -174,6 +174,9 @@ include '../_head.php';
 <div class="cart-page-container">
 
     <h1>Shopping Cart</h1>
+    <form id="checkout-selected-form" method="POST" action="checkout.php">
+        <input type="hidden" name="selected_items" id="selected-items-input">
+    </form>
 
     <section class="cart-section">
         <h2>Your Cart</h2>
@@ -194,7 +197,7 @@ include '../_head.php';
                     <tbody>
                         <?php foreach ($cartItems as $item): ?>
                             <tr>                           
-                                <td><input type="checkbox" name="selected_items[]" value="<?= $id ?>" class="item-checkbox" unchecked></td>
+                                <td><input type="checkbox" value="<?= $item['prod_id'] ?>" class="item-checkbox"></td>
                                 <td><img src="/images/product_img/<?= htmlspecialchars($item['image']) ?>" class="cart-product-img"></td>
                                 <td><?= htmlspecialchars($item['prod_name']) ?></td>
                                 <td> 
@@ -223,9 +226,10 @@ include '../_head.php';
                     </tfoot>
                 </table>
                 <div class="cart-actions">
-                    <button class="continue-shopping">Continue Shopping</button>
+                    <a href="../index.php"><button class="continue-shopping">Continue Shopping</button></a>
                     <!-- <button class="checkout-btn">Proceed to Checkout</button> -->
-                    <a href="/page/checkout.php"><button class="checkout-selected">Proceed to Checkout</button></a>
+                    <!-- TODO (on click validate) -->
+                    <button type="button" class="checkout-selected">Proceed to Checkout</button>
                     <button class="checkout-all">Checkout All Items</button>
                     <!-- <button class="save-cart">Save Cart</button> -->
                 </div>

@@ -431,6 +431,18 @@ function changeImage(selectedImg, imageSrc) {
 }
 
 /* Shopping Cart */
+
+/* TODO Shopping Cart item count top right corner */
+// function updateCartCount(count) {
+//     const cartCountElem = document.querySelector('.cart-count');
+//     if (count > 0) {
+//         cartCountElem.textContent = count;
+//         cartCountElem.style.display = 'inline-block';
+//     } else {
+//         cartCountElem.style.display = 'none';
+//     }
+// }
+
 // Calculate and update selected subtotal
 function updateSelectedSubtotal() {
   let subtotal = 0;
@@ -456,7 +468,8 @@ document.addEventListener('DOMContentLoaded', function() {
   updateSelectedSubtotal();
   
   // Checkout selected items
-  document.querySelector('.checkout-selected').addEventListener('click', function() {
+  document.querySelector('.checkout-selected').addEventListener('click', function(event) {
+      event.preventDefault();
       const selectedItems = [];
       
       document.querySelectorAll('.item-checkbox:checked').forEach(checkbox => {
@@ -469,13 +482,19 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       
       // Proceed to checkout with selected items
-      window.location.href = '/page/checkout.php?items=' + selectedItems.join(',');
+      window.location.href = 'checkout.php?items=' + selectedItems.join(',');
+    //   document.getElementById('selected-items-input').value = selectedItems.join(',');
+    //   document.getElementById('checkout-selected-form').submit();  
   });
   
   // Checkout all items
   document.querySelector('.checkout-all').addEventListener('click', function() {
-      const allItems = Array.from(document.querySelectorAll('.item-checkbox')).map(cb => cb.value);
-      window.location.href = '/page/checkout.php?items=' + allItems.join(',');
+    const allItems = Array.from(document.querySelectorAll('.item-checkbox')).map(cb => cb.value);
+    if (allItems.length === 0) {
+      alert('There are no items in the cart.');
+      return;
+    }    
+    window.location.href = '/page/checkout.php?items=' + allItems.join(',');
   });
 
   // Quantity control handlers

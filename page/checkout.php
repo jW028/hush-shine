@@ -178,84 +178,149 @@ include '../_head.php';
 ?>
 
 <div class="checkout-page">
-    <h1>Checkout</h1>
-
-    <?php if (isset($error)): ?>
-        <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
-    <?php endif; ?>
-
     <div class="checkout-container">
-        <div class="checkout-summary">
-            <h2>Order Summary</h2>
-            <div class="order-items">
-                <?php foreach ($cartItems as $item): ?>
-                    <div class="order-item">
-                        <img src="/images/prod_img/<?= htmlspecialchars($item['image']) ?>" alt="<?= htmlspecialchars($item['prod_name']) ?>">
-                        <div class="item-details">
-                            <h4><?= htmlspecialchars($item['prod_name']) ?></h4>
-                            <p>Quantity: <?= $item['quantity'] ?></p>
-                            <p>RM <?= number_format($item['price'], 2) ?></p>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-
-            <div class="order-totals">
-                <div class="total-row">
-                    <span>Subtotal:</span>
-                    <span>RM <?= number_format($subtotal, 2) ?></span>
-                </div>
-                <div class="total-row">
-                    <span>Tax (6%):</span>
-                    <span>RM <?= number_format($tax, 2) ?></span>
-                </div>
-                <div class="total-row grand-total">
-                    <span>Total:</span>
-                    <span>RM <?= number_format($total, 2) ?></span>
-                </div>
+        <div class="checkout-header">
+            <h1><i class="fas fa-shopping-bag"></i> Checkout</h1>
+            <div class="checkout-steps">
+                <div class="step active"><span>1</span> Shipping</div>
+                <div class="step"><span>2</span> Payment</div>
+                <div class="step"><span>3</span> Confirmation</div>
             </div>
         </div>
 
-        <div class="checkout-form">
-            <h2>Shipping & Payment</h2>
-            <form method="POST">
-                <div class="form-group">
-                    <label for="name">Full Name</label>
-                    <input type="text" id="name" name="name" 
-                           value="<?= htmlspecialchars($user['cust_name'] ?? '') ?>" required>
-                </div>
+        <?php if (isset($error)): ?>
+            <div class="alert alert-error">
+                <i class="fas fa-exclamation-circle"></i> <?= htmlspecialchars($error) ?>
+            </div>
+        <?php endif; ?>
 
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email" 
-                           value="<?= htmlspecialchars($user['email'] ?? '') ?>" required>
-                </div>
+        <div class="checkout-grid">
+            <!-- Shipping Information -->
+            <div class="checkout-form">
+                <div class="form-section">
+                    <h2><i class="fas fa-truck"></i> Shipping Information</h2>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="name">Full Name</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-user"></i>
+                                <input type="text" id="name" name="name" value="<?= htmlspecialchars($user['cust_name'] ?? '') ?>" required>
+                            </div>
+                        </div>
+                    </div>
 
-                <div class="form-group">
-                    <label for="address">Shipping Address</label>
-                    <textarea id="address" name="address" required><?= htmlspecialchars($user['address'] ?? '') ?></textarea>
-                </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-envelope"></i>
+                                <input type="email" id="email" name="email" value="<?= htmlspecialchars($user['email'] ?? '') ?>" required>
+                            </div>
+                        </div>
+                    </div>
 
-                <div class="form-group">
-                    <label>Payment Method</label>
-                    <div class="payment-options">
-                        <label>
-                            <input type="radio" name="payment_method" value="Credit Card" required>
-                            <span>Credit Card</span>
-                        </label>
-                        <label>
-                            <input type="radio" name="payment_method" value="PayPal">
-                            <span>PayPal</span>
-                        </label>
-                        <label>
-                            <input type="radio" name="payment_method" value="Bank Transfer">
-                            <span>Bank Transfer</span>
-                        </label>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="address">Shipping Address</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <textarea id="address" name="address" required><?= htmlspecialchars($user['address'] ?? '') ?></textarea>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <button type="submit" class="btn-checkout">Complete Order</button>
-            </form>
+                <!-- Payment Method -->
+                <div class="form-section">
+                    <h2><i class="fas fa-credit-card"></i> Payment Method</h2>
+                    
+                    <div class="payment-cards">
+                        <label class="payment-option">
+                            <input type="radio" name="payment_method" value="Credit Card" required checked>
+                            <div class="payment-content">
+                                <div class="payment-icon">
+                                    <i class="fab fa-cc-stripe"></i>
+                                </div>
+                                <span>Credit Card</span>
+                                <div class="payment-brands">
+                                    <i class="fab fa-cc-visa"></i>
+                                    <i class="fab fa-cc-mastercard"></i>
+                                    <i class="fab fa-cc-amex"></i>
+                                </div>
+                            </div>
+                        </label>
+
+                        <label class="payment-option">
+                            <input type="radio" name="payment_method" value="PayPal">
+                            <div class="payment-content">
+                                <div class="payment-icon">
+                                    <i class="fab fa-paypal"></i>
+                                </div>
+                                <span>PayPal</span>
+                            </div>
+                        </label>
+
+                        <label class="payment-option">
+                            <input type="radio" name="payment_method" value="Bank Transfer">
+                            <div class="payment-content">
+                                <div class="payment-icon">
+                                    <i class="fas fa-university"></i>
+                                </div>
+                                <span>Bank Transfer</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="order-summary">
+                <div class="summary-card">
+                    <h2><i class="fas fa-receipt"></i> Order Summary</h2>
+                    
+                    <div class="order-items">
+                        <?php foreach ($cartItems as $item): ?>
+                            <div class="order-item">
+                                <div class="item-image">
+                                    <img src="/images/prod_img/<?= htmlspecialchars($item['image']) ?>" alt="<?= htmlspecialchars($item['prod_name']) ?>">
+                                    <span class="item-quantity"><?= $item['quantity'] ?></span>
+                                </div>
+                                <div class="item-details">
+                                    <h4><?= htmlspecialchars($item['prod_name']) ?></h4>
+                                    <p>RM <?= number_format($item['price'], 2) ?></p>
+                                </div>
+                                <div class="item-total">
+                                    RM <?= number_format($item['price'] * $item['quantity'], 2) ?>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <div class="order-totals">
+                        <div class="total-row">
+                            <span>Subtotal</span>
+                            <span>RM <?= number_format($subtotal, 2) ?></span>
+                        </div>
+                        <div class="total-row">
+                            <span>Tax (6%)</span>
+                            <span>RM <?= number_format($tax, 2) ?></span>
+                        </div>
+                        <div class="total-row grand-total">
+                            <span>Total</span>
+                            <span>RM <?= number_format($total, 2) ?></span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-checkout">
+                        <i class="fas fa-lock"></i> Complete Order
+                    </button>
+                    
+                    <div class="secure-checkout">
+                        <i class="fas fa-shield-alt"></i> Secure checkout
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

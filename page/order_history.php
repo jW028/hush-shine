@@ -42,7 +42,7 @@ include '../_head.php';
     <?php if (empty($orders)): ?>
         <div class="no-orders">
             <p>You haven't placed any orders yet.</p>
-            <a href="index.php" class="btn-shop">Start Shopping</a>
+            <a href="../index.php" class="btn-shop">Start Shopping</a>
         </div>
     <?php else: ?>
         <div class="orders-list">

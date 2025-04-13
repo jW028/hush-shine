@@ -367,7 +367,7 @@ include '../_head.php';
 </div>
 
 <!-- Product Detail Pop-up Modal -->
-<div id="product-modal" class="modal">
+<div id="product-modal" class="products-modal">
     <div class="modal-content">
         <span class="close">&times;</span>
         <div class="wrap-product-detail">

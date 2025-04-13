@@ -66,7 +66,36 @@
                         <a href="/page/order_history.php"><i class="fas fa-clock-rotate-left"></i></a>
                     <?php endif; ?>
                     <a href="#"><i class = "fas fa-truck-fast"></i></a>
-                    <a href="/page/cart.php"><i class = "fas fa-cart-shopping"></i></a>
+                    <a href="/page/cart.php" class="cart-link">
+                        <i class = "fas fa-cart-shopping"></i>
+                        <span class="cart-count" id="cart-count-badge">
+                            <?php 
+                            $cartCount = 0;
+                            $testUserId = "C0001"; // Hardcoded test user ID
+
+                            if (isset($_SESSION[$testUserId])) {
+                                // Get count from database for logged-in users
+                                $stmt = $_db->prepare("
+                                    SELECT COUNT(*) as count 
+                                    FROM cart_item ci
+                                    JOIN shopping_cart sc ON ci.cart_id = sc.cart_id
+                                    WHERE sc.cust_id = ?
+                                ");
+                                $stmt->execute([$_SESSION[$testUserId]]);
+                                $result = $stmt->fetch();
+                                $cartCount = $result['count'] ?? 0;
+                            } elseif (isset($_SESSION['cart'])) {
+                                // For guests, use session cart
+                                $cartCount = count($_SESSION['cart']);
+                            }            
+                            
+                            // Only show if count > 0
+                            if ($cartCount > 0) {
+                                echo $cartCount;
+                            }
+                            ?>
+                        </span>
+                    </a>
                 </div>
 
             </div>
@@ -83,5 +112,5 @@
     <?php endif; ?>
     
 
-    <!-- <main>
-        <h1><?= $_title ?? 'Untitled' ?></h1> -->
+    <main>
+        <!-- <h1><?= $_title ?? 'Untitled' ?></h1> -->

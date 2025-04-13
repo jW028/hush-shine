@@ -108,7 +108,7 @@ try {
 
 ?>
 
-<div class="modal-content">
+<div class="admin-modal-content">
     <div class="modal-header">
         <h1>Add New Product</h1>
         <span class="close">&times;</span>

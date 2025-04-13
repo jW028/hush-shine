@@ -84,7 +84,7 @@ $action = isset($_GET['action']) ? $_GET['action'] : 'list';
     </div>
 
     <div id="addProductModal" class="modal">
-        <div class="modal-content">
+        <div class="admin-modal-content">
             <div class="modal-header">
                 <h1>Add New Product</h1>
                 <span class="close">&times;</span>
