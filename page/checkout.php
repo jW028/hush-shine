@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         //PaymentMethod
         $paymentMethod = $_POST['payment_method'];
-        $validPaymentMethods = ['Credit Card', 'PayPal', 'Bank Transfer'];
+        $validPaymentMethods = ['Debit/Credit Card', 'Touch N Go', 'Bank Transfer', 'FPX'];
         if (!in_array($paymentMethod, $validPaymentMethods)) {
             throw new Exception("Invalid payment method selected");
         }
@@ -51,13 +51,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $total = $subtotal + $tax;
 
         //Stripe
-        if ($paymentMethod === 'Credit Card') {
-            $_SESSION['checkout_total'] = $total;
-            $_SESSION['order_id'] = $orderId;
+        // if ($paymentMethod === 'Debit/Credit Card') {
+        //     $_SESSION['checkout_total'] = $total;
+        //     $_SESSION['order_id'] = $orderId;
 
-            header("Location: stripe.php");
-            exit();
-        }
+        //     header("Location: stripe.php");
+        //     exit();
+        // }
 
         // Start transaction
         $_db->beginTransaction();
@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $userId,
             $total,
             $_POST['address'],
-            $payment_method
+            $paymentMethod
         ]);
         $orderId = $_db->lastInsertId();
 
@@ -92,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         //Handle different payment methods
-        if ($paymentMethod === 'Credit Card') {
+        if ($paymentMethod === 'Debit/Credit Card') {
             $_SESSION['checkout_total'] = $total;
             $_SESSION['order_id'] = $orderId;
             
@@ -194,7 +194,7 @@ include '../_head.php';
             </div>
         <?php endif; ?>
 
-        <form method="POST">
+        <form method="POST" class="checkout-post-method">
             <div class="checkout-grid">
                 <!-- Shipping Information -->
                 <div class="checkout-form">
@@ -238,12 +238,12 @@ include '../_head.php';
                         
                         <div class="payment-cards">
                             <label class="payment-option">
-                                <input type="radio" name="payment_method" value="Credit Card" required checked>
+                                <input type="radio" name="payment_method" value="Debit/Credit Card" required checked>
                                 <div class="payment-content">
                                     <div class="payment-icon">
                                         <i class="fab fa-cc-stripe"></i>
                                     </div>
-                                    <span>Credit Card</span>
+                                    <span>Debit/Credit Card</span>
                                     <div class="payment-brands">
                                         <i class="fab fa-cc-visa"></i>
                                         <i class="fab fa-cc-mastercard"></i>
