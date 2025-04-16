@@ -62,34 +62,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Start transaction
         $_db->beginTransaction();
 
-        // Create order
-        /*$orderStmt = $_db->prepare("
-            INSERT INTO orders (cust_id, order_date, total_amount, status, 
-                               shipping_address, payment_method)
-            VALUES (?, NOW(), ?, 'Processing', ?, ?)
-        ");
-        $orderStmt->execute([
-            $userId,
-            $total,
-            $_POST['address'],
-            $payment_method
-        ]);
-        $orderId = $_db->lastInsertId();
-
-        // Add order items
-        $itemStmt = $_db->prepare("
-            INSERT INTO order_items (order_id, prod_id, quantity, price)
-            VALUES (?, ?, ?, ?)
-        ");
-        
-        foreach ($cartItems as $item) {
-            $itemStmt->execute([
-                $orderId,
-                $item['prod_id'],
-                $item['quantity'],
-                $item['price']
-            ]);
-        }*/
         // 1. Create order with "pending" status
         $orderStmt = $_db->prepare("
             INSERT INTO orders (cust_id, order_date, total_amount, status, payment_status, shipping_address, payment_method)
@@ -113,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $itemStmt->execute([
                 $orderId, 
                 $item['prod_id'], 
-                $item['quantity'], 
+                $item['quantity'],
                 $item['price']]);
         }
 
@@ -221,7 +193,7 @@ include '../_head.php';
             </div>
         <?php endif; ?>
 
-        <form method="POST">
+        <form method="POST" class="checkout-post-method">
             <div class="checkout-grid">
                 <!-- Shipping Information -->
                 <div class="checkout-form">
@@ -270,7 +242,7 @@ include '../_head.php';
                                     <div class="payment-icon">
                                         <i class="fab fa-cc-stripe"></i>
                                     </div>
-                                    <span>Credit Card</span>
+                                    <span>Debit/Credit Card</span>
                                     <div class="payment-brands">
                                         <i class="fab fa-cc-visa"></i>
                                         <i class="fab fa-cc-mastercard"></i>

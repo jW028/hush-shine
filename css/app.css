@@ -319,6 +319,7 @@ form {
     width: 33%;
     margin: 0 20px;
 }
+
 /*Index css*/
 .slider{
     /* width: 1521px; */
@@ -1959,7 +1960,7 @@ input[type="number"] {
 
 .checkout-container {
     max-width: 1200px;
-    margin: 2rem auto;
+    margin: 10rem auto;
     padding: 0 1rem;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
@@ -2016,6 +2017,11 @@ input[type="number"] {
     background: var(--primary);
     color: white;
     border-color: var(--primary);
+}
+
+.checkout-post-method {
+    width: auto;
+    margin: auto;
 }
 
 .checkout-grid {

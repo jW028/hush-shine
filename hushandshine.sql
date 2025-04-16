@@ -23,6 +23,9 @@ SET time_zone = "+00:00";
 
 -- --------------------------------------------------------
 
+CREATE DATABASE IF NOT EXISTS `hushandshine`;
+USE `hushandshine`;
+
 --
 -- Table structure for table `admin`
 --
