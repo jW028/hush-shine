@@ -33,11 +33,29 @@ try {
     // Create Stripe payment intent
     \Stripe\Stripe::setApiKey('sk_test_51R6kNpFNb65u1viGxsiDLhrmT5wfQNQtzlOhGp6Ldu7uMbQ577pvupwdb1D1dzcYdtvD2O28QevBeriOyNBaOoyJ00DgX8TQNp');
     
+    $intent = \Stripe\PaymentIntent::retrieve($_POST['payment_intent_id'] ?? null);
+
+    if ($intent && $intent->status === 'succeeded') {
+        $orderId = $intent->metadata->order_id ?? null;
+
+        if ($orderId) {
+            $stmt = $_db->prepare("UPDATE orders SET payment_status = 'paid' WHERE order_id = ?");
+            $stmt->execute([$orderId]);
+
+            // Optional: clear cart
+            $clearStmt = $_db->prepare("
+                DELETE FROM cart_item 
+                WHERE cart_id = (SELECT cart_id FROM shopping_cart WHERE cust_id = ?)
+            ");
+            $clearStmt->execute([$_SESSION['user_id']]);
+        }
+    }
     $paymentIntent = \Stripe\PaymentIntent::create([
-        'amount' => round($totalAmount * 100), // Convert to cents
+        'amount' => round($totalAmount * 100), // in cents
         'currency' => 'myr',
         'metadata' => [
-            'customer_id' => $_SESSION['user_id']
+            'customer_id' => $_SESSION['user_id'],
+            'order_id' => $orderId
         ]
     ]);
 

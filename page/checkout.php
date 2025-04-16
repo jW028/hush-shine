@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         //PaymentMethod
         $paymentMethod = $_POST['payment_method'];
-        $validPaymentMethods = ['Credit Card', 'PayPal', 'Bank Transfer'];
+        $validPaymentMethods = ['Debit/Credit Card', 'PayPal', 'Bank Transfer'];
         if (!in_array($paymentMethod, $validPaymentMethods)) {
             throw new Exception("Invalid payment method selected");
         }
@@ -51,19 +51,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $total = $subtotal + $tax;
 
         //Stripe
-        if ($paymentMethod === 'Credit Card') {
-            $_SESSION['checkout_total'] = $total;
-            $_SESSION['order_id'] = $orderId;
+        // if ($paymentMethod === 'Debit/Credit Card') {
+        //     $_SESSION['checkout_total'] = $total;
+        //     $_SESSION['order_id'] = $orderId;
 
-            header("Location: stripe.php");
-            exit();
-        }
+        //     header("Location: stripe.php");
+        //     exit();
+        // }
 
         // Start transaction
         $_db->beginTransaction();
 
         // Create order
-        $orderStmt = $_db->prepare("
+        /*$orderStmt = $_db->prepare("
             INSERT INTO orders (cust_id, order_date, total_amount, status, 
                                shipping_address, payment_method)
             VALUES (?, NOW(), ?, 'Processing', ?, ?)
@@ -89,10 +89,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $item['quantity'],
                 $item['price']
             ]);
+        }*/
+        // 1. Create order with "pending" status
+        $orderStmt = $_db->prepare("
+            INSERT INTO orders (cust_id, order_date, total_amount, status, payment_status, shipping_address, payment_method)
+            VALUES (?, NOW(), ?, 'Pending', 'Unpaid', ?, ?)
+        ");
+        $orderStmt->execute([
+            $userId, 
+            $total, 
+            $_POST['address'], 
+            $paymentMethod
+        ]);
+        $orderId = $_db->lastInsertId();
+
+        
+        // Optional: Insert order_items from cart
+        foreach ($cartItems as $item) {
+            $itemStmt = $_db->prepare("
+                INSERT INTO order_items (order_id, prod_id, quantity, price)
+                VALUES (?, ?, ?, ?)
+            ");
+            $itemStmt->execute([
+                $orderId, 
+                $item['prod_id'], 
+                $item['quantity'], 
+                $item['price']]);
         }
 
         //Handle different payment methods
-        if ($paymentMethod === 'Credit Card') {
+        if ($paymentMethod === 'Debit/Credit Card') {
             $_SESSION['checkout_total'] = $total;
             $_SESSION['order_id'] = $orderId;
             
@@ -102,6 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header("Location: stripe.php");
             exit();
         }
+
         // Clear cart
         $cartStmt = $_db->prepare("
             DELETE ci FROM cart_item ci
@@ -238,7 +265,7 @@ include '../_head.php';
                         
                         <div class="payment-cards">
                             <label class="payment-option">
-                                <input type="radio" name="payment_method" value="Credit Card" required checked>
+                                <input type="radio" name="payment_method" value="Debit/Credit Card" required checked>
                                 <div class="payment-content">
                                     <div class="payment-icon">
                                         <i class="fab fa-cc-stripe"></i>
