@@ -240,7 +240,6 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       
       const quantity = parseInt(document.getElementById('quantity').value) || 1;
-      
       const btn = this;
       btn.disabled = true;
       btn.textContent = "Adding...";
@@ -258,11 +257,15 @@ document.addEventListener('DOMContentLoaded', function() {
       .then(data => {
           if (data.success) {
               btn.textContent = "✓ Added!";
+              // Create particles from button to cart
+              createParticles(btn, quantity * 2); // More particles for larger quantities
+              refreshCartCount();
               // Close modal after delay
               setTimeout(() => {
                   modal.classList.remove("show");
                   setTimeout(() => {
                       modal.style.display = "none";
+                      resetQuantity();
                       btn.textContent = "Add to Cart";
                       btn.disabled = false;
                   }, 300);
@@ -431,18 +434,6 @@ function changeImage(selectedImg, imageSrc) {
 }
 
 /* Shopping Cart */
-
-/* TODO Shopping Cart item count top right corner */
-// function updateCartCount(count) {
-//     const cartCountElem = document.querySelector('.cart-count');
-//     if (count > 0) {
-//         cartCountElem.textContent = count;
-//         cartCountElem.style.display = 'inline-block';
-//     } else {
-//         cartCountElem.style.display = 'none';
-//     }
-// }
-
 // Calculate and update selected subtotal
 function updateSelectedSubtotal() {
   let subtotal = 0;
@@ -459,9 +450,12 @@ function updateSelectedSubtotal() {
 
 // Checkbox change handler
 document.addEventListener('DOMContentLoaded', function() {
-  // Update subtotal when checkboxes change
-  document.querySelectorAll('.item-checkbox').forEach(checkbox => {
-      checkbox.addEventListener('change', updateSelectedSubtotal);
+    // Check user SESSION for cart count 
+    initCartCount();
+
+    // Update subtotal when checkboxes change
+    document.querySelectorAll('.item-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectedSubtotal);
   });
   
   // Initial calculation
@@ -559,6 +553,7 @@ document.addEventListener('DOMContentLoaded', function() {
               totalElement.textContent = 'RM ' + (price * newQuantity).toFixed(2);
               updateButtonStates(qtyElement, minusBtn);
               updateSelectedSubtotal();
+              refreshCartCount();
           } else {
               throw new Error(data.message || 'Update failed');
           }
@@ -603,6 +598,7 @@ document.addEventListener('DOMContentLoaded', function() {
                       // Optionally, remove the item from the UI without reloading the page
                       row.remove();
                       updateSelectedSubtotal();
+                      refreshCartCount();
                   } else {
                       alert("Error: " + response.message);
                   }
@@ -614,6 +610,119 @@ document.addEventListener('DOMContentLoaded', function() {
       });
   });
 });
+
+/*Cart Count*/
+let currentCartCount = 0;
+
+// Initialize cart count on page load
+function initCartCount() {
+    fetchCartCount().then(count => {
+        currentCartCount = count;
+        updateCartBadge(count);
+    });
+}
+
+async function fetchCartCount() {
+    return fetch('cart.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'action=get_count'
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Network error');
+        return response.json();
+    })
+    .then(data => data.count || 0)
+    .catch(error => {
+        console.error('Error fetching cart count:', error);
+        return 0;
+    });
+}
+
+function createParticles(fromElement, count = 3) {
+    const cartIcon = document.querySelector('.cart-link');
+    if (!cartIcon) return;
+    
+    // Get positions
+    const fromRect = fromElement.getBoundingClientRect();
+    const toRect = cartIcon.getBoundingClientRect();
+    
+    // Create particles
+    for (let i = 0; i < count; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'cart-particle';
+        
+        // Random starting position near the clicked element
+        const startX = fromRect.left + fromRect.width/2 + (Math.random() * 20 - 10);
+        const startY = fromRect.top + fromRect.height/2 + (Math.random() * 20 - 10);
+        
+        // Calculate path to cart icon
+        const deltaX = toRect.left - startX + toRect.width/2;
+        const deltaY = toRect.top - startY + toRect.height/2;
+        
+        // Set initial position and animation target
+        particle.style.left = `${startX}px`;
+        particle.style.top = `${startY}px`;
+        particle.style.setProperty('--tx', `${deltaX}px`);
+        particle.style.setProperty('--ty', `${deltaY}px`);
+        
+        // Randomize appearance
+        particle.style.backgroundColor = `hsl(${Math.random() * 60 + 350}, 100%, 60%)`;
+        particle.style.width = `${6 + Math.random() * 4}px`;
+        particle.style.height = particle.style.width;
+        
+        // Add to DOM and auto-remove after animation
+        document.body.appendChild(particle);
+        setTimeout(() => particle.remove(), 800);
+    }
+}
+
+// Function to update cart badge
+function updateCartBadge(count) {
+    const badge = document.getElementById("cart-count-badge");
+    if (!badge) return;
+    
+    // Trigger animation
+    badge.classList.remove('update');
+    void badge.offsetWidth; // Trigger reflow
+    badge.classList.add('update');
+
+    if (count > 0) {
+        badge.textContent = `${count}`;
+        badge.style.display = "inline-block";
+    } else {
+        badge.textContent = "";
+        badge.style.display = "none";
+    }
+
+    // Remove animation class after it completes
+    setTimeout(() => badge.classList.remove('update'), 500);
+}
+
+// Call this after modifying cart
+function refreshCartCount() {
+    fetchCartCount().then(count => {
+        currentCartCount = count;
+        updateCartBadge(count);
+    });
+}
+
+// Example: Call this after adding/removing items
+// When adding an item:
+// function afterAddToCart(quantityAdded) {
+//     const badge = document.getElementById("cart-count-badge");
+//     const currentCount = parseInt(badge.textContent.replace(/[()]/g, '')) || 0;
+//     updateCartBadge(currentCount + quantityAdded);
+// }
+
+// When removing an item:
+// function afterRemoveFromCart(quantityRemoved) {
+//     const badge = document.getElementById("cart-count-badge");
+//     const currentCount = parseInt(badge.textContent.replace(/[()]/g, '')) || 0;
+//     updateCartBadge(Math.max(0, currentCount - quantityRemoved));
+// }
 
 $.ajax({
   url: 'products.php',

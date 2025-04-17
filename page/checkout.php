@@ -77,17 +77,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_db->beginTransaction();
 
         $orderStmt = $_db->prepare("
-            INSERT INTO orders (cust_id, order_date, total_amount, status, payment_status, shipping_address, payment_method)
-            VALUES (?, NOW(), ?, 'Pending', 'Unpaid', ?, ?)
+            INSERT INTO orders (cust_id, order_date, total_amount, status, payment_id, payment_status, shipping_address)
+            VALUES (?, NOW(), ?, 'Pending', NULL, 'Unpaid', ?)
         ");
         $orderStmt->execute([
             $userId, 
             $total, 
             $_POST['address'], 
-            $paymentMethod
+            // $paymentMethod
         ]);
         $orderId = $_db->lastInsertId();
         error_log("Order ID {$_db->lastInsertId()} inserted with payment_status 'Unpaid'");
+        
         
         // Optional: Insert order_items from cart
         foreach ($cartItems as $item) {
@@ -116,12 +117,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // Clear cart
-        $cartStmt = $_db->prepare("
-            DELETE ci FROM cart_item ci
-            JOIN shopping_cart sc ON ci.cart_id = sc.cart_id
-            WHERE sc.cust_id = ?
-        ");
-        $cartStmt->execute([$userId]);
+        // $cartStmt = $_db->prepare("
+        //     DELETE ci FROM cart_item ci
+        //     JOIN shopping_cart sc ON ci.cart_id = sc.cart_id
+        //     WHERE sc.cust_id = ?
+        // ");
+        // $cartStmt->execute([$userId]);
 
         // Commit transaction
         $_db->commit();
