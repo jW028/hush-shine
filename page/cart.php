@@ -124,7 +124,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         exit(); // Stop further execution after handling the AJAX request
     }
+
+    if (isset($_POST['action']) && $_POST['action'] === 'get_count') {
+        try {
+            $stmt = $_db->prepare("
+                SELECT SUM(ci.quantity) as count 
+                FROM cart_item ci
+                JOIN shopping_cart sc ON ci.cart_id = sc.cart_id
+                WHERE sc.cust_id = ?
+            ");
+            $stmt->execute([$_SESSION['user_id'] ?? 'C0001']); // Fallback to test user
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            echo json_encode([
+                'success' => true,
+                'count' => $result['count'] ?? 0
+            ]);
+        } catch (Exception $e) {
+            error_log("Count Fetch Error: " . $e->getMessage());
+            echo json_encode([
+                'success' => false,
+                'count' => 0
+            ]);
+        }
+        exit();
+    }
 }
+
 
 //Normal cart
 $_SESSION['user_id'] = 'C0001';  // Hardcoded user ID for testing
@@ -236,7 +262,7 @@ include '../_head.php';
                 </div>
             <?php else: ?>
                 <p>Your cart is empty.</p>
-                <button class="continue-shopping">Continue Shopping</button>
+                <a href="../index.php"><button class="continue-shopping">Continue Shopping</button></a>
             <?php endif; ?>
         </div>
     </section>

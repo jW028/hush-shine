@@ -44,7 +44,6 @@ try {
         $paymentIntent->amount / 100, // Convert from cents
         $paymentIntent->id
     ]);
-
     $orderId = $_db->lastInsertId();
 
     // Get cart items
@@ -67,7 +66,6 @@ try {
             price
         ) VALUES (?, ?, ?, ?)
     ");
-
     foreach ($cartItems as $item) {
         $itemStmt->execute([
             $orderId,

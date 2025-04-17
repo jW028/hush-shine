@@ -69,30 +69,38 @@
                     <a href="/page/cart.php" class="cart-link">
                         <i class = "fas fa-cart-shopping"></i>
                         <span class="cart-count" id="cart-count-badge">
-                            <?php 
-                            $cartCount = 0;
-                            $testUserId = "C0001"; // Hardcoded test user ID
-
-                            if (isset($_SESSION[$testUserId])) {
-                                // Get count from database for logged-in users
-                                $stmt = $_db->prepare("
-                                    SELECT COUNT(*) as count 
-                                    FROM cart_item ci
-                                    JOIN shopping_cart sc ON ci.cart_id = sc.cart_id
-                                    WHERE sc.cust_id = ?
-                                ");
-                                $stmt->execute([$_SESSION[$testUserId]]);
-                                $result = $stmt->fetch();
-                                $cartCount = $result['count'] ?? 0;
-                            } elseif (isset($_SESSION['cart'])) {
-                                // For guests, use session cart
-                                $cartCount = count($_SESSION['cart']);
-                            }            
+                            <!-- TODO -->
+                            <?php
+                            // For testing - hardcode user C0001
+                            $testUserId = "C0001";
+                            $count = 0;
                             
-                            // Only show if count > 0
-                            if ($cartCount > 0) {
-                                echo $cartCount;
+                            if ($testUserId) {
+                                try {
+                                    global $_db;
+                                    $stmt = $_db->prepare("
+                                        SELECT SUM(ci.quantity) as total_items
+                                        FROM cart_item ci
+                                        JOIN shopping_cart sc ON ci.cart_id = sc.cart_id
+                                        WHERE sc.cust_id = ?
+                                    ");
+                                    $stmt->execute([$testUserId]);
+                                    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                                    if (!$result || !isset($result['total_items'])) {
+                                        error_log("No cart items found for user: $testUserId or query returned null");
+                                        $count = 0;
+                                    } else {
+                                        $count = $result['total_items'];
+                                    }
+                                    
+                                } catch (Exception $e) {
+                                    error_log("Cart count error: " . $e->getMessage());
+                                    $count = 0;
+                                }
                             }
+                            
+                            echo $count > 0 ? "$count" : "";
                             ?>
                         </span>
                     </a>
