@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 13, 2025 at 09:12 AM
+-- Generation Time: Apr 18, 2025 at 01:38 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -22,9 +22,6 @@ SET time_zone = "+00:00";
 --
 
 -- --------------------------------------------------------
-
-CREATE DATABASE IF NOT EXISTS `hushandshine`;
-USE `hushandshine`;
 
 --
 -- Table structure for table `admin`
@@ -63,6 +60,8 @@ CREATE TABLE `cart_item` (
 --
 
 INSERT INTO `cart_item` (`cart_id`, `prod_id`, `quantity`) VALUES
+('CR01', 'P002', 2),
+('CR01', 'P007', 1),
 ('CR02', 'P003', 1),
 ('CR03', 'P001', 2),
 ('CR04', 'P006', 1),
@@ -157,21 +156,43 @@ CREATE TABLE `orders` (
   `status` varchar(50) NOT NULL DEFAULT 'Pending',
   `payment_id` varchar(255) DEFAULT NULL,
   `payment_status` varchar(50) DEFAULT NULL,
-  `shipping_address` text DEFAULT NULL
+  `shipping_address` text DEFAULT NULL,
+  `payment_method` varchar(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `orders`
 --
 
-INSERT INTO `orders` (`order_id`, `cust_id`, `order_date`, `total_amount`, `status`, `payment_id`, `payment_status`, `shipping_address`) VALUES
-(1, 'C0001', '2025-04-13 15:00:43', 1695.97, 'Confirmed', 'pi_3RDKU8FNb65u1viG1rHkjHk2', 'Paid', NULL),
-(2, 'C0001', '2025-04-13 15:01:45', 1695.97, 'Confirmed', 'pi_3RDKU8FNb65u1viG1rHkjHk2', 'Paid', NULL),
-(3, 'C0001', '2025-04-13 15:04:17', 1695.97, 'Confirmed', 'pi_3RDKU8FNb65u1viG1rHkjHk2', 'Paid', NULL),
-(4, 'C0001', '2025-04-13 15:04:23', 1695.97, 'Confirmed', 'pi_3RDKU8FNb65u1viG1rHkjHk2', 'Paid', NULL),
-(5, 'C0001', '2025-04-13 15:04:36', 1695.97, 'Confirmed', 'pi_3RDKU8FNb65u1viG1rHkjHk2', 'Paid', NULL),
-(6, 'C0001', '2025-04-13 15:07:50', 6945.05, 'Confirmed', 'pi_3RDKdnFNb65u1viG01RxAXxw', 'Paid', NULL),
-(7, 'C0001', '2025-04-13 15:08:43', 721.60, 'Confirmed', 'pi_3RDKegFNb65u1viG0YlQa05g', 'Paid', NULL);
+INSERT INTO `orders` (`order_id`, `cust_id`, `order_date`, `total_amount`, `status`, `payment_id`, `payment_status`, `shipping_address`, `payment_method`) VALUES
+(93, 'C0001', '2025-04-17 20:06:13', 2046.57, 'Pending', NULL, 'Unpaid', '31231231234123123121215', 'Debit/Credit Card'),
+(94, 'C0001', '2025-04-17 20:07:20', 2996.34, 'Pending', NULL, 'Unpaid', '312312', 'Debit/Credit Card'),
+(95, 'C0001', '2025-04-17 20:25:36', 2757.58, 'Pending', NULL, 'Unpaid', '312312', 'Debit/Credit Card'),
+(96, 'C0001', '2025-04-17 20:26:29', 2517.75, 'Pending', NULL, 'Unpaid', '3123123', 'Debit/Credit Card'),
+(97, 'C0001', '2025-04-17 20:26:39', 2517.75, 'Confirmed', 'pi_3RErWUFNb65u1viG1KdaTH7X', 'Paid', NULL, ''),
+(98, 'C0001', '2025-04-17 20:45:46', 1934.24, 'Pending', NULL, 'Unpaid', '3123131', 'Debit/Credit Card'),
+(99, 'C0001', '2025-04-17 20:46:21', 582.46, 'Pending', NULL, 'Unpaid', '31231231', 'Debit/Credit Card'),
+(100, 'C0001', '2025-04-17 20:56:02', 211.47, 'Pending', NULL, 'Unpaid', '4123423', 'Debit/Credit Card'),
+(101, 'C0001', '2025-04-17 20:59:51', 1087.03, 'Pending', NULL, 'Unpaid', '312312', 'Debit/Credit Card'),
+(102, 'C0001', '2025-04-17 21:08:54', 582.46, 'Pending', NULL, 'Paid', '31231', 'Debit/Credit Card'),
+(103, 'C0001', '2025-04-17 21:13:55', 582.46, 'Confirmed', 'pi_3REsGBFNb65u1viG05bRVACo', 'Paid', NULL, ''),
+(104, 'C0001', '2025-04-17 21:33:36', 370.99, 'Pending', NULL, 'Paid', '3123123', 'Debit/Credit Card'),
+(105, 'C0001', '2025-04-17 21:34:08', 1696.78, 'Confirmed', 'pi_3REsZRFNb65u1viG1kNJoiv5', 'Paid', NULL, ''),
+(106, 'C0001', '2025-04-17 21:44:35', 211.47, 'Pending', NULL, 'Paid', '31231231', 'Debit/Credit Card'),
+(107, 'C0001', '2025-04-17 21:45:20', 211.47, 'Pending', NULL, 'Paid', 'Sfafas', 'Debit/Credit Card'),
+(108, 'C0001', '2025-04-17 21:46:48', 211.47, 'Pending', NULL, 'Unpaid', '321312', 'Debit/Credit Card'),
+(109, 'C0001', '2025-04-17 21:48:05', 1882.02, 'Confirmed', 'pi_3REsmDFNb65u1viG08WmMBFW', 'Paid', NULL, ''),
+(110, 'C0001', '2025-04-17 21:58:51', 211.47, 'Pending', NULL, 'Unpaid', '45234', 'Debit/Credit Card'),
+(111, 'C0001', '2025-04-17 21:59:50', 1298.50, 'Confirmed', 'pi_3REsxsFNb65u1viG1bf8X2Uf', 'Paid', NULL, ''),
+(112, 'C0001', '2025-04-17 22:00:11', 847.21, 'Pending', NULL, 'Unpaid', '312312', 'Debit/Credit Card'),
+(113, 'C0001', '2025-04-17 22:00:33', 1058.68, 'Confirmed', 'pi_3REszAFNb65u1viG0HUrb1Qo', 'Paid', NULL, ''),
+(114, 'C0001', '2025-04-17 22:06:54', 211.47, 'Pending', NULL, 'Unpaid', '3213123', 'Debit/Credit Card'),
+(115, 'C0001', '2025-04-17 22:17:09', 211.47, 'Pending', NULL, 'Unpaid', '3421342', 'Debit/Credit Card'),
+(116, 'C0001', '2025-04-17 22:20:31', 211.47, 'Pending', NULL, 'Unpaid', '3421342', 'Debit/Credit Card'),
+(117, 'C0001', '2025-04-17 22:21:11', 211.47, 'Pending', NULL, 'Unpaid', '3421342', 'Debit/Credit Card'),
+(118, 'C0001', '2025-04-17 22:22:09', 211.47, 'Pending', NULL, 'Unpaid', '3421342', 'Debit/Credit Card'),
+(119, 'C0001', '2025-04-17 22:22:44', 211.47, 'Pending', NULL, 'Unpaid', '3421342', 'Debit/Credit Card'),
+(120, 'C0001', '2025-04-17 22:25:08', 211.47, 'Pending', NULL, 'Unpaid', '3421342', 'Debit/Credit Card');
 
 -- --------------------------------------------------------
 
@@ -192,12 +213,44 @@ CREATE TABLE `order_items` (
 --
 
 INSERT INTO `order_items` (`order_item_id`, `order_id`, `prod_id`, `quantity`, `price`) VALUES
-(1, 1, 'P001', 1, 899.99),
-(2, 1, 'P004', 2, 349.99),
-(3, 6, 'P001', 3, 899.99),
-(4, 6, 'P004', 2, 349.99),
-(5, 6, 'P007', 2, 1575.99),
-(6, 7, 'P008', 1, 680.75);
+(65, 93, 'P001', 1, 899.99),
+(66, 93, 'P004', 1, 349.99),
+(67, 93, 'P008', 1, 680.75),
+(68, 94, 'P003', 1, 1250.75),
+(69, 94, 'P007', 1, 1575.99),
+(70, 95, 'P006', 1, 1025.50),
+(71, 95, 'P007', 1, 1575.99),
+(72, 96, 'P005', 1, 799.25),
+(73, 96, 'P007', 1, 1575.99),
+(74, 97, 'P005', 1, 799.25),
+(75, 97, 'P007', 1, 1575.99),
+(76, 98, 'P005', 1, 799.25),
+(77, 98, 'P006', 1, 1025.50),
+(78, 99, 'P002', 1, 199.50),
+(79, 99, 'P004', 1, 349.99),
+(80, 100, 'P002', 1, 199.50),
+(81, 101, 'P006', 1, 1025.50),
+(82, 102, 'P002', 1, 199.50),
+(83, 102, 'P004', 1, 349.99),
+(84, 104, 'P004', 1, 349.99),
+(85, 106, 'P002', 1, 199.50),
+(86, 107, 'P002', 1, 199.50),
+(87, 108, 'P002', 1, 199.50),
+(88, 109, 'P002', 1, 199.50),
+(89, 109, 'P007', 1, 1575.99),
+(90, 110, 'P002', 1, 199.50),
+(91, 111, 'P002', 1, 199.50),
+(92, 111, 'P006', 1, 1025.50),
+(93, 112, 'P005', 1, 799.25),
+(94, 113, 'P002', 1, 199.50),
+(95, 113, 'P005', 1, 799.25),
+(96, 114, 'P002', 1, 199.50),
+(97, 115, 'P002', 1, 199.50),
+(98, 116, 'P002', 1, 199.50),
+(99, 117, 'P002', 1, 199.50),
+(100, 118, 'P002', 1, 199.50),
+(101, 119, 'P002', 1, 199.50),
+(102, 120, 'P002', 1, 199.50);
 
 -- --------------------------------------------------------
 
@@ -208,24 +261,11 @@ INSERT INTO `order_items` (`order_item_id`, `order_id`, `prod_id`, `quantity`, `
 CREATE TABLE `order_prod` (
   `order_id` char(4) NOT NULL,
   `cart_id` char(4) NOT NULL,
-  `order_date` date NOT NULL
+  `prod_id` int(11) NOT NULL,
+  `order_date` date NOT NULL,
+  `price` decimal(10,2) NOT NULL,
+  `quantity` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `order_prod`
---
-
-INSERT INTO `order_prod` (`order_id`, `cart_id`, `order_date`) VALUES
-('O001', 'CR01', '2025-02-16'),
-('O002', 'CR02', '2024-11-19'),
-('O003', 'CR03', '2024-11-30'),
-('O004', 'CR04', '2024-09-27'),
-('O005', 'CR05', '2025-03-08'),
-('O006', 'CR06', '2025-02-23'),
-('O007', 'CR07', '2024-10-16'),
-('O008', 'CR08', '2024-12-27'),
-('O009', 'CR09', '2024-10-30'),
-('O010', 'CR10', '2025-01-15');
 
 -- --------------------------------------------------------
 
@@ -240,22 +280,6 @@ CREATE TABLE `payment` (
   `payment_method` varchar(50) NOT NULL,
   `total_amount` double(7,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `payment`
---
-
-INSERT INTO `payment` (`payment_id`, `order_id`, `payment_date`, `payment_method`, `total_amount`) VALUES
-('PY01', 'O001', '2025-02-20', 'Bank Transfer', 917.99),
-('PY02', 'O002', '2024-11-23', 'Debit/Credit Card', 1261.13),
-('PY03', 'O003', '2024-12-01', 'Touch N Go', 1823.54),
-('PY04', 'O004', '2024-09-30', 'FPX', 1030.59),
-('PY05', 'O005', '2025-03-10', 'Bank Transfer', 576.36),
-('PY06', 'O006', '2025-02-25', 'Debit/Credit Card', 447.26),
-('PY07', 'O007', '2024-10-17', 'Bank Transfer', 831.65),
-('PY08', 'O008', '2024-12-29', 'FPX', 1583.01),
-('PY09', 'O009', '2024-11-01', 'FPX', 215.64),
-('PY10', 'O010', '2025-01-17', 'Debit/Credit Card', 688.83);
 
 -- --------------------------------------------------------
 
@@ -316,22 +340,6 @@ CREATE TABLE `shipping` (
   `ship_address` varchar(200) NOT NULL,
   `ship_charge` double(5,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `shipping`
---
-
-INSERT INTO `shipping` (`ship_id`, `order_id`, `ship_type`, `ship_address`, `ship_charge`) VALUES
-('S001', 'O001', 'Standard', '200 Jalan Tun Razak, Kuala Lumpur, Malaysia', 18.00),
-('S002', 'O002', 'Economy', '80 Jalan Abdul, Kuala Lumpur, Malaysia', 10.38),
-('S003', 'O003', 'Standard', '101 Nguyen Hue Street, Ho Chi Minh City, Vietnam', 23.56),
-('S004', 'O004', 'Standard', '123 Main Street, Kuala Lumpur, Malaysia', 5.09),
-('S005', 'O005', 'Economy', '150 Jalan Rawang, Kuala Lumpur, Malaysia', 25.38),
-('S006', 'O006', 'Standard', '77 Petaling Street, Kuala Lumpur, Malaysia', 48.26),
-('S007', 'O007', 'Standard', '34 Jalan Bakri,  Johor, Malaysia', 32.40),
-('S008', 'O008', 'Express', '789 Sukhumvit Road, Bangkok, Thailand', 7.02),
-('S009', 'O009', 'Economy', '123 Main Street, Kuala Lumpur, Malaysia', 16.14),
-('S010', 'O010', 'Standard', '55 Nathan Road, Hong Kong', 8.08);
 
 -- --------------------------------------------------------
 
@@ -404,7 +412,8 @@ ALTER TABLE `admin`
 -- Indexes for table `cart_item`
 --
 ALTER TABLE `cart_item`
-  ADD PRIMARY KEY (`cart_id`,`prod_id`);
+  ADD PRIMARY KEY (`cart_id`,`prod_id`),
+  ADD KEY `fk_cart_item_product` (`prod_id`);
 
 --
 -- Indexes for table `category`
@@ -423,7 +432,7 @@ ALTER TABLE `customer`
 --
 ALTER TABLE `orders`
   ADD PRIMARY KEY (`order_id`),
-  ADD KEY `cust_id` (`cust_id`);
+  ADD KEY `fk_orders_customer` (`cust_id`);
 
 --
 -- Indexes for table `order_items`
@@ -431,7 +440,7 @@ ALTER TABLE `orders`
 ALTER TABLE `order_items`
   ADD PRIMARY KEY (`order_item_id`),
   ADD KEY `order_id` (`order_id`),
-  ADD KEY `prod_id` (`prod_id`);
+  ADD KEY `fk_order_items_product` (`prod_id`);
 
 --
 -- Indexes for table `order_prod`
@@ -497,13 +506,13 @@ ALTER TABLE `update_prod`
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=121;
 
 --
 -- AUTO_INCREMENT for table `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `order_item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `order_item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=103;
 
 --
 -- AUTO_INCREMENT for table `stripe_payments`
@@ -516,15 +525,23 @@ ALTER TABLE `stripe_payments`
 --
 
 --
+-- Constraints for table `cart_item`
+--
+ALTER TABLE `cart_item`
+  ADD CONSTRAINT `fk_cart_item_product` FOREIGN KEY (`prod_id`) REFERENCES `product` (`prod_id`) ON DELETE CASCADE;
+
+--
 -- Constraints for table `orders`
 --
 ALTER TABLE `orders`
+  ADD CONSTRAINT `fk_orders_customer` FOREIGN KEY (`cust_id`) REFERENCES `customer` (`cust_id`) ON DELETE CASCADE,
   ADD CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`cust_id`) REFERENCES `customer` (`cust_id`);
 
 --
 -- Constraints for table `order_items`
 --
 ALTER TABLE `order_items`
+  ADD CONSTRAINT `fk_order_items_product` FOREIGN KEY (`prod_id`) REFERENCES `product` (`prod_id`) ON DELETE CASCADE,
   ADD CONSTRAINT `order_items_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`),
   ADD CONSTRAINT `order_items_ibfk_2` FOREIGN KEY (`prod_id`) REFERENCES `product` (`prod_id`);
 

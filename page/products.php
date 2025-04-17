@@ -14,6 +14,7 @@ if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQU
             switch ($_POST['action']) {
                 case 'add_to_cart':
                     $productId = $_POST['product_id'];
+                    error_log("Product ID: $productId"); // Debugging line
                     $quantity = isset($_POST['quantity']) ? (int)$_POST['quantity'] : 1; // Get quantity from POST
                     
                     // Validate quantity

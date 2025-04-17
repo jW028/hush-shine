@@ -153,7 +153,7 @@ include '../_head.php';
             </div>
 
             <div class="actions">
-                <a href="index.php" class="btn-primary">Continue Shopping</a>
+                <a href="../index.php" class="btn-primary">Continue Shopping</a>
                 <a href="order_history.php?tab=orders" class="btn-secondary">View Orders</a>
             </div>
         </div>

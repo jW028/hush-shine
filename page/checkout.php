@@ -27,42 +27,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new Exception("Invalid payment method selected");
         }
 
+        // Get selected items from query string
+        $selectedItems = isset($_GET['items']) ? explode(',', $_GET['items']) : [];
+
         // Get cart items
         $stmt = $_db->prepare("
-            SELECT ci.prod_id, ci.quantity, p.prod_name, p.price 
+            SELECT ci.cart_id, ci.prod_id, ci.quantity, p.prod_name, p.price,
             FROM cart_item ci
             JOIN product p ON ci.prod_id = p.prod_id
             JOIN shopping_cart sc ON ci.cart_id = sc.cart_id
             WHERE sc.cust_id = ?
         ");
-        $stmt->execute([$userId]);
-        $cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        if (empty($cartItems)) {
-            throw new Exception("Your cart is empty");
+        // Prepare the base SQL query
+        $query = "
+            SELECT ci.cart_id, ci.prod_id, ci.quantity, p.prod_name, p.price
+            FROM cart_item ci
+            JOIN product p ON ci.prod_id = p.prod_id
+            JOIN shopping_cart sc ON ci.cart_id = sc.cart_id
+            WHERE sc.cust_id = ?
+        ";
+
+        // Modify the query if there are selected items
+        if (!empty($selectedItems)) {
+        $query .= " AND ci.prod_id IN (" . implode(',', array_fill(0, count($selectedItems), '?')) . ")";
         }
 
-        // Calculate totals
+        // Prepare the statement using the DB connection
+        $stmt = $_db->prepare($query);
+
+        // Merge the user ID with selected items as parameters
+        $params = array_merge([$userId], $selectedItems);
+
+        // Execute the query
+        $stmt->execute($params);
+
+        // Fetch the cart items
+        $cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
         $subtotal = 0;
         foreach ($cartItems as $item) {
             $subtotal += $item['price'] * $item['quantity'];
+            
         }
         $tax = $subtotal * 0.06; // Example 6% tax
         $total = $subtotal + $tax;
 
-        //Stripe
-        // if ($paymentMethod === 'Debit/Credit Card') {
-        //     $_SESSION['checkout_total'] = $total;
-        //     $_SESSION['order_id'] = $orderId;
-
-        //     header("Location: stripe.php");
-        //     exit();
-        // }
-
         // Start transaction
         $_db->beginTransaction();
 
-        // 1. Create order with "pending" status
         $orderStmt = $_db->prepare("
             INSERT INTO orders (cust_id, order_date, total_amount, status, payment_status, shipping_address, payment_method)
             VALUES (?, NOW(), ?, 'Pending', 'Unpaid', ?, ?)
@@ -74,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $paymentMethod
         ]);
         $orderId = $_db->lastInsertId();
-
+        error_log("Order ID {$_db->lastInsertId()} inserted with payment_status 'Unpaid'");
         
         // Optional: Insert order_items from cart
         foreach ($cartItems as $item) {
@@ -86,7 +99,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $orderId, 
                 $item['prod_id'], 
                 $item['quantity'],
-                $item['price']]);
+                $item['price']
+            ]);
         }
 
         //Handle different payment methods

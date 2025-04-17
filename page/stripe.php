@@ -9,15 +9,24 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 try {
-    // Get cart items
-    $stmt = $_db->prepare("
+    $selectedItems = $_SESSION['selected_items'];
+    if (empty($selectedItems)) {
+        throw new Exception("No items selected for payment.");
+    }
+    $placeholders = implode(',', array_fill(0, count($selectedItems), '?'));
+    $query = "
         SELECT ci.prod_id, ci.quantity, p.prod_name, p.price, p.image
         FROM cart_item ci
         JOIN product p ON ci.prod_id = p.prod_id
         JOIN shopping_cart sc ON ci.cart_id = sc.cart_id
-        WHERE sc.cust_id = ?
-    ");
-    $stmt->execute([$_SESSION['user_id']]);
+        WHERE sc.cust_id = ? AND ci.prod_id IN ($placeholders)
+    ";
+
+    $params = array_merge([$_SESSION['user_id']], $selectedItems);
+
+    $stmt = $_db->prepare($query);
+    $stmt->execute($params);
+
     $cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Calculate total
