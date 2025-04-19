@@ -794,3 +794,12 @@ $('#payment-form').on('submit', function(event) {
         }
     });
 });
+
+// Validate shipping address before form submission
+document.querySelector('.checkout-post-method').addEventListener('submit', function (e) {
+    const address = document.getElementById('address').value.trim();
+    if (address.length < 10) {
+        e.preventDefault();
+        alert('Shipping address must be at least 10 characters long.');
+    }
+});

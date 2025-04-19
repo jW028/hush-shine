@@ -1,269 +1,136 @@
 <?php
 require '../_base.php';
-require_once '../vendor/autoload.php';
 
-// Check if user is logged in
-if (!isset($_SESSION['user_id'])) {
-    header("Location: ../login.php");
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['order_id'])) {
+    header("Location: ../index.php");
     exit();
 }
 
+$orderId = $_SESSION['order_id'];
+$userId = $_SESSION['user_id'];
+
 try {
-    // Get payment intent ID from URL
-    if (!isset($_GET['payment_intent'])) {
-        throw new Exception("No payment information found");
+    // Debug session values
+    if (!$orderId || !$userId) {
+        throw new Exception("Missing session values: orderId or userId");
     }
 
-    // Initialize Stripe
-    \Stripe\Stripe::setApiKey('sk_test_51R6kNpFNb65u1viGxsiDLhrmT5wfQNQtzlOhGp6Ldu7uMbQ577pvupwdb1D1dzcYdtvD2O28QevBeriOyNBaOoyJ00DgX8TQNp');
-
-    // Retrieve payment intent
-    $paymentIntent = \Stripe\PaymentIntent::retrieve($_GET['payment_intent']);
-    
-    if ($paymentIntent->status !== 'succeeded') {
-        throw new Exception("Payment was not successful");
+    // Update order status
+    $stmt = $_db->prepare("UPDATE orders SET payment_status = 'Paid', status = 'Confirmed' WHERE order_id = ? AND cust_id = ?");
+    if (!$stmt->execute([$orderId, $userId])) {
+        throw new Exception("Failed to update order status.");
     }
 
-    // Start transaction
-    $_db->beginTransaction();
-
-    // Create order
-    $orderStmt = $_db->prepare("
-        INSERT INTO orders (
-            cust_id, 
-            order_date, 
-            total_amount, 
-            status, 
-            payment_id,
-            payment_status
-        ) VALUES (?, NOW(), ?, 'Confirmed', ?, 'Paid')
+    // Fetch order items
+    $stmt = $_db->prepare("
+        SELECT oi.prod_id, oi.quantity, p.prod_name, p.price, p.image
+        FROM order_items oi
+        JOIN product p ON oi.prod_id = p.prod_id
+        WHERE oi.order_id = ?
     ");
-
-    $orderStmt->execute([
-        $_SESSION['user_id'],
-        $paymentIntent->amount / 100, // Convert from cents
-        $paymentIntent->id
-    ]);
-    $orderId = $_db->lastInsertId();
-
-    // Get cart items
-    $cartStmt = $_db->prepare("
-        SELECT ci.prod_id, ci.quantity, p.price
-        FROM cart_item ci
-        JOIN product p ON ci.prod_id = p.prod_id
-        JOIN shopping_cart sc ON ci.cart_id = sc.cart_id
-        WHERE sc.cust_id = ?
-    ");
-    $cartStmt->execute([$_SESSION['user_id']]);
-    $cartItems = $cartStmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // Add order items
-    $itemStmt = $_db->prepare("
-        INSERT INTO order_items (
-            order_id, 
-            prod_id, 
-            quantity, 
-            price
-        ) VALUES (?, ?, ?, ?)
-    ");
-    foreach ($cartItems as $item) {
-        $itemStmt->execute([
-            $orderId,
-            $item['prod_id'],
-            $item['quantity'],
-            $item['price']
-        ]);
+    if (!$stmt->execute([$orderId])) {
+        throw new Exception("Failed to fetch order items.");
     }
 
-    // Clear cart
-    $clearCartStmt = $_db->prepare("
+    $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    if (!$items) {
+        throw new Exception("No items found for order ID: " . $orderId);
+    }
+
+    // Fetch order details including shipping address
+    $stmt = $_db->prepare("SELECT shipping_address FROM orders WHERE order_id = ? AND cust_id = ?");
+    if (!$stmt->execute([$orderId, $userId])) {
+        throw new Exception("Failed to fetch order details.");
+    }
+    $orderDetails = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$orderDetails || !isset($orderDetails['shipping_address'])) {
+        throw new Exception("Shipping address not found for order ID: " . $orderId);
+    }
+    $shippingAddress = $orderDetails['shipping_address'];
+    // Calculate delivery date (today + 5 days)
+    $deliveryDate = (new DateTime())->modify('+5 days')->format('l, d M Y');
+
+    // Calculate totals
+    $subtotal = 0;
+    foreach ($items as $item) {
+        $subtotal += $item['price'] * $item['quantity'];
+    }
+    $tax = $subtotal * 0.06;
+    $total = $subtotal + $tax;
+
+    // Clean up session
+    unset($_SESSION['checkout_total']);
+    unset($_SESSION['order_id']);
+
+    // Remove confirmed items from cart
+    $deleteStmt = $_db->prepare("
         DELETE ci FROM cart_item ci
         JOIN shopping_cart sc ON ci.cart_id = sc.cart_id
-        WHERE sc.cust_id = ?
+        WHERE sc.cust_id = ? AND ci.prod_id IN (SELECT prod_id FROM order_items WHERE order_id = ?)
     ");
-    $clearCartStmt->execute([$_SESSION['user_id']]);
+    $deleteStmt->execute([$userId, $orderId]);
 
-    // Commit transaction
-    $_db->commit();
-
-    // Get order details for display
-    $orderStmt = $_db->prepare("
-        SELECT o.*, oi.*, p.prod_name, p.image
-        FROM orders o
-        JOIN order_items oi ON o.order_id = oi.order_id
-        JOIN product p ON oi.prod_id = p.prod_id
-        WHERE o.order_id = ?
-    ");
-    $orderStmt->execute([$orderId]);
-    $orderItems = $orderStmt->fetchAll(PDO::FETCH_ASSOC);
-
-    $success = true;
-    $message = "Payment successful! Your order has been confirmed.";
 
 } catch (Exception $e) {
-    if ($_db->inTransaction()) {
-        $_db->rollBack();
-    }
-    $success = false;
-    $message = $e->getMessage();
     error_log("Order Confirmation Error: " . $e->getMessage());
+    echo "<p><strong>DEBUG:</strong> " . htmlspecialchars($e->getMessage()) . "</p>";
+    exit();
 }
+
 
 $_title = 'Order Confirmation';
 include '../_head.php';
 ?>
 
 <div class="confirmation-container">
-    <?php if ($success): ?>
-        <div class="success-message">
-            <i class="fas fa-check-circle"></i>
-            <h1>Thank You for Your Order!</h1>
-            <p><?= htmlspecialchars($message) ?></p>
+    <h2>Thank you for your payment!</h2>
+    <p>Your order <strong><?= htmlspecialchars($orderId) ?></strong> has been confirmed.</p>
+
+    <div class="order-summary">
+        <h3>Order Summary</h3>
+        <div class="shipping-address">
+            <h4>Shipping Address</h4>
+            <p><?= nl2br(htmlspecialchars($shippingAddress)) ?></p>
+            <p><strong>Estimated Delivery Date:</strong> <?= htmlspecialchars($deliveryDate) ?></p>
         </div>
 
-        <div class="order-details">
-            <h2>Order Summary</h2>
-            <div class="order-info">
-                <p>Order ID: #<?= $orderId ?></p>
-                <p>Date: <?= date('F j, Y') ?></p>
-                <p>Payment Status: Paid</p>
-            </div>
-
-            <div class="order-items">
-                <?php foreach ($orderItems as $item): ?>
-                    <div class="item">
-                        <img src="/images/prod_img/<?= htmlspecialchars($item['image']) ?>" 
-                             alt="<?= htmlspecialchars($item['prod_name']) ?>">
-                        <div class="item-details">
-                            <h3><?= htmlspecialchars($item['prod_name']) ?></h3>
-                            <p>Quantity: <?= $item['quantity'] ?></p>
-                            <p>Price: RM <?= number_format($item['price'], 2) ?></p>
-                        </div>
+        <div class="items-list">
+            <?php foreach ($items as $item): ?>
+                <div class="item">
+                    <img src="/images/prod_img/<?= htmlspecialchars($item['image']) ?>" 
+                         alt="<?= htmlspecialchars($item['prod_name']) ?>">
+                    <div class="item-details">
+                        <h4><?= htmlspecialchars($item['prod_name']) ?></h4>
+                        <p>Quantity: <?= $item['quantity'] ?></p>
+                        <p>Price: RM <?= number_format($item['price'], 2) ?></p>
                     </div>
-                <?php endforeach; ?>
-            </div>
-
-            <div class="order-total">
-                <div class="total-row">
-                    <span>Total Paid:</span>
-                    <span>RM <?= number_format($paymentIntent->amount / 100, 2) ?></span>
                 </div>
-            </div>
+            <?php endforeach; ?>
+        </div>
 
-            <div class="actions">
-                <a href="../index.php" class="btn-primary">Continue Shopping</a>
-                <a href="order_history.php?tab=orders" class="btn-secondary">View Orders</a>
+        <div class="total-summary">
+            <div class="row">
+                <span>Subtotal:</span>
+                <span>RM <?= number_format($subtotal, 2) ?></span>
+            </div>
+            <div class="row">
+                <span>Tax (6%):</span>
+                <span>RM <?= number_format($tax, 2) ?></span>
+            </div>
+            <div class="row total">
+                <span>Total:</span>
+                <span>RM <?= number_format($total, 2) ?></span>
             </div>
         </div>
-    <?php else: ?>
-        <div class="error-message">
-            <i class="fas fa-times-circle"></i>
-            <h1>Payment Failed</h1>
-            <p><?= htmlspecialchars($message) ?></p>
-            <div class="actions">
-                <a href="checkout.php" class="btn-primary">Try Again</a>
-                <a href="cart.php" class="btn-secondary">Return to Cart</a>
-            </div>
+        <div class="confirmation-actions" style="margin-top: 30px; text-align: center;">
+            <a href="products.php" class="action-button" style="display: inline-block; margin: 0 10px; padding: 10px 20px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">
+                Continue Shopping
+            </a>
+            <a href="order_history.php" class="action-button" style="display: inline-block; margin: 0 10px; padding: 10px 20px; background-color: #2196F3; color: white; text-decoration: none; border-radius: 5px;">
+                View My Orders
+            </a>
         </div>
-    <?php endif; ?>
+    </div>
 </div>
-
-<style>
-.confirmation-container {
-    max-width: 800px;
-    margin: 150px auto 50px;
-    padding: 30px;
-}
-
-.success-message,
-.error-message {
-    text-align: center;
-    margin-bottom: 40px;
-}
-
-.success-message i,
-.error-message i {
-    font-size: 48px;
-    color: #4CAF50;
-    margin-bottom: 20px;
-}
-
-.error-message i {
-    color: #dc3545;
-}
-
-.order-details {
-    background: #f9f9f9;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
-}
-
-.order-info {
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #eee;
-}
-
-.order-items .item {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 15px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid #eee;
-    align-items: center;
-}
-
-.item img {
-    width: 80px;
-    height: 80px;
-    object-fit: cover;
-    border-radius: 4px;
-}
-
-.order-total {
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 2px solid #eee;
-}
-
-.total-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 1.2em;
-    font-weight: bold;
-}
-
-.actions {
-    margin-top: 30px;
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-}
-
-.btn-primary,
-.btn-secondary {
-    padding: 12px 24px;
-    border-radius: 4px;
-    text-decoration: none;
-    text-align: center;
-}
-
-.btn-primary {
-    background: #4CAF50;
-    color: white;
-}
-
-.btn-secondary {
-    background: #f8f9fa;
-    color: #333;
-    border: 1px solid #ddd;
-}
-
-.btn-primary:hover,
-.btn-secondary:hover {
-    opacity: 0.9;
-}
-</style>
 
 <?php include '../_foot.php'; ?>

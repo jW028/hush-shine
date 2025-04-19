@@ -18,6 +18,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (empty($_POST[$field])) {
                 throw new Exception("Please fill in all required fields");
             }
+            // Extra validation for address
+            $address = trim($_POST['address']);
+            if (strlen($address) < 10) {
+                throw new Exception("Shipping address must be at least 10 characters long");
+            }
         }
 
         //PaymentMethod
@@ -32,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Get cart items
         $stmt = $_db->prepare("
-            SELECT ci.cart_id, ci.prod_id, ci.quantity, p.prod_name, p.price,
+            SELECT ci.cart_id, ci.prod_id, ci.quantity, p.prod_name, p.price
             FROM cart_item ci
             JOIN product p ON ci.prod_id = p.prod_id
             JOIN shopping_cart sc ON ci.cart_id = sc.cart_id
@@ -83,10 +88,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $orderStmt->execute([
             $userId, 
             $total, 
-            $_POST['address'], 
-            // $paymentMethod
+            $_POST['address']
         ]);
         $orderId = $_db->lastInsertId();
+        $_SESSION['pending_order_id'] = $orderId;
         error_log("Order ID {$_db->lastInsertId()} inserted with payment_status 'Unpaid'");
         
         
@@ -103,6 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $item['price']
             ]);
         }
+        $_SESSION['pending_order_id'] = $_db->lastInsertId();
 
         //Handle different payment methods
         if ($paymentMethod === 'Debit/Credit Card') {
@@ -115,14 +121,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header("Location: stripe.php");
             exit();
         }
-
-        // Clear cart
-        // $cartStmt = $_db->prepare("
-        //     DELETE ci FROM cart_item ci
-        //     JOIN shopping_cart sc ON ci.cart_id = sc.cart_id
-        //     WHERE sc.cust_id = ?
-        // ");
-        // $cartStmt->execute([$userId]);
 
         // Commit transaction
         $_db->commit();
@@ -240,7 +238,8 @@ include '../_head.php';
                                 <label for="address">Shipping Address</label>
                                 <div class="input-with-icon">
                                     <i class="fas fa-map-marker-alt"></i>
-                                    <textarea id="address" name="address" required><?= htmlspecialchars($user['address'] ?? '') ?></textarea>
+                                    <textarea id="address" name="address" required minlength="10" 
+                                        placeholder="Enter your full shipping address"><?= htmlspecialchars($user['address'] ?? '') ?></textarea>
                                 </div>
                             </div>
                         </div>

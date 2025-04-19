@@ -2,57 +2,57 @@
 require '../_base.php';
 require_once '../vendor/autoload.php';
 
-// Check if user is logged in
-if (!isset($_SESSION['user_id'])) {
-    header("Location: ../login.php?redirect=checkout");
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['checkout_total']) || !isset($_SESSION['order_id'])) {
+    header("Location: ../checkout.php");
     exit();
 }
+$totalAmount = $_SESSION['checkout_total'];
+$userId = $_SESSION['user_id']; 
+$orderId = $_SESSION['order_id'];
 
+// Get cart items for display
 try {
-    $selectedItems = $_SESSION['selected_items'];
-    if (empty($selectedItems)) {
-        throw new Exception("No items selected for payment.");
-    }
-    $placeholders = implode(',', array_fill(0, count($selectedItems), '?'));
+    // Get selected items from query string if present
+    $selectedItems = isset($_GET['items']) ? explode(',', $_GET['items']) : [];
+
     $query = "
-        SELECT ci.prod_id, ci.quantity, p.prod_name, p.price, p.image
+        SELECT ci.prod_id, ci.quantity, p.prod_name, p.price, p.image 
         FROM cart_item ci
         JOIN product p ON ci.prod_id = p.prod_id
         JOIN shopping_cart sc ON ci.cart_id = sc.cart_id
-        WHERE sc.cust_id = ? AND ci.prod_id IN ($placeholders)
+        WHERE sc.cust_id = ?
     ";
 
-    $params = array_merge([$_SESSION['user_id']], $selectedItems);
+    if (!empty($selectedItems)) {
+        $query .= " AND ci.prod_id IN (" . implode(',', array_fill(0, count($selectedItems), '?')) . ")";
+        $params = array_merge([$userId], $selectedItems);
+    } else {
+        $params = [$userId];
+    }
 
     $stmt = $_db->prepare($query);
     $stmt->execute($params);
-
     $cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Calculate total
-    $totalAmount = 0;
+    // Calculate totals
+    $subtotal = 0;
     foreach ($cartItems as $item) {
-        $totalAmount += $item['price'] * $item['quantity'];
+        $subtotal += $item['price'] * $item['quantity'];
     }
-    
-    // Add tax
-    $tax = $totalAmount * 0.06;
-    $totalAmount += $tax;
+    $tax = $subtotal * 0.06; // Example 6% tax
+    $total = $subtotal + $tax;
 
+} catch (Exception $e) {
+    error_log("Checkout Error: " . $e->getMessage());
+    $cartItems = [];
+    $subtotal = $tax = $total = 0;
+}
+
+try {
     // Create Stripe payment intent
     \Stripe\Stripe::setApiKey('sk_test_51R6kNpFNb65u1viGxsiDLhrmT5wfQNQtzlOhGp6Ldu7uMbQ577pvupwdb1D1dzcYdtvD2O28QevBeriOyNBaOoyJ00DgX8TQNp');
     
-    if ($orderId) {
-        $stmt = $_db->prepare("UPDATE orders SET payment_status = 'Paid' WHERE order_id = ?");
-        $stmt->execute([$orderId]);
-
-        // Optional: clear cart
-        $clearStmt = $_db->prepare("
-            DELETE FROM cart_item 
-            WHERE cart_id = (SELECT cart_id FROM shopping_cart WHERE cust_id = ?)
-        ");
-        $clearStmt->execute([$_SESSION['user_id']]);
-    }
+    
     $paymentIntent = \Stripe\PaymentIntent::create([
         'amount' => round($totalAmount * 100), // in cents
         'currency' => 'myr',
@@ -70,42 +70,47 @@ try {
     exit();
 }
 
+
 $_title = 'Complete Payment';
 include '../_head.php';
 ?>
 
-<div class="stripe-container">
-    
+<div class="stripe-container">  
     <div class="order-summary">
         <h2>Order Summary</h2>
-        <div class="items-list">
+        <div class="order-items">
             <?php foreach ($cartItems as $item): ?>
-                <div class="item">
-                    <img src="/images/prod_img/<?= htmlspecialchars($item['image']) ?>" 
-                         alt="<?= htmlspecialchars($item['prod_name']) ?>">
+                        <div class="order-item">
+                    <div class="item-image">
+                        <img src="/images/prod_img/<?= htmlspecialchars($item['image']) ?>" alt="<?= htmlspecialchars($item['prod_name']) ?>">
+                        <span class="item-quantity"><?= $item['quantity'] ?></span>
+                    </div>
                     <div class="item-details">
-                        <h3><?= htmlspecialchars($item['prod_name']) ?></h3>
-                        <p>Quantity: <?= $item['quantity'] ?></p>
-                        <p>Price: RM <?= number_format($item['price'], 2) ?></p>
+                        <h4><?= htmlspecialchars($item['prod_name']) ?></h4>
+                        <p>RM <?= number_format($item['price'], 2) ?></p>
+                    </div>
+                    <div class="item-total">
+                        RM <?= number_format($item['price'] * $item['quantity'], 2) ?>
                     </div>
                 </div>
             <?php endforeach; ?>
         </div>
         
-        <div class="total-summary">
-            <div class="row">
-                <span>Subtotal:</span>
-                <span>RM <?= number_format($totalAmount - $tax, 2) ?></span>
+        <div class="order-totals">
+            <div class="total-row">
+                <span>Subtotal</span>
+                <span>RM <?= number_format($subtotal, 2) ?></span>
             </div>
-            <div class="row">
-                <span>Tax (6%):</span>
+            <div class="total-row">
+                <span>Tax (6%)</span>
                 <span>RM <?= number_format($tax, 2) ?></span>
             </div>
-            <div class="row total">
-                <span>Total:</span>
-                <span>RM <?= number_format($totalAmount, 2) ?></span>
+            <div class="total-row grand-total">
+                <span>Total</span>
+                <span>RM <?= number_format($total, 2) ?></span>
             </div>
         </div>
+
     </div>
 
     <div class="payment-form">

@@ -52,6 +52,10 @@ include '../_head.php';
                         <div class="order-info">
                             <h3>Order #<?= $order['order_id'] ?></h3>
                             <p>Placed on <?= date('F j, Y', strtotime($order['order_date'])) ?></p>
+                            <?php
+                                $deliveryDate = date('F j, Y', strtotime($order['order_date'] . ' +5 days'));
+                            ?>
+                            <p>Estimated Delivery: <?= $deliveryDate ?></p>
                         </div>
                         <div class="order-status">
                             <span class="status-badge <?= strtolower($order['status']) ?>">
