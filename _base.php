@@ -13,7 +13,7 @@ session_start();
 
 // Database connection parameters
 $db_host = 'localhost';
-$db_name = 'hushandshine';
+$db_name = 'test';
 $db_user = 'root';
 $db_pass = '';
 // Connect to database

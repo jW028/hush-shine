@@ -53,12 +53,15 @@ try {
 }
 ?>
 
+<div class="admin-main">
 <div class="admin-content">
-    <div class="admin-header">
+    <div class="admin-title">
         <h2>Category Details: <?= htmlspecialchars($category['cat_name']) ?></h2>
-</div>
-
-    <button data-get="admin_category.php" class="back-btn"><- Back to Categories</button>
+        <a href="admin_category.php" class="category-btn back">
+            <i class="fas fa-arrow-left"></i> Back to Categories
+        </a>
+    </div>
+   
 
     <?php if (!empty($errors)): ?>
         <div class="alert alert-danger">
@@ -88,7 +91,8 @@ try {
     <hr>
     
     <div class="form-group">
-        <button type="submit" name="update_category" class="btn btn-primary">Update Category</button>
+        <button type="submit" name="update_category" class="admin-submit-btn primary">Update Category</button>
     </div>
     </form>
+</div>
 </div>
