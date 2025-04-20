@@ -126,7 +126,7 @@ try {
     <form action="add_product.php" method="POST" enctype="multipart/form-data" class="product-form">
     <div class="form-group">
         <label for="name">Product Name</label>
-        <input type="text" id="name" name="name" class="form-control" ?>" required>
+        <input type="text" id="name" name="name" class="form-control" required>
     </div>
     
     <div class="form-group">
@@ -171,7 +171,7 @@ try {
     <div class="image-previews" id="imagePreview"></div>
     
     <div class="form-group">
-        <button type="submit" class="submit-button">Add Product</button>
+        <button type="submit" class="admin-submit-btn">Add Product</button>
         <a href="admin_menu.php">Cancel</a>
     </div>
 </form>

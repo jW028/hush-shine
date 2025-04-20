@@ -127,89 +127,95 @@ try {
     exit;
 }
 ?>
-
-<div class="admin-content">
-    <div class="admin-header">
-        <h2>Product Details: <?= htmlspecialchars($product['prod_name']) ?></h2>
-</div>
-
-    <button data-get="admin_products.php" class="back-btn"><- Back to Products</button>
-
-    <?php if (!empty($errors)): ?>
-        <div class="alert alert-danger">
-            <ul>
-                <?php foreach ($errors as $error): ?>
-                    <li><?= htmlspecialchars($error) ?></li>
-                <?php endforeach; ?>
-            </ul>
-        </div>
-    <?php endif; ?>
-
-    <form action="view_product.php?id=<?= htmlspecialchars($prod_id)?>" method="POST" enctype="multipart/form-data" class="product-form">
-    <div class="form-group">
-        <label for="prod_id">Product ID</label>
-        <input type="text" id="prod_id" class="form-control" value="<?= htmlspecialchars($product['prod_id']) ?>" readonly>
-    </div>
-
-    <div class="form-group">
-        <label for="prod_name">Product Name</label>
-        <input type="text" id="prod_name" name="prod_name" class="form-control" value="<?= htmlspecialchars($product['prod_name']) ?>" required>
-    </div>
-
-    <div class="form-group">
-        <label for="prod_desc">Description</label>
-        <textarea id="prod_desc" name="prod_desc" class="form-control" rows="4"><?= htmlspecialchars($product['prod_desc']) ?></textarea>
-    </div>
-
-    <div class="form-group">
-        <label for="price">Price</label>
-        <input type="number" id="price" name="price" class="form-control" value="<?= htmlspecialchars($product['price']) ?>" step="0.01" required>
-    </div>
-
-    <div class="form-group">
-        <label for="quantity">Quantity</label>
-        <input type="number" id="quantity" name="quantity" class="form-control" min="0" value="<?= htmlspecialchars($product['quantity'] ?? 0) ?>" required>
-    </div>
-    <div class="form-group">
-        <label for="cat_id">Category</label>
-        <select id="cat_id" name="cat_id" class="form-control" required>
-            <option value="">Select a category</option>
-            <?php foreach ($categories as $category): ?>
-                <option value="<?= htmlspecialchars($category['cat_id']) ?>" <?= $product['cat_id'] == $category['cat_id'] ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($category['cat_name']) ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label>Current Images</label>
-        <div class="current-images">
-            <?php if (!empty($images)): ?>
-                <?php foreach($images as $image): ?>
-                    <div class="current-image-item">
-                        <img src="../images/products/<?= htmlspecialchars($image) ?>" alt="Product Image" class="img-thumbnail">
-                        <input type="checkbox" name="existing_images[]" value="<?= htmlspecialchars($image) ?>" checked>    
-                        <label>Keep this image</label>
-                    </div>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <p>No images available for this product.</p>
-            <?php endif; ?>
-        </div>
-    </div>
-
-    <div class="form-group">
-        <label for="images">Upload New Images</label>
-        <input type="file" id="images" name="images[]" class="form-control-file" accept="image/*" multiple>
-        <small class="form-text text-muted">Select multiple images by holding Ctrl (or Cmd on Mac) while clicking.</small>
-    </div>
-
-    <div class="image-previews" id="imagePreview"></div>
-    <hr>
     
-    <div class="form-group">
-        <button type="submit" name="update_product" class="btn btn-primary">Update Product</button>
+    <div class="admin-main">
+        <div class="admin-content">
+            <div class="admin-title">
+                <h2>Product Details: <?= htmlspecialchars($product['prod_name']) ?></h2>
+                <a href="admin_products.php" class="category-btn back">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Products
+                </a>
+        </div>
+
+
+            <?php if (!empty($errors)): ?>
+                <div class="alert alert-danger">
+                    <ul>
+                        <?php foreach ($errors as $error): ?>
+                            <li><?= htmlspecialchars($error) ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+            <?php endif; ?>
+
+            <form action="view_product.php?id=<?= htmlspecialchars($prod_id)?>" method="POST" enctype="multipart/form-data" class="product-form">
+            <div class="form-group">
+                <label for="prod_id">Product ID</label>
+                <input type="text" id="prod_id" class="form-control" value="<?= htmlspecialchars($product['prod_id']) ?>" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="prod_name">Product Name</label>
+                <input type="text" id="prod_name" name="prod_name" class="form-control" value="<?= htmlspecialchars($product['prod_name']) ?>" required>
+            </div>
+
+            <div class="form-group">
+                <label for="prod_desc">Description</label>
+                <textarea id="prod_desc" name="prod_desc" class="form-control" rows="4"><?= htmlspecialchars($product['prod_desc']) ?></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="price">Price</label>
+                <input type="number" id="price" name="price" class="form-control" value="<?= htmlspecialchars($product['price']) ?>" step="0.01" required>
+            </div>
+
+            <div class="form-group">
+                <label for="quantity">Quantity</label>
+                <input type="number" id="quantity" name="quantity" class="form-control" min="0" value="<?= htmlspecialchars($product['quantity'] ?? 0) ?>" required>
+            </div>
+            <div class="form-group">
+                <label for="cat_id">Category</label>
+                <select id="cat_id" name="cat_id" class="form-control" required>
+                    <option value="">Select a category</option>
+                    <?php foreach ($categories as $category): ?>
+                        <option value="<?= htmlspecialchars($category['cat_id']) ?>" <?= $product['cat_id'] == $category['cat_id'] ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($category['cat_name']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Current Images</label>
+                <div class="current-images">
+                    <?php if (!empty($images)): ?>
+                        <?php foreach($images as $image): ?>
+                            <div class="current-image-item">
+                                <img src="../images/products/<?= htmlspecialchars($image) ?>" alt="Product Image" class="img-thumbnail">
+                                <input type="checkbox" name="existing_images[]" value="<?= htmlspecialchars($image) ?>" checked>    
+                                <label>Keep this image</label>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <p>No images available for this product.</p>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="images">Upload New Images</label>
+                <input type="file" id="images" name="images[]" class="form-control-file" accept="image/*" multiple>
+                <small class="form-text text-muted">Select multiple images by holding Ctrl (or Cmd on Mac) while clicking.</small>
+            </div>
+
+            <div class="image-previews" id="imagePreview"></div>
+            <hr>
+            
+            <div class="form-group">
+                <button type="submit" name="update_product" class="admin-submit-btn primary">Update Product</button>
+            </div>
+            </form>
+        </div>
     </div>
-    </form>
-</div>
+</main>
