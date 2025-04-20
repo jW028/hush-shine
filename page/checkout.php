@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         //PaymentMethod
         $paymentMethod = $_POST['payment_method'];
-        $validPaymentMethods = ['Debit/Credit Card', 'PayPal', 'Bank Transfer'];
+        $validPaymentMethods = ['Debit/Credit Card', 'Bank Transfer', 'DuitNow QR'];
         if (!in_array($paymentMethod, $validPaymentMethods)) {
             throw new Exception("Invalid payment method selected");
         }
@@ -119,6 +119,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_db->commit();
 
             header("Location: stripe.php");
+            exit();
+        } else if ($paymentMethod === 'Bank Transfer') {
+            $_SESSION['checkout_total'] = $total;
+            $_SESSION['order_id'] = $orderId;
+            
+            // Commit transaction before redirecting
+            $_db->commit();
+
+            header("Location: FPX.php");
+            exit();
+        } elseif ($paymentMethod === 'DuitNow QR') {
+            $_SESSION['checkout_total'] = $total;
+            $_SESSION['order_id'] = $orderId;
+            
+            // Commit transaction before redirecting
+            $_db->commit();
+
+            header("Location: duitnow.php");
             exit();
         }
 
@@ -266,22 +284,22 @@ include '../_head.php';
                             </label>
 
                             <label class="payment-option">
-                                <input type="radio" name="payment_method" value="PayPal">
-                                <div class="payment-content">
-                                    <div class="payment-icon">
-                                        <i class="fab fa-paypal"></i>
-                                    </div>
-                                    <span>PayPal</span>
-                                </div>
-                            </label>
-
-                            <label class="payment-option">
                                 <input type="radio" name="payment_method" value="Bank Transfer">
                                 <div class="payment-content">
                                     <div class="payment-icon">
                                         <i class="fas fa-university"></i>
                                     </div>
                                     <span>Bank Transfer</span>
+                                </div>
+                            </label>
+
+                            <label class="payment-option">
+                                <input type="radio" name="payment_method" value="DuitNow QR">
+                                <div class="payment-content">
+                                    <div class="payment-icon">
+                                        <i class="fas fa-qrcode"></i>
+                                    </div>
+                                    <span>DuitNow QR</span>
                                 </div>
                             </label>
                         </div>
