@@ -47,6 +47,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_returning) {
         $gender = 'F';
     }
 
+    if (empty($contact)) {
+        $errors[] = "Contact number is required";
+    } elseif (!preg_match('/^\d{3}-\d{8}$/', $contact)) {
+        $errors[] = "Invalid contact number format. Must be in the format XXX-XXXXXXXX.";
+    }
+    
+
     
     // If no errors, proceed with registration
     if (empty($errors)) {
@@ -71,8 +78,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_returning) {
                 
                 // Insert new user
                 $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-                $stmt = $_db->prepare("INSERT INTO customer (cust_id, cust_name, cust_contact, cust_email, cust_gender, cust_password) VALUES (?, ?, ?, ?, ?, ?)");
-                $stmt->execute([$customer_id, $name, $contact, $email, $gender, $hashed_password]);
+                $stmt = $_db->prepare("INSERT INTO customer (cust_id, cust_name, cust_contact, cust_email, cust_gender, cust_password, cust_photo) VALUES (?, ?, ?, ?, ?, ?,?)");
+                $stmt->execute([$customer_id, $name, $contact, $email, $gender, $hashed_password, 'default.png']);
                 
                 // Redirect to login page
                 $_SESSION['success_message'] = "Registration successful! You can now log in.";

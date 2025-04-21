@@ -112,35 +112,17 @@ CREATE TABLE `customer` (
   `cust_contact` varchar(13) NOT NULL,
   `cust_email` varchar(50) NOT NULL,
   `cust_gender` char(1) NOT NULL,
-  `cust_password` varchar(100) NOT NULL
+  `cust_password` varchar(100) NOT NULL,
+  `cust_photo` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `customer`
 --
 
-INSERT INTO `customer` (`cust_id`, `cust_name`, `cust_contact`, `cust_email`, `cust_gender`, `cust_password`) VALUES
-('C0001', 'Aiman Rahman', '0134567890', 'aimanrahman@gmail.com', 'M', 'pass1234'),
-('C0002', 'Siti Aminah', '0129876543', 'sitiaminah@gmail.com', 'F', 'securepass1'),
-('C0003', 'Lim Wei Sheng', '0176543210', 'limweisheng@gmail.com', 'M', 'mypassword'),
-('C0004', 'Kavitha Subramaniam', '0183456789', 'kavithas@gmail.com', 'F', 'kavi2023'),
-('C0005', 'Tan Chong Leong', '0162233445', 'tanchong@gmail.com', 'M', 'chongleong88'),
-('C0006', 'Nor Hidayah', '0141122334', 'norhidayah@gmail.com', 'F', 'hidayah987'),
-('C0007', 'Rajesh Kumar', '0194455667', 'rajeshk@gmail.com', 'M', 'rajesh_secure'),
-('C0008', 'Farah Nabilah', '0137788990', 'farahnabilah@gmail.com', 'F', 'farah_123'),
-('C0009', 'Michael Wong', '0125566778', 'michaelwong@gmail.com', 'M', 'wongmike98'),
-('C0010', 'Zarina Hassan', '0176677889', 'zarinahassan@gmail.com', 'F', 'zarina_pass'),
-('C0011', 'Adam Firdaus', '0199988776', 'adamfirdaus@gmail.com', 'M', 'adamF_pass'),
-('C0012', 'Priya Chandran', '0163344556', 'priyachandran@gmail.com', 'F', 'priya_c123'),
-('C0013', 'Hafizullah Syed', '0182233445', 'hafizsyed@gmail.com', 'M', 'hafiz_987'),
-('C0014', 'Jenny Lim', '0149988776', 'jennylim@gmail.com', 'F', 'jenny_2023'),
-('C0015', 'Ahmad Danish', '0136677889', 'ahmadanish@gmail.com', 'M', 'danish_678'),
-('C0016', 'Yasmin Zulkifli', '0191122334', 'yasmin@gmail.com', 'F', 'yasmin_abc'),
-('C0017', 'Kelvin Tan', '0175566778', 'kelvintan@gmail.com', 'M', 'kelvinpass01'),
-('C0018', 'Nabila Farhana', '0127788990', 'nabilafarhana@gmail.com', 'F', 'nabila_pass'),
-('C0019', 'Syafiq Hazim', '0164455667', 'syafiqhazim@gmail.com', 'M', 'syafiq_321'),
-('C0020', 'Cheryl Lee', '0183344556', 'cherylee@gmail.com', 'F', 'cheryllee999'),
-('C0021', 'Samuel Chew', '0123053492', 'samchew323@gmail.com', 'M', '$2y$10$P.I.xEYJzEAjO5mYGkSDAuFKX3LJV1F71vEMMy9AiEKRsPl9vKQJe');
+INSERT INTO `customer` (`cust_id`, `cust_name`, `cust_contact`, `cust_email`, `cust_gender`, `cust_password`, `cust_photo`) VALUES
+('C0001', 'John Down', '012-3465633', 'jd@gmail.com', 'M', '$2y$10$.mPb/HBto6.VQF4l3T7NR.wxqmLZhTbOzgpjxF/CAi9Ky05H3nzfu', '68051890029db.jpg'),
+('C0002', 'walker', '012-3456783', 'walker@gmail.com', 'M', '$2y$10$5BiFFhzPVi.Qdyki00lKEOrHfSHFqcqZoHguyQNpw66CB80t5hd5a', 'default.png');
 
 -- --------------------------------------------------------
 
@@ -292,7 +274,7 @@ CREATE TABLE `product` (
   `prod_name` varchar(100) NOT NULL,
   `prod_desc` varchar(200) NOT NULL,
   `price` double(7,2) NOT NULL,
-  `status` char(1) NOT NULL,
+  `quantity` int(4) NOT NULL,
   `cat_id` char(4) NOT NULL,
   `image` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -301,17 +283,22 @@ CREATE TABLE `product` (
 -- Dumping data for table `product`
 --
 
-INSERT INTO `product` (`prod_id`, `prod_name`, `prod_desc`, `price`, `status`, `cat_id`, `image`) VALUES
-('P001', 'Gold Necklace', 'Elegant 18K gold necklace with a delicate chain.', 899.99, 'A', 'CT01', ''),
-('P002', 'Silver Bracelet', 'Sterling silver bracelet with intricate design.', 199.50, 'A', 'CT02', ''),
-('P003', 'Diamond Ring', '14K white gold ring with a 0.5-carat diamond.', 1250.75, 'A', 'CT03', ''),
-('P004', 'Pearl Earrings', 'Classic pearl earrings with sterling silver backing.', 349.99, 'A', 'CT04', ''),
-('P005', 'Sapphire Pendant', 'Blue sapphire pendant set in 18K gold.', 799.25, 'A', 'CT05', ''),
-('P006', 'Gold Bangle', 'Traditional 22K gold bangle with intricate patterns.', 1025.50, 'A', 'CT06', ''),
-('P007', 'Ruby Necklace', 'Ruby gemstone necklace with gold chain.', 1575.99, 'A', 'CT01', ''),
-('P008', 'Emerald Stud Earrings', 'Green emerald stud earrings set in platinum.', 680.75, 'A', 'CT04', ''),
-('P009', 'Platinum Wedding Band', 'Simple yet elegant platinum wedding band.', 1150.00, 'A', 'CT09', ''),
-('P010', 'Gold Anklet', 'Delicate 18K gold anklet with small charms.', 275.49, 'A', 'CT07', '');
+INSERT INTO `product` (`prod_id`, `prod_name`, `prod_desc`, `price`, `quantity`, `cat_id`, `image`) VALUES
+('P001', 'Gold Necklace', 'Elegant 18K gold necklace with a delicate chain.', 899.99, 10, 'CT01', ''),
+('P002', 'Silver Bracelet', 'Sterling silver bracelet with intricate design.', 199.50, 10, 'CT02', ''),
+('P003', 'Diamond Ring', '14K white gold ring with a 0.5-carat diamond.', 1250.75, 10, 'CT03', '[\"680363320f445_1.jpg\",\"680363320f778_2.jpg\"]'),
+('P004', 'Pearl Earrings', 'Classic pearl earrings with sterling silver backing.', 349.99, 10, 'CT04', ''),
+('P005', 'Sapphire Pendant', 'Blue sapphire pendant set in 18K gold.', 799.25, 10, 'CT05', ''),
+('P008', 'Emerald Stud Earrings', 'Green emerald stud earrings set in platinum.', 680.75, 10, 'CT04', '[\"6802563074830_1.webp\",\"6802563074b29_2.webp\",\"6802563074c18_3.webp\"]'),
+('P009', 'Platinum Wedding Band', 'Simple yet elegant platinum wedding band.', 1150.00, 10, 'CT09', ''),
+('P011', 'Pearl Earrings', 'pearl earrings', 1499.99, 15, 'CT04', '[\"680267e954da1_1.webp\",\"680267e9550ba_2.webp\",\"680267e9551a8_3.webp\"]'),
+('P012', 'Gold Heart Earrings', 'Gold Heart Earrrings', 649.99, 15, 'CT04', '[\"68058243380d7_1.webp\",\"6805824338424_2.webp\",\"6805824338581_3.webp\"]'),
+('P013', 'Emerald Necklace', 'Emerald Necklace', 1399.99, 20, 'CT01', '[\"6805826f066b1_1.webp\",\"6805826f067e8_2.webp\",\"6805826f068b8_3.webp\"]'),
+('P014', 'Pearl Necklace', 'Pearl Necklace', 1299.99, 18, 'CT01', '[\"680582964fd21_1.png\",\"680582964fe23_2.webp\",\"680582964ff2d_3.webp\"]'),
+('P015', 'Silver Heart Necklace', 'Silver Heart Necklace', 899.99, 15, 'CT01', '[\"680582b980bfb_1.webp\",\"680582b980d2d_2.webp\",\"680582b980ec7_3.webp\"]'),
+('P016', 'Open Heart Necklace with Pearl', 'Open Heart Necklace with Pearl', 1499.99, 16, 'CT01', '[\"680583143042f_1.webp\",\"680583143059d_2.webp\",\"6805831430689_3.webp\"]'),
+('P017', 'Silver Olive Leaf Band Ring', 'Silver Olive Leaf Band Ring', 1599.99, 12, 'CT03', '[\"68058359a60f2_1.webp\",\"68058359a6228_2.webp\",\"68058359a6301_3.webp\"]'),
+('P018', 'Sapphire Ring', 'Sapphire Ring', 1299.99, 21, 'CT03', '[\"68059a817e326_1.webp\",\"68059a817e4ac_2.webp\",\"68059a817e5a2_3.webp\"]');
 
 -- --------------------------------------------------------
 
@@ -597,4 +584,8 @@ COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+<<<<<<< Updated upstream
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+=======
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION 
+>>>>>>> Stashed changes

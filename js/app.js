@@ -795,6 +795,7 @@ $('#payment-form').on('submit', function(event) {
     });
 });
 
+<<<<<<< Updated upstream
 // Validate shipping address before form submission
 document.querySelector('.checkout-post-method').addEventListener('submit', function (e) {
     const address = document.getElementById('address').value.trim();
@@ -803,3 +804,29 @@ document.querySelector('.checkout-post-method').addEventListener('submit', funct
         alert('Shipping address must be at least 10 characters long.');
     }
 });
+=======
+function toggleSidebar(){
+    const sidebar = document.getElementById('sidebar');
+    const content = document.getElementById('content');
+
+    sidebar.classList.toggle('show');
+    content.classList.toggle('with-sidebar');
+
+    return false;
+}
+
+function previewImage(event){
+    const input = event.target;
+    const preview = document.getElementById('preview');
+
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+            preview.src = e.target.result; // Set the preview image source to the selected file
+        };
+
+        reader.readAsDataURL(input.files[0]); // Read the file as a data URL
+    }    
+}
+>>>>>>> Stashed changes
