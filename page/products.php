@@ -4,6 +4,7 @@ require '../_base.php';
 //-----------------------------------------------------------------------------
 
 // Handle AJAX requests FIRST
+
 if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
     header('Content-Type: application/json');
     
@@ -78,6 +79,10 @@ if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQU
 
 $search = $_GET['search'] ?? null;
 $category = $_GET['category'] ?? null;
+$minPrice = isset($_GET['min_price']) && is_numeric($_GET['min_price']) ? floatval($_GET['min_price']) : null;
+$maxPrice = isset($_GET['max_price']) && is_numeric($_GET['max_price']) ? floatval($_GET['max_price']) : null;
+$sort = $_GET['sort'] ?? null;
+
 
 $params = [];
 $where = [];
@@ -93,9 +98,41 @@ if ($category && $category !== '*') {
     $params[] = $category;
 }
 
+// Add price range filter
+if ($minPrice !== null) {
+    $where[] = "price >= ?";
+    $params[] = $minPrice;
+}
+
+if ($maxPrice !== null) {
+    $where[] = "price <= ?";
+    $params[] = $maxPrice;
+}
+
 $sql = "SELECT * FROM product";
 if (!empty($where)) {
     $sql .= " WHERE " . implode(" AND ", $where);
+}
+
+// Add sorting
+if ($sort) {
+    switch ($sort) {
+        case 'name_asc':
+            $sql .= " ORDER BY prod_name ASC";
+            break;
+        case 'name_desc':
+            $sql .= " ORDER BY prod_name DESC";
+            break;
+        case 'price_asc':
+            $sql .= " ORDER BY price ASC";
+            break;
+        case 'price_desc':
+            $sql .= " ORDER BY price DESC";
+            break;
+        default:
+            // Default sorting - by category
+            break;
+    }
 }
 
 $stmt = $_db->prepare($sql);
@@ -110,25 +147,22 @@ $categories = [
     'CT03' => 'Rings'
 ];
 
-if ($search) {
-    $stmt = $_db->prepare('SELECT * FROM product WHERE prod_name LIKE ? OR prod_desc LIKE ?');
-    $searchParam = "%$search%";
-    $stmt->execute([$searchParam, $searchParam]);
-    $arr = $stmt->fetchAll();
-} elseif ($category && $category !== '*') {
-    $stmt = $_db->prepare('SELECT * FROM product WHERE cat_id = ?');
-    $stmt->execute([$category]);
-    $arr = $stmt->fetchAll();
-} else {
-    $arr = $_db->query('SELECT * FROM product')->fetchAll();
+if (!$sort && !$search) {
+    // Sort products by category (Unknown categories go last)
+    usort($arr, function ($a, $b) use ($categories) {
+        $catA = isset($categories[$a->cat_id]) ? array_search($a->cat_id, array_keys($categories)) : count($categories);
+        $catB = isset($categories[$b->cat_id]) ? array_search($b->cat_id, array_keys($categories)) : count($categories);
+        return $catA <=> $catB;
+    });
 }
 
-// Sort products by category (Unknown categories go last)
-usort($arr, function ($a, $b) use ($categories) {
-    $catA = isset($categories[$a->cat_id]) ? array_search($a->cat_id, array_keys($categories)) : count($categories);
-    $catB = isset($categories[$b->cat_id]) ? array_search($b->cat_id, array_keys($categories)) : count($categories);
-    return $catA <=> $catB;
-});
+// Get min and max prices for the filter
+$minAvailablePrice = $_db->query("SELECT MIN(price) as min_price FROM product")->fetch()->min_price;
+$maxAvailablePrice = $_db->query("SELECT MAX(price) as max_price FROM product")->fetch()->max_price;
+
+// Round to nearest 10
+$minAvailablePrice = floor($minAvailablePrice / 10) * 10;
+$maxAvailablePrice = ceil($maxAvailablePrice / 10) * 10;
 
 // ----------------------------------------------------------------------------
 $_title = 'Products';
@@ -136,14 +170,84 @@ include '../_head.php';
 ?>
 
 <div class="product-page-container">
-    <div class="product-search-container">
-        <form action="/page/products.php" method="get" class="product-search-form">
-            <input type="text" name="search" placeholder="Search products..." value="<?= htmlspecialchars($search ?? '') ?>">
-            <button type="submit"><i class="fa fa-search"></i></button>
-            <?php if ($search): ?>
-                <a href="/page/products.php" class="clear-search">Clear</a>
-            <?php endif; ?>
-        </form>
+    <div class="product-filters-container">
+        <div class="product-search-container">
+            <form action="/page/products.php" method="get" class="product-search-form">
+                <input type="text" name="search" placeholder="Search products..." value="<?= htmlspecialchars($search ?? '') ?>">
+                <button type="submit"><i class="fa fa-search"></i></button>
+                <?php if ($search || $category || $minPrice || $maxPrice || $sort): ?>
+                    <a href="/page/products.php" class="clear-search">Clear All Filters</a>
+                <?php endif; ?>
+                
+                <!-- Preserve other filters when submitting -->
+                <?php if ($category): ?>
+                    <input type="hidden" name="category" value="<?= htmlspecialchars($category) ?>">
+                <?php endif; ?>
+                <?php if ($sort): ?>
+                    <input type="hidden" name="sort" value="<?= htmlspecialchars($sort) ?>">
+                <?php endif; ?>
+            </form>
+        </div>
+        
+        <div class="filter-sort-container">
+            <!-- Price filter -->
+            <div class="price-filter">
+                <h3>Price Range</h3>
+                <form action="/page/products.php" method="get" class="price-filter-form">
+                    <div class="price-inputs">
+                        <div class="price-input">
+                            <label for="min_price">Min (RM)</label>
+                            <input type="number" id="min_price" name="min_price" min="<?= $minAvailablePrice ?>" max="<?= $maxAvailablePrice ?>" value="<?= htmlspecialchars($minPrice ?? $minAvailablePrice) ?>">
+                        </div>
+                        <div class="price-input">
+                            <label for="max_price">Max (RM)</label>
+                            <input type="number" id="max_price" name="max_price" min="<?= $minAvailablePrice ?>" max="<?= $maxAvailablePrice ?>" value="<?= htmlspecialchars($maxPrice ?? $maxAvailablePrice) ?>">
+                        </div>
+                    </div>
+                    
+                    <!-- Preserve other filters when submitting -->
+                    <?php if ($search): ?>
+                        <input type="hidden" name="search" value="<?= htmlspecialchars($search) ?>">
+                    <?php endif; ?>
+                    <?php if ($category): ?>
+                        <input type="hidden" name="category" value="<?= htmlspecialchars($category) ?>">
+                    <?php endif; ?>
+                    <?php if ($sort): ?>
+                        <input type="hidden" name="sort" value="<?= htmlspecialchars($sort) ?>">
+                    <?php endif; ?>
+                    
+                    <button type="submit" class="apply-price">Apply</button>
+                </form>
+            </div>
+            
+            <!-- Sorting -->
+            <div class="product-sort">
+                <h3>Sort By</h3>
+                <form action="/page/products.php" method="get" class="sort-form">
+                    <select name="sort" id="sort" onchange="this.form.submit()">
+                        <option value="">Default</option>
+                        <option value="name_asc" <?= $sort === 'name_asc' ? 'selected' : '' ?>>Name (A-Z)</option>
+                        <option value="name_desc" <?= $sort === 'name_desc' ? 'selected' : '' ?>>Name (Z-A)</option>
+                        <option value="price_asc" <?= $sort === 'price_asc' ? 'selected' : '' ?>>Price (Low to High)</option>
+                        <option value="price_desc" <?= $sort === 'price_desc' ? 'selected' : '' ?>>Price (High to Low)</option>
+                    </select>
+                    
+                    <!-- Preserve other filters when submitting -->
+                    <?php if ($search): ?>
+                        <input type="hidden" name="search" value="<?= htmlspecialchars($search) ?>">
+                    <?php endif; ?>
+                    <?php if ($category): ?>
+                        <input type="hidden" name="category" value="<?= htmlspecialchars($category) ?>">
+                    <?php endif; ?>
+                    <?php if ($minPrice): ?>
+                        <input type="hidden" name="min_price" value="<?= htmlspecialchars($minPrice) ?>">
+                    <?php endif; ?>
+                    <?php if ($maxPrice): ?>
+                        <input type="hidden" name="max_price" value="<?= htmlspecialchars($maxPrice) ?>">
+                    <?php endif; ?>
+                </form>
+            </div>
+        </div>
     </div>
 
     <div class="row-container">
@@ -178,7 +282,7 @@ include '../_head.php';
                     
                     <div class="product-container">
                         <div class="product-actions">
-                            <button class="favorite-btn" data-product-id="<?= htmlspecialchars($s->prod_id) ?>">
+                            <button type="button" class="favorite-btn" data-product-id="<?= htmlspecialchars($s->prod_id) ?>">
                                 <i class="far fa-heart"></i>
                             </button>
                         </div>
@@ -224,9 +328,6 @@ include '../_head.php';
                 <div class="product-detail">
                     <div class="product-detail-header">
                         <h2 id="modal-name"></h2>
-                        <button class="modal-favorite-btn" id="modal-favorite-btn">
-                            <i class="far fa-heart"></i>
-                        </button>
                     </div>
                     <p id="modal-desc"></p>
                     <h3 id="modal-price"></h3>
@@ -243,10 +344,111 @@ include '../_head.php';
                 <button type="submit" name="add_to_cart" onclick="addToCart()" class="add-to-cart">Add to Cart</button>
                     <!-- <button class="cancel">Cancel</button> -->
                 </div>
+                <button type="button" class="modal-favorite-btn" id="modal-favorite-btn">
+                            <i class="far fa-heart"></i>
+                </button>
             </div>
         </div>
     </div>
 </div>
 
+<script>
+    $(document).ready(function() {
+    // Load favorites status when the page loads
+    loadFavoriteStatus();
+    
+    // Handle clicks on favorite buttons
+    $(document).on('click', '.favorite-btn, .modal-favorite-btn', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        let $button = $(this);
+        let productId = $button.data('product-id');
+        let isActive = $button.hasClass('active');
+        
+        console.log("Toggling favorite for product:", productId, "Current status:", isActive);
+        toggleFavorite(productId, !isActive, $button);
+    });
+    
+    // Update modal favorite button when product is clicked
+    $(document).on('click', '.product', function() {
+        let productId = $(this).data('id');
+        let isFavorite = $(this).find('.favorite-btn').hasClass('active');
+        
+        $('#modal-favorite-btn')
+            .data('product-id', productId)
+            .toggleClass('active', isFavorite)
+            .find('i')
+            .toggleClass('far fa-heart', !isFavorite)
+            .toggleClass('fas fa-heart', isFavorite);
+    });
+    
+    // Load favorites from server
+    function loadFavoriteStatus() {
+        console.log("Loading favorites status...");
+        $.ajax({
+            url: '/page/favorites_handler.php',
+            type: 'GET',
+            dataType: 'json',
+            data: { action: 'get_favorites' },
+            success: function(response) {
+                console.log("Favorites loaded:", response);
+                if (response.success && response.favorites) {
+                    response.favorites.forEach(function(prodId) {
+                        updateFavoriteUI(prodId, true);
+                    });
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Failed to load favorites:', error);
+                console.error('Response:', xhr.responseText);
+            }
+        });
+    }
+    
+    // Toggle favorite status on server
+    function toggleFavorite(productId, addToFavorites, $button) {
+        console.log("Sending request to toggle favorite:", productId, addToFavorites);
+        $.ajax({
+            url: '/page/favorites_handler.php',
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                action: addToFavorites ? 'add_favorite' : 'remove_favorite',
+                product_id: productId
+            },
+            success: function(response) {
+                console.log("Toggle favorite response:", response);
+                if (response.success) {
+                    updateFavoriteUI(productId, addToFavorites);
+                } else {
+                    if (response.message === 'login_required') {
+                        window.location.href = '/page/login.php?redirect=' + encodeURIComponent(window.location.pathname);
+                    } else {
+                        alert(response.message || 'Error updating favorites');
+                    }
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Failed to update favorites:', error);
+                console.error('Response:', xhr.responseText);
+                alert('Failed to update favorites. Please try again.');
+            }
+        });
+    }
+    
+    // Update UI to reflect favorite status
+    function updateFavoriteUI(productId, isFavorite) {
+        console.log("Updating UI for product:", productId, "Favorite:", isFavorite);
+        $('.favorite-btn[data-product-id="' + productId + '"], .modal-favorite-btn[data-product-id="' + productId + '"]')
+            .toggleClass('active', isFavorite)
+            .find('i')
+            .toggleClass('far fa-heart', !isFavorite)
+            .toggleClass('fas fa-heart', isFavorite);
+    }
+});
+</script>
+
 <?php
 include '../_foot.php';
+?>

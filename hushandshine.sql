@@ -330,6 +330,15 @@ CREATE TABLE `shipping` (
 
 -- --------------------------------------------------------
 
+CREATE TABLE `prod_fav` (
+  `favorite_id` int(11) NOT NULL AUTO_INCREMENT,
+  `cust_id` char(5) NOT NULL,
+  `prod_id` char(4) NOT NULL,
+  PRIMARY KEY (`favorite_id`),
+  UNIQUE KEY `unique_favorite` (`cust_id`,`prod_id`),
+  KEY `prod_id` (`prod_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 --
 -- Table structure for table `shopping_cart`
 --
@@ -401,6 +410,10 @@ ALTER TABLE `admin`
 ALTER TABLE `cart_item`
   ADD PRIMARY KEY (`cart_id`,`prod_id`),
   ADD KEY `fk_cart_item_product` (`prod_id`);
+
+ALTER TABLE `prod_fav`
+  ADD KEY `fk_fav_customer` (`cust_id`),
+  ADD KEY `fk_fav_product` (`prod_id`);
 
 --
 -- Indexes for table `category`
@@ -516,6 +529,10 @@ ALTER TABLE `stripe_payments`
 --
 ALTER TABLE `cart_item`
   ADD CONSTRAINT `fk_cart_item_product` FOREIGN KEY (`prod_id`) REFERENCES `product` (`prod_id`) ON DELETE CASCADE;
+
+ALTER TABLE `prod_fav`
+  ADD CONSTRAINT `fk_fav_customer` FOREIGN KEY (`cust_id`) REFERENCES `customer` (`cust_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_fav_product` FOREIGN KEY (`prod_id`) REFERENCES `product` (`prod_id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `orders`

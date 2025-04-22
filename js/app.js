@@ -134,6 +134,39 @@ document.addEventListener('DOMContentLoaded', function() {
                 label.classList.remove('active');
             }
         });
+
+    $(document).off('click', '.favorite-btn').on('click', '.favorite-btn', function(e) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    
+    const $btn = $(this);
+    const productId = $btn.data('product-id');
+    const isFavorite = $btn.hasClass('active');
+    const action = isFavorite ? 'remove_favorite' : 'add_favorite';
+
+    $.ajax({
+        url: '/page/favorites_handler.php',
+        method: 'POST',
+        data: { action, product_id: productId },
+        dataType: 'json',
+        success: (response) => {
+            if (response.success) {
+                $btn.toggleClass('active');
+                $btn.find('i').toggleClass('far fas');
+                if (action === 'remove_favorite') {
+                    $btn.closest('.column-container').remove();
+                }
+            } else {
+                alert(response.message || 'failed');
+            }
+        },
+        error: (xhr) => {
+            console.error('fail', xhr.status, xhr.responseText);
+            alert('server error');
+        }
+    });
+});
+
     });
 
 
@@ -842,83 +875,4 @@ $(document).ready(function() {
     });
 });
 
-//fav
-$(document).ready(function() {
-    loadFavoriteStatus();
-    
-    $(document).on('click', '.favorite-btn, .modal-favorite-btn', function(e) {
-        e.preventDefault();
-        e.stopPropagation(); 
 
-        let $button = $(this);
-        let productId = $button.data('product-id');
-        let isActive = $button.hasClass('active');
-        
-        toggleFavorite(productId, !isActive, $button);
-    });
-    
-    $(document).on('click', '.product', function() {
-        let productId = $(this).data('id');
-        let isFavorite = $(this).find('.favorite-btn').hasClass('active');
-
-        $('#modal-favorite-btn')
-            .data('product-id', productId)
-            .toggleClass('active', isFavorite)
-            .find('i')
-            .toggleClass('far fa-heart', !isFavorite)
-            .toggleClass('fas fa-heart', isFavorite);
-    });
-    
-    function loadFavoriteStatus() {
-        $.ajax({
-            url: '/page/favorites_handler.php',
-            type: 'GET',
-            dataType: 'json',
-            data: { action: 'get_favorites' },
-            success: function(response) {
-                if (response.success && response.favorites) {
-                    response.favorites.forEach(function(prodId) {
-                        updateFavoriteUI(prodId, true);
-                    });
-                }
-            },
-            error: function() {
-                console.error('Failed to load favorites');
-            }
-        });
-    }
-    
-    function toggleFavorite(productId, addToFavorites, $button) {
-        $.ajax({
-            url: '/page/favorites_handler.php',
-            type: 'POST',
-            dataType: 'json',
-            data: {
-                action: addToFavorites ? 'add_favorite' : 'remove_favorite',
-                product_id: productId
-            },
-            success: function(response) {
-                if (response.success) {
-                    updateFavoriteUI(productId, addToFavorites);
-                } else {
-                    if (response.message === 'login_required') {
-                        window.location.href = '/page/login.php?redirect=' + encodeURIComponent(window.location.pathname);
-                    } else {
-                        alert(response.message || 'Error updating favorites');
-                    }
-                }
-            },
-            error: function() {
-                alert('Failed to update favorites. Please try again.');
-            }
-        });
-    }
-    
-    function updateFavoriteUI(productId, isFavorite) {
-        $('.favorite-btn[data-product-id="' + productId + '"], .modal-favorite-btn[data-product-id="' + productId + '"]')
-            .toggleClass('active', isFavorite)
-            .find('i')
-            .toggleClass('far fa-heart', !isFavorite)
-            .toggleClass('fas fa-heart', isFavorite);
-    }
-});

@@ -1493,6 +1493,105 @@ fieldset {
 
 
 /* Product Page css*/
+/* Filter and sort styling */
+.product-filters-container {
+    margin-bottom: 20px;
+    background-color: #f5f5f5;
+    padding: 15px;
+    border-radius: 5px;
+}
+
+.filter-sort-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+}
+
+.price-filter, .product-sort {
+    flex: 1;
+    padding: 0 15px;
+}
+
+.price-filter {
+    border-right: 1px solid #ddd;
+}
+
+.price-filter h3, .product-sort h3 {
+    margin-top: 0;
+    font-size: 16px;
+    color: #333;
+}
+
+.price-inputs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.price-input {
+    flex: 1;
+}
+
+.price-input label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.price-input input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.apply-price {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.apply-price:hover {
+    background-color: #45a049;
+}
+
+.product-sort select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: white;
+    cursor: pointer;
+}
+
+.clear-search {
+    margin-left: 10px;
+    color: #f44336;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.clear-search:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .filter-sort-container {
+        flex-direction: column;
+    }
+    
+    .price-filter {
+        border-right: none;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 15px;
+        margin-bottom: 15px;
+    }
+}
+
 .product-search-container {
     width: 100%;
     padding: 15px 0;
@@ -1674,7 +1773,7 @@ fieldset {
 }
 
 .favorite-btn.active i, .modal-favorite-btn.active i {
-    color: #ff4e4e;
+    color: #ff4e4e ;
     font-weight: 900;
 }
 
@@ -3934,4 +4033,36 @@ input[type="number"] {
     display: flex;
     flex-direction: column;
     min-height: 100vh; /* Ensure the wrapper takes up the full height of the viewport */
+}
+
+/* Favorites page*/
+.favorites-empty {
+    text-align: center;
+    padding: 50px 20px;
+}
+
+.favorites-empty i {
+    font-size: 48px;
+    color: #ddd;
+    margin-bottom: 20px;
+}
+
+.favorites-empty p {
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.favorites-empty .shop-now-btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #7c5295;
+    color: white;
+    border-radius: 25px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.favorites-empty .shop-now-btn:hover {
+    background-color: #6a4580;
+    transform: translateY(-2px);
 }
