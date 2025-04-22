@@ -4161,3 +4161,83 @@ input[type="number"] {
     flex-direction: column;
     min-height: 100vh; /* Ensure the wrapper takes up the full height of the viewport */
 }
+
+.admin-toolbar {
+    position: fixed;
+    top: 95%;
+    right: 10px;
+    background: rgba(51, 51, 51, 0.9);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    z-index: 9999;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    font-size: 14px;
+}
+
+.admin-toolbar a {
+    color: white;
+    text-decoration: none;
+    display: inline-flex;
+    padding: 5px;
+    transition: transform 0.2s;
+}
+
+.admin-toolbar a:hover {
+    transform: scale(1.2);
+}
+
+.admin-toolbar span {
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+.admin-sidebar-profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-icon {
+    font-size: 48px;
+    color: #007bff;
+    margin-bottom: 10px;
+}
+
+/* Favorites page*/
+.favorites-empty {
+    text-align: center;
+    padding: 50px 20px;
+}
+
+.favorites-empty i {
+    font-size: 48px;
+    color: #ddd;
+    margin-bottom: 20px;
+}
+
+.favorites-empty p {
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.favorites-empty .shop-now-btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #7c5295;
+    color: white;
+    border-radius: 25px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.favorites-empty .shop-now-btn:hover {
+    background-color: #6a4580;
+    transform: translateY(-2px);
+}

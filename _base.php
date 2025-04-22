@@ -13,7 +13,8 @@ session_start();
 
 // Database connection parameters
 $db_host = 'localhost';
-$db_name = 'test';
+// $db_name = 'test';
+$db_name = 'hushandshine';
 $db_user = 'root';
 $db_pass = '';
 // Connect to database
