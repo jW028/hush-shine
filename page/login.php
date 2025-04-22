@@ -5,11 +5,21 @@ require '../_base.php';
 $_title = 'Create an Account';
 include '../_head.php';
 
-
+if (isset($_SESSION['user'])) {
+    if ($_SESSION['user'] == "admin") {
+        header("Location: ../admin/admin_dashboard.php");
+        exit();
+    } else {
+        header("Location: ../index.php");
+        exit();
+    }
+}   
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = trim($_POST["email"] ?? '');
     $password = trim($_POST["password"] ?? '');
+
+
 
     try {
         $stmt = $_db->prepare("SELECT * FROM admin WHERE admin_email = ?");
@@ -21,7 +31,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION['user'] = "admin";
                 $_SESSION["admin_id"] = $admin["admin_id"];
                 $_SESSION["admin_email"] = $admin["admin_email"];
-                header("Location: ../admin/admin_menu.php");
+                header("Location: ../admin/admin_dashboard.php");
                 exit();
             } 
         }

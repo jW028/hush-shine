@@ -158,4 +158,25 @@ include '_head.php';
 </div>
 
 <?php
+    try {
+        $m = get_mail();
+        $m->addAddress("tanjw05@gmail.com");
+        $m->Subject = "Test Email from Hush & Shine";
+        $m->Body = "This is a test email from the Hush & Shine website.";
+        $m->addAttachment("README.md");
+        
+        if($m->send()) {
+            echo "Email sent successfully!";
+        } else {
+            echo "Email could not be sent.";
+            echo "Mailer Error: " . $m->ErrorInfo;
+        }
+    } catch (Exception $e) {
+        echo "Message could not be sent. Mailer Error: {$m->ErrorInfo}";
+    }
+?>
+
+<?php
 include '_foot.php';
+
+

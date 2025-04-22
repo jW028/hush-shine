@@ -4,12 +4,14 @@ include '../_head.php';
 
 auth('admin');
 
+$_adminContext = true;
+
 $title = 'Category Details';
 
 $cat_id = $_GET['id'] ?? null;
 
 if (!$cat_id) {
-    header('Location: /admin/admin_menu.php');
+    header('Location: /admin/admin_dashboard.php');
     exit;
 }
 
@@ -43,7 +45,7 @@ try {
     $category = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$category) {
-        header('Location: /admin/admin_menu.php');
+        header('Location: /admin/admin_dashboard.php');
         exit;
     }
 

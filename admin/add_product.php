@@ -5,6 +5,8 @@ include '../_head.php';
 // Check if user is logged in and has admin privileges
 auth('admin');
 
+$_adminContext = true;
+
 // Initialize variables
 $name = '';
 $description = '';
@@ -88,7 +90,7 @@ if (is_post()) {
             $stmt->execute([$prod_id, $name, $description, $price, $quantity, $category_id, $image_path]);
             
             $_SESSION['success'] = 'Product added successfully';
-            header('Location: admin_menu.php');
+            header('Location: admin_dashboard.php');
             exit;
         } catch (PDOException $e) {
             $errors[] = 'Database error: ' . $e->getMessage();
@@ -172,7 +174,7 @@ try {
     
     <div class="form-group">
         <button type="submit" class="admin-submit-btn">Add Product</button>
-        <a href="admin_menu.php">Cancel</a>
+        <a href="admin_dashboard.php">Cancel</a>
     </div>
 </form>
 </div>

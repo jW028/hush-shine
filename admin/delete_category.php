@@ -4,6 +4,8 @@ require_once '../_base.php';
     // Check if user is logged in and has admin privileges
 auth('admin');
 
+$_adminContext = true;
+
 header('Content-Type: application/json');
 $response = ['success' => false, 'message' => ''];
 

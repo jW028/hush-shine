@@ -4,6 +4,8 @@ include '../_head.php';
 
 auth('admin');
 
+$_adminContext = true;
+
 $action = isset($_GET['action']) ? $_GET['action'] : 'list';
 
 ?>

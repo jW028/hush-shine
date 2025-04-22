@@ -2,6 +2,8 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+$isAdminSection = strpos($_SERVER['REQUEST_URI'], '/admin/') !== false;
+    $_adminContext = $_adminContext ?? $isAdminSection;
 ?>
 
 <!DOCTYPE html>
@@ -19,7 +21,7 @@ if (session_status() === PHP_SESSION_NONE) {
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 </head>
 <body>
-    <?php if ($_SESSION['user'] == "admin"): ?>
+    <?php if (isset($_SESSION['user']) && $_SESSION['user'] == "admin" && $_adminContext): ?>
         <script src="/js/admin.js"></script>
         <header class="admin-header">
             <div class="admin-nav">
@@ -38,7 +40,7 @@ if (session_status() === PHP_SESSION_NONE) {
         <div class="admin-container">
             <nav class="admin-sidebar">
                 <ul>
-                    <li><a href="/admin/admin_menu.php"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li><a href="/admin/admin_dashboard.php"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
                     <li><a href="/admin/admin_products.php"><i class="fas fa-box"></i> Products</a></li>
                     <li><a href="/admin/admin_category.php"><i class="fas fa-tags"></i> Categories</a></li>
                     <li><a href="/admin/admin_orders.php"><i class="fas fa-shopping-cart"></i> Orders</a></li>
@@ -46,24 +48,56 @@ if (session_status() === PHP_SESSION_NONE) {
             </nav>
 
     <?php else: ?>
+        <?php if (isset($_SESSION['user']) && $_SESSION['user'] == "admin"): ?>
+            <div class="admin-toolbar">
+                <span>Admin Mode</span>
+                <a href="/admin/admin_dashboard.php" title="Dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                </a>
+                <a href="/admin/admin_products.php" title="Products">
+                    <i class="fas fa-box"></i>
+                </a>
+                <a href="/admin/admin_orders.php" title="Orders">
+                    <i class="fas fa-shopping-cart"></i>
+                </a>
+            </div>
+            <?php endif; ?>
         <header class="header">
         <div id="sidebar">
             <button class="close-btn" onclick="toggleSidebar()">&times;</button>
             
                 <div>
-                    
-                    <?php if (isset($_SESSION['user']) && $_SESSION['user'] === "customer"):
-                        $stm = $_db->prepare("SELECT cust_name, cust_photo FROM customer WHERE cust_id = ?");
-                        $stm->execute([$_SESSION['cust_id']]);
-                        $user = $stm->fetch(PDO::FETCH_ASSOC);
-                        $_SESSION['cust_name'] = $user['cust_name'];
-                        $_SESSION['cust_photo'] = $user['cust_photo'];
-                        ?>
-                        <img src="/images/customer_img/<?= htmlspecialchars($user['cust_photo']) ?>" alt="Profile Picture" class="profile-pic">
-                        <p>Welcome, <?= htmlspecialchars($_SESSION['cust_name']) ?>!</p>
-                        <a href="/index.php" class="sidebar-link">Home</a>
-                        <a href="/page/profile.php" class="sidebar-link">Profile</a>
-                        <a href="/page/logout.php" class="sidebar-link">Log out</a>
+                    <?php if (isset($_SESSION['user'])): ?>
+                        <?php if ($_SESSION['user'] === "admin"): ?>
+                            <?php
+                            $stm = $_db->prepare("SELECT admin_name, admin_email FROM admin where admin_id = ?");
+                            $stm->execute([$_SESSION['admin_id']]);
+                            $user = $stm->fetch(PDO::FETCH_ASSOC);
+                            $_SESSION['admin_name'] = $user['admin_name'];
+                            $_SESSION['admin_email'] = $user['admin_email'];
+                            ?>
+                            <div class="admin-side-profile">
+                                <i class="fas fa-user-shield admin-icon"></i>
+                                <p>Welcome, <?= htmlspecialchars($_SESSION['admin_name']) ?>!</p> 
+                            </div>
+                            <a href="/index.php" class="sidebar-link">Home</a>
+                            <a href="/page/logout.php" class="sidebar-link">Log out</a>
+
+                        <?php elseif ($_SESSION['user'] === "customer"): ?>
+                            <?php
+                            $stm = $_db->prepare("SELECT cust_name, cust_photo FROM customer WHERE cust_id = ?");
+                            $stm->execute([$_SESSION['cust_id']]);
+                            $user = $stm->fetch(PDO::FETCH_ASSOC);
+                            $_SESSION['cust_name'] = $user['cust_name'];
+                            $_SESSION['cust_photo'] = $user['cust_photo'];
+                            ?>
+                            <img src="/images/customer_img/<?= htmlspecialchars($user['cust_photo']) ?>" alt="Profile Picture" class="profile-pic">
+                            <p>Welcome, <?= htmlspecialchars($_SESSION['cust_name']) ?>!</p>
+                            <a href="/index.php" class="sidebar-link">Home</a>
+                            <a href="/page/profile.php" class="sidebar-link">Profile</a>
+                            <a href="/page/logout.php" class="sidebar-link">Log out</a>
+                            ?>
+                        <?php endif; ?>
                     <?php else: ?>
                         <p>Please log in to access your account.</p>
                         <a href="/index.php" class="sidebar-link">Home</a>
@@ -73,8 +107,6 @@ if (session_status() === PHP_SESSION_NONE) {
                 </div>
                 
         
-            
-
         </div>
         <div class="overlay" onclick="toggleSidebar()"></div>
         <div class="top-nav">
@@ -151,3 +183,4 @@ if (session_status() === PHP_SESSION_NONE) {
     
 
     <main>
+    

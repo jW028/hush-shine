@@ -3,6 +3,8 @@
 require_once '../_base.php';
 include '../_head.php';
 
+$_adminContext = true;
+
 // Initialize variables
 $category_name = '';
 $material_type = '';
@@ -46,7 +48,7 @@ if (is_post()) {
                                   VALUES (?, ?, ?)");
             $stmt->execute([$cat_id, $category_name, $material_type]);
             $success = 'Category added successfully';
-            header('Location: admin_menu.php');
+            header('Location: admin_dashboard.php');
             exit;
         } catch (PDOException $e) {
             $errors[] = 'Database error: ' . $e->getMessage();

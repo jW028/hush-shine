@@ -13,8 +13,7 @@ session_start();
 
 // Database connection parameters
 $db_host = 'localhost';
-// $db_name = 'test';
-$db_name = 'hushandshine';
+$db_name = 'test';
 $db_user = 'root';
 $db_pass = '';
 // Connect to database
@@ -205,4 +204,31 @@ function is_phone($value) {
 function html_password($key, $attr = '') {
     $value = encode($GLOBALS[$key] ?? '');
     echo "<input type='password' id='$key' name='$key' value='$value' $attr>";
+}
+
+function get_mail() {
+    require_once 'lib/PHPMailer.php';
+    require_once 'lib/SMTP.php';
+    
+    // Use the correct namespace
+    $m = new PHPMailer(true);
+    
+    // Server settings
+    $m->isSMTP();
+    $m->SMTPDebug = 0;                      // Set to 2 for debugging
+    $m->SMTPAuth = true;
+    $m->Host = 'smtp.gmail.com';            // SMTP server
+    $m->Port = 587;                         // TCP port
+    $m->SMTPSecure = 'tls';                 // Use TLS encryption
+    
+    // Gmail account credentials
+    $m->Username = 'hushandshine99@gmail.com';  // Your Gmail address
+    $m->Password = 'hcra fced nnap kuhz';       // Your app password
+    
+    // Email settings
+    $m->CharSet = 'UTF-8';
+    $m->setFrom('hushandshine99@gmail.com', 'Hush and Shine');
+    $m->isHTML(true);                       // Send as HTML by default
+    
+    return $m;
 }
