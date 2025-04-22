@@ -81,7 +81,7 @@ if (session_status() === PHP_SESSION_NONE) {
                 <div class = "left-nav">
                     <a href="/index.php"><i class = "fas fa-home"></i></a>
                     <a href="/page/contact.php"><i class = "fas fa-circle-exclamation"></i></a>
-                    <a href="/page/contact.php"><i class = "fas fa-heart"></i></a>
+                    <a href="/page/fav.php"><i class = "fas fa-heart"></i></a>
                 </div>
 
                 <div class="nav-center">
@@ -136,8 +136,6 @@ if (session_status() === PHP_SESSION_NONE) {
                 </div>
 
             </div>
-
-            
 
             <nav class = "bottom-nav">
                 <a href="/page/products.php?category=CT04" data-cat="CT04" class="category-link">Earrings</a>

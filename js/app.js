@@ -316,7 +316,7 @@ document.addEventListener('DOMContentLoaded', function() {
       history.replaceState(null, null, "products.php"); // Clean URL after scrolling
     }
   });
-       
+
 });
 document.addEventListener('DOMContentLoaded', function() {
   // Contact Us Banner Slider
@@ -788,5 +788,137 @@ document.querySelector('.checkout-post-method').addEventListener('submit', funct
     if (address.length < 10) {
         e.preventDefault();
         alert('Shipping address must be at least 10 characters long.');
+    }
+});
+function toggleSidebar(){
+    const sidebar = document.getElementById('sidebar');
+    const content = document.getElementById('content');
+
+    sidebar.classList.toggle('show');
+    content.classList.toggle('with-sidebar');
+
+    return false;
+}
+
+function previewImage(event){
+    const input = event.target;
+    const preview = document.getElementById('preview');
+
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+            preview.src = e.target.result; // Set the preview image source to the selected file
+        };
+
+        reader.readAsDataURL(input.files[0]); // Read the file as a data URL
+    }    
+}
+
+//search
+$(document).ready(function() {
+    $('.product-search-form input').on('keyup', function(e) {
+        if (e.key === 'Escape') {
+            $(this).val('');
+        }
+    });
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const category = urlParams.get('category');
+    
+    if (category) {
+        $('.category-link').removeClass('active');
+        $(`.category-link[data-cat="${category}"]`).addClass('active');
+    }
+    
+    $('.category-link').on('click', function(e) {
+        const searchQuery = $('.product-search-form input[name="search"]').val();
+        
+        if (searchQuery) {
+            e.preventDefault();
+            const categoryId = $(this).data('cat');
+            window.location.href = `/page/products.php?category=${categoryId}&search=${encodeURIComponent(searchQuery)}`;
+        }
+    });
+});
+
+//fav
+$(document).ready(function() {
+    loadFavoriteStatus();
+    
+    $(document).on('click', '.favorite-btn, .modal-favorite-btn', function(e) {
+        e.preventDefault();
+        e.stopPropagation(); 
+
+        let $button = $(this);
+        let productId = $button.data('product-id');
+        let isActive = $button.hasClass('active');
+        
+        toggleFavorite(productId, !isActive, $button);
+    });
+    
+    $(document).on('click', '.product', function() {
+        let productId = $(this).data('id');
+        let isFavorite = $(this).find('.favorite-btn').hasClass('active');
+
+        $('#modal-favorite-btn')
+            .data('product-id', productId)
+            .toggleClass('active', isFavorite)
+            .find('i')
+            .toggleClass('far fa-heart', !isFavorite)
+            .toggleClass('fas fa-heart', isFavorite);
+    });
+    
+    function loadFavoriteStatus() {
+        $.ajax({
+            url: '/page/favorites_handler.php',
+            type: 'GET',
+            dataType: 'json',
+            data: { action: 'get_favorites' },
+            success: function(response) {
+                if (response.success && response.favorites) {
+                    response.favorites.forEach(function(prodId) {
+                        updateFavoriteUI(prodId, true);
+                    });
+                }
+            },
+            error: function() {
+                console.error('Failed to load favorites');
+            }
+        });
+    }
+    
+    function toggleFavorite(productId, addToFavorites, $button) {
+        $.ajax({
+            url: '/page/favorites_handler.php',
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                action: addToFavorites ? 'add_favorite' : 'remove_favorite',
+                product_id: productId
+            },
+            success: function(response) {
+                if (response.success) {
+                    updateFavoriteUI(productId, addToFavorites);
+                } else {
+                    if (response.message === 'login_required') {
+                        window.location.href = '/page/login.php?redirect=' + encodeURIComponent(window.location.pathname);
+                    } else {
+                        alert(response.message || 'Error updating favorites');
+                    }
+                }
+            },
+            error: function() {
+                alert('Failed to update favorites. Please try again.');
+            }
+        });
+    }
+    
+    function updateFavoriteUI(productId, isFavorite) {
+        $('.favorite-btn[data-product-id="' + productId + '"], .modal-favorite-btn[data-product-id="' + productId + '"]')
+            .toggleClass('active', isFavorite)
+            .find('i')
+            .toggleClass('far fa-heart', !isFavorite)
+            .toggleClass('fas fa-heart', isFavorite);
     }
 });

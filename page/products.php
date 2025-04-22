@@ -177,6 +177,11 @@ include '../_head.php';
                     data-cat-id="<?= $categoryId ?>">
                     
                     <div class="product-container">
+                        <div class="product-actions">
+                            <button class="favorite-btn" data-product-id="<?= htmlspecialchars($s->prod_id) ?>">
+                                <i class="far fa-heart"></i>
+                            </button>
+                        </div>
                         <img class="product-image" src="/images/product_img/<?= htmlspecialchars($s->image) ?>" alt="<?= htmlspecialchars($s->prod_name) ?>">
                         <div class="prod-description">
                             <p><?= htmlspecialchars($s->prod_name) ?></p>
@@ -217,10 +222,14 @@ include '../_head.php';
 
             <div class="product-detail-button">
                 <div class="product-detail">
-                    <h2 id="modal-name"></h2>
+                    <div class="product-detail-header">
+                        <h2 id="modal-name"></h2>
+                        <button class="modal-favorite-btn" id="modal-favorite-btn">
+                            <i class="far fa-heart"></i>
+                        </button>
+                    </div>
                     <p id="modal-desc"></p>
                     <h3 id="modal-price"></h3>
-
                     <div class="quantity-selector">
                         <label for="quantity">Quantity: </label>
                         <div class="product-quantity-control">
