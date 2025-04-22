@@ -4,114 +4,273 @@ include '../_head.php';
 
 auth('admin');
 
+$_adminContext = true;
+
 $action = isset($_GET['action']) ? $_GET['action'] : 'list';
+
+// Pagination parameters
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+if ($page < 1) $page = 1;
+$itemsPerPage = 10; // Products per page
+$offset = ($page - 1) * $itemsPerPage;
+
+// Search and filter parameters
+$searchTerm = isset($_GET['search']) ? trim($_GET['search']) : '';
+$categoryFilter = isset($_GET['category']) ? $_GET['category'] : '';
+$sortBy = isset($_GET['sort']) ? $_GET['sort'] : 'newest';
+
+// Building WHERE clause for filtering
+$where = [];
+$params = [];
+
+// Search by product name or ID
+if (!empty($searchTerm)) {
+    $where[] = "(p.prod_name LIKE ? OR p.prod_id LIKE ?)";
+    $params[] = "%$searchTerm%";
+    $params[] = "%$searchTerm%";
+}
+
+// Category filter
+if (!empty($categoryFilter)) {
+    $where[] = "p.cat_id = ?";
+    $params[] = $categoryFilter;
+}
+
+// Combine WHERE clauses
+$whereClause = !empty($where) ? ' WHERE ' . implode(' AND ', $where) : '';
+
+// Sorting options
+$orderBy = match($sortBy) {
+    'price_high' => 'p.price DESC',
+    'price_low' => 'p.price ASC',
+    'name_asc' => 'p.prod_name ASC',
+    'name_desc' => 'p.prod_name DESC',
+    'oldest' => 'p.prod_id ASC',
+    default => 'p.prod_id DESC'  // newest first (default)
+};
+
+// Count total products for pagination
+try {
+    $countQuery = "SELECT COUNT(*) FROM product p" . $whereClause;
+    $stmt = $_db->prepare($countQuery);
+    $stmt->execute($params);
+    $totalItems = $stmt->fetchColumn();
+    $totalPages = ceil($totalItems / $itemsPerPage);
+    echo $totalPages;
+} catch (PDOException $e) {
+    echo "Database error: " . $e->getMessage();
+    exit;
+}
+
+// Get paginated products
+try {
+    $query = "SELECT p.prod_id, p.prod_name, p.prod_desc, p.price, p.quantity, p.cat_id as category, p.image
+             FROM product p 
+             LEFT JOIN category c ON p.cat_id = c.cat_id"
+             . $whereClause .
+             " ORDER BY " . $orderBy . 
+             " LIMIT " . $itemsPerPage . " OFFSET " . $offset;
+             
+    $stmt = $_db->prepare($query);
+    $stmt->execute($params);
+    $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    echo "Database error: " . $e->getMessage();
+    exit;
+}
+
+// Get categories for filter dropdown
+try {
+    $stmt = $_db->query("SELECT * FROM category ORDER BY cat_name");
+    $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    echo "Error loading categories: " . $e->getMessage();
+}
 
 ?>
             <div class="admin-main">
-                <?php
-                    try {
-                        $stmt = $_db->query("SELECT p.prod_id, p.prod_name, p.prod_desc, p.price, p.quantity, p.cat_id as category, p.image
-                                            FROM product p 
-                                            LEFT JOIN category c ON p.cat_id = c.cat_id 
-                                            ORDER BY p.prod_id DESC");
-                        $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                    } catch (PDOException $e) {
-                        echo "Database error: " . $e->getMessage();
-                        exit;
-                    }
-                    try {
-                        $stmt = $_db->query("SELECT * FROM category ORDER BY cat_name");
-                        $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                    } catch (PDOException $e) {
-                        echo "Error loading categories: " . $e->getMessage();
-                    }
-                    ?>
-                    <div class="admin-title">
-                        <h2>Product List</h2>   
-                        <div class="button-group">
-                            <button id="openAddProductModal" class="category-btn">
-                                <i class="fas fa-plus"></i> Add Product
-                            </button>
-                        </div>
+                <div class="admin-title">
+                    <h2>Product List</h2>   
+                    <div class="button-group">
+                        <button id="openAddProductModal" class="category-btn">
+                            <i class="fas fa-plus"></i> Add Product
+                        </button>
                     </div>
+                </div>
 
-                    <?php if (isset($_SESSION['message'])) : ?>
-                        <div class="message <?= $_SESSION['message_type'] ?>">
-                            <?= $_SESSION['message'] ?>
+                <div class="filter-section">
+                    <form action="admin_products.php" method="GET" class="filter-form">
+                        <div class="filter-row">
+                            <div class="search-box">
+                                <input type="text" name="search" placeholder="Search by ID or name" value="<?= htmlspecialchars($searchTerm) ?>">
+                                <button type="submit" class="search-btn">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="filter-group">
+                                <select name="category" class="filter-select">
+                                    <option value="">All Categories</option>
+                                    <?php foreach ($categories as $category): ?>
+                                        <option value="<?= $category['cat_id'] ?>" <?= $categoryFilter == $category['cat_id'] ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($category['cat_name']) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            
+                            <div class="filter-group">
+                                <select name="sort" class="filter-select">
+                                    <option value="newest" <?= $sortBy == 'newest' ? 'selected' : '' ?>>Newest First</option>
+                                    <option value="oldest" <?= $sortBy == 'oldest' ? 'selected' : '' ?>>Oldest First</option>
+                                    <option value="price_high" <?= $sortBy == 'price_high' ? 'selected' : '' ?>>Price (High to Low)</option>
+                                    <option value="price_low" <?= $sortBy == 'price_low' ? 'selected' : '' ?>>Price (Low to High)</option>
+                                    <option value="name_asc" <?= $sortBy == 'name_asc' ? 'selected' : '' ?>>Name (A-Z)</option>
+                                    <option value="name_desc" <?= $sortBy == 'name_desc' ? 'selected' : '' ?>>Name (Z-A)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="filter-buttons">
+                                <button type="submit" class="filter-btn">Apply Filters</button>
+                                <a href="admin_products.php" class="admin-submit-btn secondary">Clear</a>
+                            </div>
                         </div>
-                        <?php
-                        unset($_SESSION['message']);
-                        unset($_SESSION['message_type']);
-                        ?>
-                    <?php endif; ?>
 
-                    <div class="table-responsive">
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Name</th>
-                                    <th>Image</th>
-                                    <th>Price</th>
-                                    <th>Quantity</th>
-                                    <th>Category</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (count($products) > 0): ?>
-                                    <?php foreach ($products as $product): ?>
-                                        <?php
-                                        $productImage = '../images/no-image.png';
-                                        if (!empty($product['image'])) {
-                                            $imageData = json_decode($product['image'], true);
-                                            if ($imageData) {
-                                                $imageFile = is_array($imageData) ? $imageData[0] : $imageData;
-                                                $productImage = '../images/products/' . $imageFile;
-                                                if (!file_exists($productImage)) {
-                                                    $productImage = '../images/no-image.png';
-                                                }
+                        <!-- Store current page in hidden field -->
+                        <input type="hidden" name="page" value="1">
+                    </form>
+                </div>
+
+                <div class="product-info-bar">
+                <div class="product-count">
+                    Showing <?= count($products) ?> of <?= $totalItems ?> products
+                </div>
+            </div>
+
+            <?php if (isset($_SESSION['message'])) : ?>
+                <div class="message <?= $_SESSION['message_type'] ?>">
+                    <?= $_SESSION['message'] ?>
+                </div>
+                <?php
+                unset($_SESSION['message']);
+                unset($_SESSION['message_type']);
+                ?>
+                <?php endif; ?>
+
+                <?php if (isset($_SESSION['message'])) : ?>
+                    <div class="message <?= $_SESSION['message_type'] ?>">
+                        <?= $_SESSION['message'] ?>
+                    </div>
+                    <?php
+                    unset($_SESSION['message']);
+                    unset($_SESSION['message_type']);
+                    ?>
+                <?php endif; ?>
+
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Image</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Category</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (count($products) > 0): ?>
+                                <?php foreach ($products as $product): ?>
+                                    <?php
+                                    $productImage = '../images/no-image.png';
+                                    if (!empty($product['image'])) {
+                                        $imageData = json_decode($product['image'], true);
+                                        if ($imageData) {
+                                            $imageFile = is_array($imageData) ? $imageData[0] : $imageData;
+                                            $productImage = '../images/products/' . $imageFile;
+                                            if (!file_exists($productImage)) {
+                                                $productImage = '../images/no-image.png';
                                             }
                                         }
-                                        $stm = $_db->prepare("SELECT cat_name FROM category WHERE cat_id = ?");
-                                        $stm->execute([$product['category']]);
-                                        $category_name = $stm->fetchColumn();
-                                        if ($category_name === false) {
-                                            $category_name = 'Unknown';
-                                        }
-                                        ?>
-                                        <tr>
-                                            <td><?= htmlspecialchars($product['prod_id']) ?></td>
-                                            <td><?= htmlspecialchars($product['prod_name']) ?></td>
-                                            <td class="product-thumbnail">
-                                                <img src="<?= htmlspecialchars($productImage) ?>" alt="<?= htmlspecialchars($product['prod_name']) ?>">
-                                            </td>
-                                            <td><?= number_format($product['price'], 2) ?></td>
-                                            <td><?= htmlspecialchars($product['quantity']) ?></td>
-                                            <td><?= htmlspecialchars($category_name) ?></td>
-                                            <td class="actions">
-                                                <a href="view_product.php?id=<?= $product['prod_id'] ?>" class="btn">
-                                                    <i class="fas fa-eye"></i> 
-                                                </a>
-                                                <a class="btn btn-danger delete-product"
-                                                    data-id="<?= htmlspecialchars($product['prod_id']) ?>"
-                                                    data-name="<?= htmlspecialchars($product['prod_name']) ?>">
-                                                    <i class="fas fa-trash"></i>    
-                                                </a> 
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
+                                    }
+                                    $stm = $_db->prepare("SELECT cat_name FROM category WHERE cat_id = ?");
+                                    $stm->execute([$product['category']]);
+                                    $category_name = $stm->fetchColumn();
+                                    if ($category_name === false) {
+                                        $category_name = 'Unknown';
+                                    }
+                                    ?>
                                     <tr>
-                                        <td colspan="6">No products found</td>
+                                        <td><?= htmlspecialchars($product['prod_id']) ?></td>
+                                        <td><?= htmlspecialchars($product['prod_name']) ?></td>
+                                        <td class="product-thumbnail">
+                                            <img src="<?= htmlspecialchars($productImage) ?>" alt="<?= htmlspecialchars($product['prod_name']) ?>">
+                                        </td>
+                                        <td><?= number_format($product['price'], 2) ?></td>
+                                        <td><?= htmlspecialchars($product['quantity']) ?></td>
+                                        <td><?= htmlspecialchars($category_name) ?></td>
+                                        <td class="actions">
+                                            <a href="view_product.php?id=<?= $product['prod_id'] ?>" class="btn">
+                                                <i class="fas fa-eye"></i> 
+                                            </a>
+                                            <a class="btn btn-danger delete-product"
+                                                data-id="<?= htmlspecialchars($product['prod_id']) ?>"
+                                                data-name="<?= htmlspecialchars($product['prod_name']) ?>">
+                                                <i class="fas fa-trash"></i>    
+                                            </a> 
+                                        </td>
                                     </tr>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="6">No products found</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </main>
-    </div>
+            <?php if ($totalPages > 1): ?>
+            <div class="pagination">
+                <?php if ($page > 1): ?>
+                    <a href="?page=<?= $page - 1 ?>&search=<?php echo urlencode($searchTerm); ?>&category=<?= urlencode($categoryFilter); ?>&sort=<?php echo urlencode($sortBy); ?>">&laquo; Previous</a>
+                <?php endif; ?>
+
+                <?php 
+                $range = 2;
+                $startPage = max(1, $page - $range);
+                $endPage = min($totalPages, $page + $range);
+                
+                if ($startPage > 1) {
+                    echo "<a href=\"?page=1&search=" . urlencode($searchTerm) . "&category=" . urlencode($categoryFilter) . "&sort=" . urlencode($sortBy) . "\">1</a>";
+                    if ($startPage > 2) {
+                        echo "<span class=\"ellipsis\">...</span>";
+                    }
+                }
+
+                for ($i = $startPage; $i <= $endPage; $i++) {
+                    echo '<a href="?page=' . $i . '&search=' . urlencode($searchTerm) . '&category=' . urlencode($categoryFilter) . '&sort=' . urlencode($sortBy) . '"';
+                    echo ($i == $page) ? ' class="active"' : '';
+                    echo '>' . $i . '</a>';
+                }
+
+                if ($endPage < $totalPages) {
+                    if ($endPage < $totalPages - 1) {
+                        echo "<span class=\"ellipsis\">...</span>";
+                    }
+                    echo "<a href=\"?page=$totalPages&search=" . urlencode($searchTerm) . "&category=" . urlencode($categoryFilter) . "&sort=" . urlencode($sortBy) . "\">$totalPages</a>";
+                }
+                ?>
+
+                <?php if ($page < $totalPages): ?>
+                    <a href="?page=<?= $page + 1 ?>&search=<?= urlencode($searchTerm) ?>&category=<?= urlencode($categoryFilter) ?>&sort=<?= urlencode($sortBy) ?>">Next &raquo;</a>
+                <?php endif; ?>
+            </div>
+            <?php endif; ?>
+                </main>
+            </div>
 
     <div id="addProductModal" class="modal">
         <div class="admin-modal-content">
@@ -169,7 +328,7 @@ $action = isset($_GET['action']) ? $_GET['action'] : 'list';
                 
                 <div class="form-group btn">
                     <button type="submit" class="admin-submit-btn primary">Add Product</button>
-                    <button id="close-modal" type="button" class="admin-submit-btn secondary">Cancel</button>
+                    <button id="close-modal" type="button" class="admin-submit-btn secondary close-modal">Cancel</button>
                 </div>
             </form>
             </div>

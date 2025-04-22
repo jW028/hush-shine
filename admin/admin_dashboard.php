@@ -7,6 +7,8 @@ auth('admin');
 $_title = 'Admin Dashboard';
 include '../_head.php';
 
+$_adminContext = true;
+
 // Get current month and year for default filters
 $currentMonth = date('m');
 $currentYear = date('Y');
@@ -265,7 +267,7 @@ $categoryQuantitiesJSON = json_encode($categoryQuantities);
         <div class="dashboard-header">
             <h1>Dashboard</h1>
             <div class="dashboard-actions">
-                <form action="admin_menu.php" method="GET" class="period-selector">
+                <form action="admin_dashboard.php" method="GET" class="period-selector">
                     <div class="form-group">
                         <label for="period">View Sales By:</label>
                         <select name="period" id="period" class="form-control" onchange="this.form.submit()">

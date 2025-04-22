@@ -81,7 +81,7 @@ $(document).ready(function() {
             return;
         }
         $(deleteProductModal).find('.modal-body strong').text(productName);
-        $(deleteProductForm).find('#prod_id').val(productId);
+        $('#deleteProductForm #product_id').val(productId);
         
         deleteProductModal.style.display = "block";
         setTimeout(() => {

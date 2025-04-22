@@ -4,12 +4,14 @@ include '../_head.php';
 
 auth('admin');
 
+$_adminContext = true;
+
 $title = 'Product Details';
 
 $prod_id = $_GET['id'] ?? null;
 
 if (!$prod_id) {
-    header('Location: /admin/admin_menu.php');
+    header('Location: /admin/admin_dashboard.php');
     exit;
 }
 
@@ -111,7 +113,7 @@ try {
     $product = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$product) {
-        header('Location: /admin/admin_menu.php');
+        header('Location: /admin/admin_dashboard.php');
         exit;
     }
 

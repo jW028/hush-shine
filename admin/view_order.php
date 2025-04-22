@@ -5,6 +5,8 @@ require_once '../_base.php';
 // Ensure user is authorized as admin
 auth('admin');
 
+$_adminContext = true;
+
 $_title = 'View Order';
 include '../_head.php';
 
@@ -161,7 +163,7 @@ $status_options = [
             <h2>Order #<?= $order_id ?></h2>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="admin_menu.php">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="admin_dashboard.php">Dashboard</a></li>
                     <li class="breadcrumb-item"><a href="admin_orders.php">Orders</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Order #<?= $order_id ?></li>
                 </ol>
