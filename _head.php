@@ -1,3 +1,9 @@
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -34,16 +40,43 @@
                 <ul>
                     <li><a href="/admin/admin_menu.php"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
                     <li><a href="/admin/admin_products.php"><i class="fas fa-box"></i> Products</a></li>
-                    <li><a href="/admin/add_product.php"><i class="fas fa-plus-circle"></i> Add Product</a></li>
                     <li><a href="/admin/admin_category.php"><i class="fas fa-tags"></i> Categories</a></li>
                     <li><a href="/admin/admin_orders.php"><i class="fas fa-shopping-cart"></i> Orders</a></li>
                     <li><a href="/admin/admin_customer.php"><i class="fas fa-users"></i> Customers</a></li>
-                    <li><a href="/admin/admin_reports.php"><i class="fas fa-chart-bar"></i> Reports</a></li>
-                </ul>
             </nav>
 
     <?php else: ?>
         <header class="header">
+        <div id="sidebar">
+            <button class="close-btn" onclick="toggleSidebar()">&times;</button>
+            
+                <div>
+                    
+                    <?php if (isset($_SESSION['user']) && $_SESSION['user'] === "customer"):
+                        $stm = $_db->prepare("SELECT cust_name, cust_photo FROM customer WHERE cust_id = ?");
+                        $stm->execute([$_SESSION['cust_id']]);
+                        $user = $stm->fetch(PDO::FETCH_ASSOC);
+                        $_SESSION['cust_name'] = $user['cust_name'];
+                        $_SESSION['cust_photo'] = $user['cust_photo'];
+                        ?>
+                        <img src="/images/customer_img/<?= htmlspecialchars($user['cust_photo']) ?>" alt="Profile Picture" class="profile-pic">
+                        <p>Welcome, <?= htmlspecialchars($_SESSION['cust_name']) ?>!</p>
+                        <a href="/index.php" class="sidebar-link">Home</a>
+                        <a href="/page/profile.php" class="sidebar-link">Profile</a>
+                        <a href="/page/logout.php" class="sidebar-link">Log out</a>
+                    <?php else: ?>
+                        <p>Please log in to access your account.</p>
+                        <a href="/index.php" class="sidebar-link">Home</a>
+                        <a href="/page/login.php" class="sidebar-link">Login</a>
+                        <a href="/page/register.php" class="sidebar-link">Register</a>
+                    <?php endif; ?>
+                </div>
+                
+        
+            
+
+        </div>
+        <div class="overlay" onclick="toggleSidebar()"></div>
         <div class="top-nav">
                 <div class = "left-nav">
                     <a href="/index.php"><i class = "fas fa-home"></i></a>
@@ -57,7 +90,7 @@
                 
 
                 <div class = "right-nav">
-                    <a href="/page/login.php"><i class = "fas fa-user"></i></a>
+                    <a href="#" onclick="toggleSidebar()"><i class = "fas fa-user"></i></a>
                     <?php if (isset($_SESSION['user_id'])): ?>
                         <a href="/page/order_history.php"><i class="fas fa-clock-rotate-left"></i></a>
                     <?php endif; ?>
@@ -103,6 +136,9 @@
                 </div>
 
             </div>
+
+            
+
             <nav class = "bottom-nav">
                 <a href="/page/products.php?category=CT04" data-cat="CT04" class="category-link">Earrings</a>
                 <a href="/page/products.php?category=CT01" data-cat="CT01" class="category-link">Necklaces</a>
@@ -117,4 +153,3 @@
     
 
     <main>
-        <!-- <h1><?= $_title ?? 'Untitled' ?></h1> -->

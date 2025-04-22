@@ -26,7 +26,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             } 
         }
 
-        $stmt = $_db->prepare("SELECT cust_id, cust_password FROM customer WHERE cust_email = ?");
+        $stmt = $_db->prepare("SELECT cust_id, cust_name, cust_email, cust_password FROM customer WHERE cust_email = ?");
         $stmt->execute([$email]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -34,7 +34,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Password is correct, start a session
             $_SESSION['user'] = "customer";
             $_SESSION["cust_id"] = $user["cust_id"];
-            $_SESSION["cust_email"] = $email;
+            $_SESSION["cust_email"] = $user["cust_email"];
+            $_SESSION["cust_name"] = $user["cust_name"];
             $_SESSION["admin"] = false;
 
             header("Location: ../index.php");

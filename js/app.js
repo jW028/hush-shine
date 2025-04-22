@@ -790,30 +790,3 @@ document.querySelector('.checkout-post-method').addEventListener('submit', funct
         alert('Shipping address must be at least 10 characters long.');
     }
 });
-
-//search
-$(document).ready(function() {
-    $('.product-search-form input').on('keyup', function(e) {
-        if (e.key === 'Escape') {
-            $(this).val('');
-        }
-    });
-    
-    const urlParams = new URLSearchParams(window.location.search);
-    const category = urlParams.get('category');
-    
-    if (category) {
-        $('.category-link').removeClass('active');
-        $(`.category-link[data-cat="${category}"]`).addClass('active');
-    }
-    
-    $('.category-link').on('click', function(e) {
-        const searchQuery = $('.product-search-form input[name="search"]').val();
-        
-        if (searchQuery) {
-            e.preventDefault();
-            const categoryId = $(this).data('cat');
-            window.location.href = `/page/products.php?category=${categoryId}&search=${encodeURIComponent(searchQuery)}`;
-        }
-    });
-});

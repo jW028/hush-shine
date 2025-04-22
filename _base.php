@@ -72,7 +72,7 @@ function req($key, $value = null) {
 }
 
 // Redirect to URL
-function redirect($url = null) {
+function redirect($url = '/') {
     $url ??= $_SERVER['REQUEST_URI'];
     header("Location: $url");
     exit();
@@ -175,3 +175,34 @@ $_expert = [
     'Earring' => 'Earring Expert',
     'Watch' => 'Watch Expert'
 ];
+
+function get_file($key) {
+    $f = $_FILES[$key] ?? null;
+    
+    if ($f && $f['error'] == 0) {
+        return (object)$f;
+    }
+
+    return null;
+}
+
+function save_photo($f, $folder, $width = 200, $height = 200) {
+    $photo = uniqid() . '.jpg';
+    
+    require_once 'lib/SimpleImage.php';
+    $img = new SimpleImage();
+    $img->fromFile($f->tmp_name)
+        ->thumbnail($width, $height)
+        ->toFile("$folder/$photo", 'image/jpeg');
+
+    return $photo;
+}
+
+function is_phone($value) {
+    return preg_match('/^\d{3}-\d{7,8}$/', $value) === 1;
+}
+
+function html_password($key, $attr = '') {
+    $value = encode($GLOBALS[$key] ?? '');
+    echo "<input type='password' id='$key' name='$key' value='$value' $attr>";
+}
