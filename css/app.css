@@ -3935,35 +3935,3 @@ input[type="number"] {
     flex-direction: column;
     min-height: 100vh; /* Ensure the wrapper takes up the full height of the viewport */
 }
-
-/* Favorites page*/
-.favorites-empty {
-    text-align: center;
-    padding: 50px 20px;
-}
-
-.favorites-empty i {
-    font-size: 48px;
-    color: #ddd;
-    margin-bottom: 20px;
-}
-
-.favorites-empty p {
-    color: #666;
-    margin-bottom: 20px;
-}
-
-.favorites-empty .shop-now-btn {
-    display: inline-block;
-    padding: 10px 20px;
-    background-color: #7c5295;
-    color: white;
-    border-radius: 25px;
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
-
-.favorites-empty .shop-now-btn:hover {
-    background-color: #6a4580;
-    transform: translateY(-2px);
-}

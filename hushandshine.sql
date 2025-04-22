@@ -40,7 +40,7 @@ CREATE TABLE `admin` (
 --
 
 INSERT INTO `admin` (`admin_id`, `admin_name`, `admin_contact`, `admin_email`, `admin_password`) VALUES
-('A001', 'Alex Tan', '012-3242532', 'alextan@gmail.com', 'alextan135'),
+('A001', 'Alex Tan', '012-3242532', 'alextan@gmail.com', '$2y$12$/dYbUsT7VSx5sE768oKOLeU3D2XQyBTF2eUV1m1NEBsYrXEq96Com'),
 ('A002', 'Emily June', '014-12364346', 'emilyjune@gmail.com', 'emijune123');
 
 -- --------------------------------------------------------
@@ -584,8 +584,4 @@ COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-<<<<<<< Updated upstream
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-=======
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION 
->>>>>>> Stashed changes
