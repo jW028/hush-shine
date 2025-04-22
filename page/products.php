@@ -76,7 +76,31 @@ if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQU
     }
 }
 
-$arr = $_db->query('SELECT * FROM product')->fetchAll();
+$search = $_GET['search'] ?? null;
+$category = $_GET['category'] ?? null;
+
+$params = [];
+$where = [];
+
+if ($search) {
+    $where[] = "(prod_name LIKE ? OR prod_desc LIKE ?)";
+    $params[] = "%$search%";
+    $params[] = "%$search%";
+}
+
+if ($category && $category !== '*') {
+    $where[] = "cat_id = ?";
+    $params[] = $category;
+}
+
+$sql = "SELECT * FROM product";
+if (!empty($where)) {
+    $sql .= " WHERE " . implode(" AND ", $where);
+}
+
+$stmt = $_db->prepare($sql);
+$stmt->execute($params);
+$arr = $stmt->fetchAll();
 
 // Define known categories
 $categories = [
@@ -85,6 +109,19 @@ $categories = [
     'CT02' => 'Bracelets',
     'CT03' => 'Rings'
 ];
+
+if ($search) {
+    $stmt = $_db->prepare('SELECT * FROM product WHERE prod_name LIKE ? OR prod_desc LIKE ?');
+    $searchParam = "%$search%";
+    $stmt->execute([$searchParam, $searchParam]);
+    $arr = $stmt->fetchAll();
+} elseif ($category && $category !== '*') {
+    $stmt = $_db->prepare('SELECT * FROM product WHERE cat_id = ?');
+    $stmt->execute([$category]);
+    $arr = $stmt->fetchAll();
+} else {
+    $arr = $_db->query('SELECT * FROM product')->fetchAll();
+}
 
 // Sort products by category (Unknown categories go last)
 usort($arr, function ($a, $b) use ($categories) {
@@ -98,225 +135,25 @@ $_title = 'Products';
 include '../_head.php';
 ?>
 
-<!-- Manual define row & column since database no image yet -->
 <div class="product-page-container">
-    <div class="row-container">
-        <div class="column-container">
-            <a class="product" href="products.php">
-                <div class="product-container">
-                    <img class="product-image" src="/images/product_img/Red_ring1.jpg" alt="Jewelry">
-                    <br>
-                    <div class="prod-description">
-                        <p>Red Ring Red Ring Red Ring Red Ring</p>
-                    </div>
-                    <div class="prod-price">
-                        <span class="price">RM8888.00</span>
-                        <span class="view-details">View Details</span>
-                    </div>
-                </div>  
-            </a>
-        </div>  
-        <div class="column-container">
-            <a class="product" href="products.php">
-                <div class="product-container">
-                    <img class="product-image" src="/images/product_img/Red_ring2.jpg" alt="Jewelry">
-                    <br>
-                    <div class="prod-description">
-                        <p>Red Ring</p>
-                    </div>
-                    <div class="prod-price">
-                        <span class="price">RM8888.00</span>
-                        <span class="view-details">View Details</span>
-                    </div>
-                </div>  
-            </a>
-        </div>  
-        <div class="column-container">
-            <a class="product" href="products.php">
-                <div class="product-container">
-                    <img class="product-image" src="/images/product_img/blue_ring1.jpg" alt="Jewelry">
-                    <br>
-                    <div class="prod-description">
-                        <p>Red Ring</p>
-                    </div>
-                    <div class="prod-price">
-                        <span class="price">RM8888.00</span>
-                        <span class="view-details">View Details</span>
-                    </div>
-                </div>  
-            </a>
-        </div>  
-        <div class="column-container">
-            <a class="product" href="products.php">
-                <div class="product-container">
-                    <img class="product-image" src="/images/product_img/blue_ring2.jpg" alt="Jewelry">
-                    <br>
-                    <div class="prod-description">
-                        <p>Red Ring</p>
-                    </div>
-                    <div class="prod-price">
-                        <span class="price">RM8888.00</span>
-                        <span class="view-details">View Details</span>
-                    </div>
-                </div>  
-            </a>
-        </div>  
-    </div>
-
-    <div class="row-container">
-        <div class="column-container">
-            <a class="product" href="products.php">
-                <div class="product-container">
-                    <img class="product-image" src="/images/product_img/heart_ear2.webp" alt="Jewelry">
-                    <br>
-                    <div class="prod-description">
-                        <p>Red Ring</p>
-                    </div>
-                    <div class="prod-price">
-                        <span class="price">RM8888.00</span>
-                        <span class="view-details">View Details</span>
-                    </div>
-                </div>  
-            </a>
-        </div>  
-        <div class="column-container">
-            <a class="product" href="products.php">
-                <div class="product-container">
-                    <img class="product-image" src="/images/product_img/pad_pendant2.webp" alt="Jewelry">
-                    <br>
-                    <div class="prod-description">
-                        <p>Red Ring</p>
-                    </div>
-                    <div class="prod-price">
-                        <span class="price">RM8888.00</span>
-                        <span class="view-details">View Details</span>
-                    </div>
-                </div>  
-            </a>
-        </div>  
-        <div class="column-container">
-            <a class="product" href="products.php">
-                <div class="product-container">
-                    <img class="product-image" src="/images/product_img/perettidiamond_ring2.webp" alt="Jewelry">
-                    <br>
-                    <div class="prod-description">
-                        <p>Red Ring</p>
-                    </div>
-                    <div class="prod-price">
-                        <span class="price">RM8888.00</span>
-                        <span class="view-details">View Details</span>
-                    </div>
-                </div>  
-            </a>
-        </div>  
-        <div class="column-container">
-            <a class="product" href="products.php">
-                <div class="product-container">
-                    <img class="product-image" src="/images/product_img/picassoo_ear3.webp" alt="Jewelry">
-                    <br>
-                    <div class="prod-description">
-                        <p>Red Ring</p>
-                    </div>
-                    <div class="prod-price">
-                        <span class="price">RM8888.00</span>
-                        <span class="view-details">View Details</span>
-                    </div>
-                </div>  
-            </a>
-        </div>  
-    </div>
-
-    <div class="row-container">
-        <div class="column-container">
-            <a class="product" href="products.php">
-                <div class="product-container">
-                    <img class="product-image" src="/images/product_img/heart_ear2.webp" alt="Jewelry">
-                    <br>
-                    <div class="prod-description">
-                        <p>Red Ring</p>
-                    </div>
-                    <div class="prod-price">
-                        <span class="price">RM8888.00</span>
-                        <span class="view-details">View Details</span>
-                    </div>
-                </div>  
-            </a>
-        </div>  
-        <div class="column-container">
-            <a class="product" href="products.php">
-                <div class="product-container">
-                    <img class="product-image" src="/images/product_img/pad_pendant2.webp" alt="Jewelry">
-                    <br>
-                    <div class="prod-description">
-                        <p>Red Ring Red Ring Red Ring Red Ring Red Ring</p>
-                    </div>
-                    <div class="prod-price">
-                        <span class="price">RM8888.00</span>
-                        <span class="view-details">View Details</span>
-                    </div>
-                </div>  
-            </a>
-        </div>  
-        <div class="column-container">
-            <a class="product" href="products.php">
-                <div class="product-container">
-                    <img class="product-image" src="/images/product_img/perettidiamond_ring2.webp" alt="Jewelry">
-                    <br>
-                    <div class="prod-description">
-                        <p>Red Ring</p>
-                    </div>
-                    <div class="prod-price">
-                        <span class="price">RM8888.00</span>
-                        <span class="view-details">View Details</span>
-                    </div>
-                </div>  
-            </a>
-        </div>  
-    </div>
-<!-- </div> -->
-
-
-<!-- For data retrieval from database to display product by row & column-->
-<!-- <div class="product-page-container"> -->
-    <div class="row-container">
-        <?php 
-        $columnCount = 0;
-        foreach ($arr as $s): 
-            if ($columnCount % 4 == 0 && $columnCount > 0): ?>
-                </div><div class="row-container">
+    <div class="product-search-container">
+        <form action="/page/products.php" method="get" class="product-search-form">
+            <input type="text" name="search" placeholder="Search products..." value="<?= htmlspecialchars($search ?? '') ?>">
+            <button type="submit"><i class="fa fa-search"></i></button>
+            <?php if ($search): ?>
+                <a href="/page/products.php" class="clear-search">Clear</a>
             <?php endif; ?>
-
-            <div class="column-container">
-                <a class="product" href="products.php?id=<?= $s->id ?>"
-                    data-id="<?= $productId ?>"
-                    data-name="<?= htmlspecialchars($s->prod_name) ?>" 
-                    data-desc="<?= htmlspecialchars($s->prod_desc) ?>" 
-                    data-price="<?= number_format($s->price, 2) ?>" 
-                    data-image="<?= htmlspecialchars($s->image) ?>"
-                    data-cat-id="<?= htmlspecialchars($s->cat_id) ?>">
-                    
-                    <div class="product-container">
-                        <img class="product-image" src="/images/product_img/<?= htmlspecialchars($s->image) ?>" alt="<?= htmlspecialchars($s->prod_name) ?>">
-                        <div class="prod-description">
-                            <p><?= htmlspecialchars($s->prod_name) ?></p>
-                        </div>
-                        <div class="prod-price">
-                            <span class="price">RM <?= number_format($s->price, 2) ?></span>
-                            <span class="view-details">View Details</span>
-                        </div>
-                    </div>
-                </a>
-            </div>
-
-            <?php 
-            $columnCount++;
-        endforeach; ?>
+        </form>
     </div>
-<!-- </div> -->
 
-
-<!-- <div class="product-page-container"> -->
     <div class="row-container">
+        <?php if (empty($arr)): ?>
+            <div class="no-products-found">
+                <p>No products found<?= $search ? " for \"" . htmlspecialchars($search) . "\"" : "" ?>.</p>
+            </div>
+        <?php else: ?>
+        <?php endif; ?>
+
         <?php 
         $columnCount = 0;
         $firstProduct = []; // Track the first product of each category
@@ -326,14 +163,6 @@ include '../_head.php';
             $productId = htmlspecialchars($s->prod_id);
             $categoryId = htmlspecialchars($s->cat_id);
 
-            if (!isset($firstProduct[$categoryId])) {
-                $firstProduct[$categoryId] = true;
-                    echo '<div class="category-spacer" id="cat-' . $categoryId . '"></div>'; // Spacer added
-                $idAttribute = 'id="cat-' . $categoryId . '"'; // Assign ID only to the first product
-            } else {
-                $idAttribute = ''; // No ID for other products
-            }
-
             if ($columnCount % 4 == 0 && $columnCount > 0): ?>
                 </div><div class="row-container">
             <?php endif; ?>
@@ -341,7 +170,6 @@ include '../_head.php';
             <div class="column-container">
                 <a class="product" href="products.php?id=<?= $productId ?>&category=<?= $categoryId ?>"
                     data-id="<?= $productId ?>"
-                    <?= $idAttribute ?>
                     data-name="<?= htmlspecialchars($s->prod_name) ?>" 
                     data-desc="<?= htmlspecialchars($s->prod_desc) ?>" 
                     data-price="<?= number_format($s->price, 2) ?>" 

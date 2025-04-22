@@ -46,16 +46,12 @@
         <header class="header">
         <div class="top-nav">
                 <div class = "left-nav">
-                <form action="" class="searchform">
-                    <input type="search" placeholder="Search here ...">
-                    <i class="fa fa-search"></i>
-                </form>
                     <a href="/index.php"><i class = "fas fa-home"></i></a>
                     <a href="/page/contact.php"><i class = "fas fa-circle-exclamation"></i></a>
+                    <a href="/page/contact.php"><i class = "fas fa-heart"></i></a>
                 </div>
 
                 <div class="nav-center">
-                    <!-- <a href="#"><img class="logo" src="/images/Hush & Shine.svg"></a> -->
                     <h1>Hush & Shine</h1>
                 </div>
                 
@@ -113,7 +109,7 @@
                 <a href="/page/products.php?category=CT02" data-cat="CT02" class="category-link">Bracelets</a>
                 <a href="/page/products.php?category=CT03" data-cat="CT03" class="category-link">Rings</a>
                 <a href="/page/products.php?category=CT05" data-cat="CT05" class="category-link">Watches</a>
-                <a href="/page/products.php?category=CT06" data-cat="CT06" class="category-link">Discount</a>
+                <a href="/page/products.php?category=*" data-cat="*" class="category-link">All Products</a>
             </nav>
         </header>
 

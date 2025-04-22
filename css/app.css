@@ -136,53 +136,6 @@ body {
     width: 100%;
 }
 
-.searchform {
-    position: relative;
-    width: 35px;
-    height: 35px;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-}
-
-.searchform input {
-    width: 0;
-    height: 35px;
-    padding: 0;
-    border: 1px solid #e0e0e0;
-    border-radius: 20px;
-    opacity: 0;
-    transition: all 0.3s ease;
-    background-color: #fff;
-}
-
-.searchform .fa-search {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #666;
-    z-index: 2;
-    transition: all 0.3s ease;
-    padding: 8px;
-    border-radius: 50%;
-    background-color: #f6f6f6;
-}
-
-.searchform:hover .fa-search {
-    color: #7c5295; 
-}
-
-.searchform:hover {
-    width: 200px;
-}
-
-.searchform:hover input {
-    width: 100%;
-    opacity: 1;
-    padding: 0 40px 0 15px; 
-}
-
 .nav-icon {
     display: flex;
     align-items: center;
@@ -190,9 +143,6 @@ body {
     white-space: nowrap;
     color: #000;
     text-decoration: none;
-}
-.searchform:hover .fa-search {
-    right: 10px;
 }
 
 @media (max-width: 768px) {
@@ -204,13 +154,7 @@ body {
         flex-wrap: wrap;
         gap: 10px;
         font-size: 12px;
-    }
-    .searchform:hover input {
-        display: block !important;
-        width: 150px;
-        opacity: 1;
-    }
-    
+    }    
     .nav-icon span {
         display: none; 
     }
@@ -237,7 +181,7 @@ body {
     border-radius: 50%;
 }
 
-.left-nav a:not(.searchform):hover, .right-nav a:hover {
+.left-nav a:hover, .right-nav a:hover {
     color: #7c5295; 
     transform: translateY(-3px);
     background-color: rgba(246, 246, 246, 0.5);
@@ -1530,6 +1474,114 @@ fieldset {
 
 
 /* Product Page css*/
+.product-search-container {
+    width: 100%;
+    padding: 15px 0;
+    display: flex;
+    justify-content:right;
+}
+
+.product-search-form {
+    position: relative;
+    width: 35px;
+    height: 35px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+}
+
+.product-search-form input[type="text"] {
+    width: 0;
+    height: 35px;
+    padding: 0;
+    border: 1px solid #e0e0e0;
+    border-radius: 20px;
+    opacity: 0;
+    transition: all 0.3s ease;
+    background-color: #fff;
+}
+
+.product-search-form button {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    z-index: 2;
+    transition: all 0.3s ease;
+    padding: 0;
+}
+
+.product-search-form button i {
+    color: #666;
+    padding: 8px;
+    border-radius: 50%;
+    background-color: #f6f6f6;
+    transition: all 0.3s ease;
+}
+
+.product-search-form:hover button i {
+    color: #7c5295;
+}
+
+.product-search-form:hover {
+    width: 300px;
+}
+
+.product-search-form:hover input[type="text"] {
+    width: 100%;
+    opacity: 1;
+    padding: 0 40px 0 15px;
+}
+
+.product-search-form:focus-within {
+    width: 300px;
+}
+
+.product-search-form:focus-within input[type="text"] {
+    width: 100%;
+    opacity: 1;
+    padding: 0 40px 0 15px;
+}
+
+.clear-search {
+    position: absolute;
+    right: 45px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    color: #666;
+    text-decoration: none;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.product-search-form:hover .clear-search, 
+.product-search-form:focus-within .clear-search {
+    opacity: 1;
+}
+
+.no-products-found {
+    width: 100%;
+    padding: 50px 0;
+    text-align: center;
+    font-size: 18px;
+    color: #666;
+}
+
+@media (max-width: 768px) {
+    .product-search-form:hover input[type="text"],
+    .product-search-form:focus-within input[type="text"] {
+        width: 150px;
+        opacity: 1;
+    }
+}
 
 .product-page-container {
     /* margin-top: 150px; */
@@ -1543,6 +1595,7 @@ fieldset {
     display: block;
     align-content: center;
     flex: 1;
+    font-size: 12px;
 }
 
 .row-container{
