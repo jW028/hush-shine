@@ -45,6 +45,7 @@ $isAdminSection = strpos($_SERVER['REQUEST_URI'], '/admin/') !== false;
                     <li><a href="/admin/admin_category.php"><i class="fas fa-tags"></i> Categories</a></li>
                     <li><a href="/admin/admin_orders.php"><i class="fas fa-shopping-cart"></i> Orders</a></li>
                     <li><a href="/admin/admin_customer.php"><i class="fas fa-users"></i> Customers</a></li>
+                    <li><a href="/admin/admin_profile.php"><i class="fas fa-user"></i> Profile</a></li>
             </nav>
 
     <?php else: ?>
@@ -81,6 +82,7 @@ $isAdminSection = strpos($_SERVER['REQUEST_URI'], '/admin/') !== false;
                                 <p>Welcome, <?= htmlspecialchars($_SESSION['admin_name']) ?>!</p> 
                             </div>
                             <a href="/index.php" class="sidebar-link">Home</a>
+                            <a href="/admin/admin_profile.php" class="sidebar-link">Profile</a>
                             <a href="/page/logout.php" class="sidebar-link">Log out</a>
 
                         <?php elseif ($_SESSION['user'] === "customer"): ?>
@@ -96,7 +98,6 @@ $isAdminSection = strpos($_SERVER['REQUEST_URI'], '/admin/') !== false;
                             <a href="/index.php" class="sidebar-link">Home</a>
                             <a href="/page/profile.php" class="sidebar-link">Profile</a>
                             <a href="/page/logout.php" class="sidebar-link">Log out</a>
-                            ?>
                         <?php endif; ?>
                     <?php else: ?>
                         <p>Please log in to access your account.</p>

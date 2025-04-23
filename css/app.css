@@ -313,8 +313,20 @@ footer {
     flex: 1;
 }
 
+.container.admin-margin-top {
+    margin-bottom: 250px;
+    align-content:unset;
+}
+
 .container.margin-top {
-    top: 150px;
+    margin-top: 150px;
+    margin-bottom: 250px;
+    align-content:unset;
+}
+
+.container.user-margin-top {
+    padding-top: 150px;
+    align-content:unset;
 }
 
 .profile-container {
@@ -326,6 +338,11 @@ footer {
 .profile-form {
     flex: 1;
     padding: 0 50px;
+}
+
+.profile-picture label{
+    font-weight: bold;
+    margin-top: 10px;
 }
 
 form {
@@ -1838,7 +1855,7 @@ fieldset {
 
 img.product-image {
     width: 20em;
-    height: 20em;
+    height: auto;
     object-fit: cover;
     border-bottom: 3px solid #f6f6f6;
 }
@@ -4126,7 +4143,7 @@ input[type="number"] {
     height: 100px;
     border-radius: 50%;
     object-fit: cover;
-    margin-bottom: 20px;
+    margin: 20px 0;
     border: 2px solid #ccc;
 }
 
@@ -4134,6 +4151,8 @@ input[type="number"] {
     text-align: center;
     max-width: 200px;
 }
+
+
 
 /* Change Password link styling */
 .change-password-link {
@@ -4152,9 +4171,20 @@ input[type="number"] {
     white-space: nowrap;
 }
 
+.change-password-container h3 {
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
 .content.profile {
     flex: 1;
 }
+
+.content.admin-profile {
+    margin: 50px 100px 0 250px;
+    flex: 1;
+}
+
 
 .page-wrapper {
     display: flex;

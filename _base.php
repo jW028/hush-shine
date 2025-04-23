@@ -233,3 +233,14 @@ function get_mail() {
     
     return $m;
 }
+
+function base($path = '') {
+    return "http://$_SERVER[SERVER_NAME]:$_SERVER[SERVER_PORT]/$path";
+}
+
+function is_exists($value, $table, $field) {
+    global $_db;
+    $stm = $_db->prepare("SELECT COUNT(*) FROM $table WHERE $field = ?");
+    $stm->execute([$value]);   
+    return $stm->fetchColumn() > 0;
+}

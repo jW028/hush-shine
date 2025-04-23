@@ -82,14 +82,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_db->beginTransaction();
 
         $orderStmt = $_db->prepare("
-            INSERT INTO orders (cust_id, order_date, total_amount, status, payment_id, payment_status, shipping_address, payment_method)
-            VALUES (?, NOW(), ?, 'Pending', NULL, 'Unpaid', ?, ?)
+            INSERT INTO orders (cust_id, order_date, total_amount, status, payment_id, payment_status, shipping_address)
+            VALUES (?, NOW(), ?, 'Pending', NULL, 'Unpaid', ?)
         ");
         $orderStmt->execute([
             $userId, 
             $total, 
-            $_POST['address'],
-            $_POST['payment_method']
+            $_POST['address']
         ]);
         $orderId = $_db->lastInsertId();
         $_SESSION['pending_order_id'] = $orderId;
