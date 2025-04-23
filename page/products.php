@@ -286,7 +286,18 @@ include '../_head.php';
                                 <i class="far fa-heart"></i>
                             </button>
                         </div>
-                        <img class="product-image" src="/images/product_img/<?= htmlspecialchars($s->image) ?>" alt="<?= htmlspecialchars($s->prod_name) ?>">
+                        <?php 
+                        // Check if the image field contains multiple images separated by commas
+                        $imageData = json_decode($s->image, true); // Use the first image as primary
+                        if ($imageData) {
+                            $imageFile = is_array($imageData) ? $imageData[0] : $imageData;
+                            $productImage = '../images/products/' . $imageFile;
+                            if (!file_exists($productImage)) {
+                                $productImage = '../images/no-image.png';
+                            }
+                        }
+                        ?>
+                        <img class="product-image" src="<?= htmlspecialchars($productImage) ?>" alt="<?= htmlspecialchars($s->prod_name) ?>" >
                         <div class="prod-description">
                             <p><?= htmlspecialchars($s->prod_name) ?></p>
                         </div>

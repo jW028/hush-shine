@@ -1838,7 +1838,7 @@ fieldset {
 
 img.product-image {
     width: 20em;
-    height: auto;
+    height: 20em;
     object-fit: cover;
     border-bottom: 3px solid #f6f6f6;
 }
