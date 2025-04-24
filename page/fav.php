@@ -3,9 +3,8 @@ require '../_base.php';
 
 // Check if user is logged in
 if (!isset($_SESSION['cust_id']) || empty($_SESSION['cust_id'])) {
-    error_log("Session 'cust_id' is missing or empty.");
-    echo json_encode(['success' => false, 'message' => 'Invalid user ID']);
-    exit;
+    header("Location: ../page/login.php");
+    exit();
 }
 
 // Handle AJAX requests FIRST

@@ -79,50 +79,25 @@ try {
 
 if (isset($_SESSION['applied_reward_points']) && $_SESSION['applied_reward_points'] > 0) {
     $pointsUsed = $_SESSION['applied_reward_points'];
-    
+
     try {
         // Insert a negative entry into the reward_points table to track the deduction
         $deductStmt = $_db->prepare("
-            INSERT INTO reward_points (cust_id, points, description, created_at)
-            VALUES (?, ?, ?, NOW())
+            INSERT INTO reward_points (cust_id, order_id, points, description, created_at)
+            VALUES (?, ?, ?, ?, NOW())
         ");
         $deductStmt->execute([
-            $_SESSION['cust_id'],
+            $custId,
+            $orderId,
             -$pointsUsed, // Negative points to deduct
-            "Redeemed for Order #" . $_SESSION['order_id']
+            "Redeemed for Order #" . $orderId
         ]);
-        
+
         // Clear the applied reward points from session
         unset($_SESSION['applied_reward_points']);
     } catch (Exception $e) {
         error_log("Reward Points Deduction Error: " . $e->getMessage());
     }
-}
-
-// Award new reward points for this purchase (e.g., 1 point per RM 1 spent)
-try {
-    // Get the order total
-    $orderStmt = $_db->prepare("SELECT total_amount FROM orders WHERE order_id = ?");
-    $orderStmt->execute([$_SESSION['order_id']]);
-    $order = $orderStmt->fetch(PDO::FETCH_ASSOC);
-    
-    if ($order) {
-        $orderTotal = $order['total_amount'];
-        $pointsToAward = floor($orderTotal); // 1 point per RM 1
-        
-        // Insert points record
-        $awardStmt = $_db->prepare("
-            INSERT INTO reward_points (cust_id, points, description, created_at)
-            VALUES (?, ?, ?, NOW())
-        ");
-        $awardStmt->execute([
-            $_SESSION['cust_id'],
-            $pointsToAward,
-            "Earned from Order #" . $_SESSION['order_id']
-        ]);
-    }
-} catch (Exception $e) {
-    error_log("Reward Points Award Error: " . $e->getMessage());
 }
 
 $_title = 'Order Confirmation';

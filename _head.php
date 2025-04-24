@@ -2,6 +2,11 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+if (isset($_SESSION['cust_id'])) {
+    $custId = $_SESSION['cust_id'];
+} else {
+    $custId = null; // Default to null if the customer is not logged in
+}
 $isAdminSection = strpos($_SERVER['REQUEST_URI'], '/admin/') !== false;
     $_adminContext = $_adminContext ?? $isAdminSection;
 ?>
@@ -94,10 +99,27 @@ $isAdminSection = strpos($_SERVER['REQUEST_URI'], '/admin/') !== false;
                                 FROM reward_points
                                 WHERE cust_id = ?
                             ");
-                            $rewardStmt->execute([$custId]);
-                            $rewardPoints = $rewardStmt->fetch(PDO::FETCH_ASSOC)['total_points'] ?? 0;
                             $_SESSION['cust_name'] = $user['cust_name'];
                             $_SESSION['cust_photo'] = $user['cust_photo'];
+                            if ($custId) {
+                                try {
+                                    $stmt = $_db->prepare("
+                                        SELECT
+                                            (SELECT COALESCE(SUM(rp.points), 0)
+                                             FROM reward_points rp
+                                             INNER JOIN orders o ON rp.order_id = o.order_id
+                                             WHERE rp.cust_id = ? AND o.status != 'Pending') AS total_earned,
+                                            (SELECT COALESCE(SUM(reward_used), 0)
+                                             FROM orders
+                                             WHERE cust_id = ?) AS total_used
+                                    ");
+                                    $stmt->execute([$custId, $custId]);
+                                    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+                                    $rewardPoints = ($result['total_earned'] ?? 0) - ($result['total_used'] ?? 0);
+                                } catch (Exception $e) {
+                                    error_log("Reward Points Calculation Error: " . $e->getMessage());
+                                }
+                            }
                             ?>
                             <img src="/images/customer_img/<?= htmlspecialchars($user['cust_photo']) ?>" alt="Profile Picture" class="profile-pic">
                             <p>Welcome, <?= htmlspecialchars($_SESSION['cust_name']) ?>!</p>

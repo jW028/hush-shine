@@ -134,6 +134,8 @@ CREATE TABLE `orders` (
   `order_id` int(11) NOT NULL,
   `cust_id` char(5) NOT NULL,
   `order_date` datetime NOT NULL,
+  `reward_used` DECIMAL(10,2) DEFAULT 0,
+  `reward_get` DECIMAL(10,2) DEFAULT 0,
   `total_amount` decimal(10,2) NOT NULL,
   `status` varchar(50) NOT NULL DEFAULT 'Pending',
   `payment_id` varchar(255) DEFAULT NULL,
@@ -355,9 +357,26 @@ CREATE TABLE `return_refund_requests` (
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- Triggers `return_refund_requests`
+--
+DELIMITER $$
+CREATE TRIGGER `after_refund_completed` AFTER UPDATE ON `return_refund_requests` FOR EACH ROW BEGIN
+    -- Check if the status is updated to 'Refund Completed'
+    IF NEW.status = 'Refund Completed' AND OLD.status != 'Refund Completed' THEN
+        -- Insert reward points into the reward_points table
+        INSERT INTO reward_points (cust_id, order_id, points, description, created_at)
+        SELECT NEW.cust_id, NEW.order_id, o.total_amount, CONCAT('Refund for Order #', NEW.order_id), NOW()
+        FROM orders o
+        WHERE o.order_id = NEW.order_id;
+    END IF;
+END
+$$
+DELIMITER ;
+
 CREATE TABLE `reward_points` (
   `reward_id` INT AUTO_INCREMENT PRIMARY KEY, 
-  `cust_id` CHAR(5) NOT NULL,                 
+  `cust_id` CHAR(5) NOT NULL,
+  `order_id` INT DEFAULT NULL,                 
   `points` DECIMAL(10,2) NOT NULL,            
   `description` TEXT NOT NULL,                
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -560,6 +579,7 @@ ALTER TABLE `return_refund_requests`
   ADD CONSTRAINT `fk_return_refund_order` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`) ON DELETE CASCADE;
 
 ALTER TABLE `reward_points`
+  ADD CONSTRAINT `fk_reward_points_order` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_reward_points_customer` FOREIGN KEY (`cust_id`) REFERENCES `customer` (`cust_id`) ON DELETE CASCADE;
 
 --

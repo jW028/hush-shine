@@ -8,201 +8,35 @@ if (!isset($_SESSION['cust_id'])) {
 }
 
 $custId = $_SESSION['cust_id'];
+$error = null;
+$success = null;
 
-// Process checkout form submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    try {
-        // Validate required fields
-        $required = ['name', 'email', 'address', 'payment_method'];
-        foreach ($required as $field) {
-            if (empty($_POST[$field])) {
-                throw new Exception("Please fill in all required fields");
-            }
-            // Extra validation for address
-            $address = trim($_POST['address']);
-            if (strlen($address) < 10) {
-                throw new Exception("Shipping address must be at least 10 characters long");
-            }
-        }
-
-        //PaymentMethod
-        $paymentMethod = $_POST['payment_method'];
-        $validPaymentMethods = ['Debit/Credit Card', 'Bank Transfer', 'DuitNow QR'];
-        if (!in_array($paymentMethod, $validPaymentMethods)) {
-            throw new Exception("Invalid payment method selected");
-        }
-
-        // Get selected items from query string
-        $selectedItems = isset($_GET['items']) ? explode(',', $_GET['items']) : [];
-
-        // Get cart items
-        $stmt = $_db->prepare("
-            SELECT ci.cart_id, ci.prod_id, ci.quantity, p.prod_name, p.price
-            FROM cart_item ci
-            JOIN product p ON ci.prod_id = p.prod_id
-            JOIN shopping_cart sc ON ci.cart_id = sc.cart_id
-            WHERE sc.cust_id = ?
-        ");
-
-        // Prepare the base SQL query
-        $query = "
-            SELECT ci.cart_id, ci.prod_id, ci.quantity, p.prod_name, p.price
-            FROM cart_item ci
-            JOIN product p ON ci.prod_id = p.prod_id
-            JOIN shopping_cart sc ON ci.cart_id = sc.cart_id
-            WHERE sc.cust_id = ?
-        ";
-
-        // Modify the query if there are selected items
-        if (!empty($selectedItems)) {
-        $query .= " AND ci.prod_id IN (" . implode(',', array_fill(0, count($selectedItems), '?')) . ")";
-        }
-
-        // Prepare the statement using the DB connection
-        $stmt = $_db->prepare($query);
-
-        // Merge the user ID with selected items as parameters
-        $params = array_merge([$custId], $selectedItems);
-
-        // Execute the query
-        $stmt->execute($params);
-
-        // Fetch the cart items
-        $cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        $subtotal = 0;
-        foreach ($cartItems as $item) {
-            $subtotal += $item['price'] * $item['quantity'];
-            
-        }
-        $tax = $subtotal * 0.06; // Example 6% tax
-        $total = $subtotal + $tax;
-
-        // Start transaction
-        $_db->beginTransaction();
-
-        $orderStmt = $_db->prepare("
-            INSERT INTO orders (cust_id, order_date, total_amount, status, payment_id, payment_status, shipping_address)
-            VALUES (?, NOW(), ?, 'Pending', NULL, 'Unpaid', ?)
-        ");
-        $orderStmt->execute([
-            $custId, 
-            $total, 
-            $_POST['address']
-        ]);
-        $orderId = $_db->lastInsertId();
-        $_SESSION['pending_order_id'] = $orderId;
-        error_log("Order ID {$_db->lastInsertId()} inserted with payment_status 'Unpaid'");
-        
-        
-        // Optional: Insert order_items from cart
-        foreach ($cartItems as $item) {
-            $itemStmt = $_db->prepare("
-                INSERT INTO order_items (order_id, prod_id, quantity, price)
-                VALUES (?, ?, ?, ?)
-            ");
-            $itemStmt->execute([
-                $orderId, 
-                $item['prod_id'], 
-                $item['quantity'],
-                $item['price']
-            ]);
-        }
-        $_SESSION['pending_order_id'] = $_db->lastInsertId();
-
-        //Handle different payment methods
-        if ($paymentMethod === 'Debit/Credit Card') {
-            $_SESSION['checkout_total'] = $total;
-            $_SESSION['order_id'] = $orderId;
-            
-            // Commit transaction before redirecting
-            $_db->commit();
-
-            header("Location: stripe.php");
-            exit();
-        } else if ($paymentMethod === 'Bank Transfer') {
-            $_SESSION['checkout_total'] = $total;
-            $_SESSION['order_id'] = $orderId;
-            
-            // Commit transaction before redirecting
-            $_db->commit();
-
-            header("Location: FPX.php");
-            exit();
-        } elseif ($paymentMethod === 'DuitNow QR') {
-            $_SESSION['checkout_total'] = $total;
-            $_SESSION['order_id'] = $orderId;
-            
-            // Commit transaction before redirecting
-            $_db->commit();
-
-            header("Location: duitnow.php");
-            exit();
-        }
-
-        // Commit transaction
-        $_db->commit();
-
-        // Redirect to order confirmation
-        header("Location: order_confirmation.php?id=" . $orderId);
-        exit();
-
-    } catch (Exception $e) {
-        if ($_db->inTransaction()) {
-            $_db->rollBack();
-        }
-        $error = $e->getMessage();
-    }
-}
-if (isset($_POST['apply_reward_points']) && !empty($_POST['points'])) {
-    try {
-        $pointsToUse = floatval($_POST['points']);
-
-        // Validate reward points
-        if ($pointsToUse <= 0) {
-            throw new Exception("Reward points must be greater than 0.");
-        }
-
-        // Make sure we have the current reward points balance
-        $rewardStmt = $_db->prepare("
-            SELECT COALESCE(SUM(points), 0) as total_points
-            FROM reward_points
-            WHERE cust_id = ?
-        ");
-        $rewardStmt->execute([$custId]);
-        $rewardResult = $rewardStmt->fetch(PDO::FETCH_ASSOC);
-        $currentRewardPoints = floatval($rewardResult['total_points']);
-
-        if ($pointsToUse > $currentRewardPoints) {
-            throw new Exception("You cannot use more reward points than you have.");
-        }
-        
-        if ($pointsToUse > $total) {
-            $pointsToUse = $total; // Limit points to the total amount
-        }
-
-        // Store applied reward points in the session
-        $_SESSION['applied_reward_points'] = $pointsToUse;
-        
-        // Recalculate total after points
-        $afterPointsTotal = $total - $pointsToUse;
-        if ($afterPointsTotal < 0) $afterPointsTotal = 0;
-        
-        // Success message
-        $success = "Successfully applied " . number_format($pointsToUse, 0) . " reward points.";
-        
-    } catch (Exception $e) {
-        $error = $e->getMessage();
-    }
+// Get user details
+try {
+    $stmt = $_db->prepare("SELECT * FROM customer WHERE cust_id = ?");
+    $stmt->execute([$custId]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    error_log("User Fetch Error: " . $e->getMessage());
+    $user = [];
 }
 
-// Handle removing reward points
-if (isset($_POST['remove_reward_points'])) {
-    unset($_SESSION['applied_reward_points']);
-    $appliedPoints = 0;
-    $afterPointsTotal = $total;
-    $success = "Reward points removed.";
+// Get reward points
+try {
+    $rewardStmt = $_db->prepare("
+        SELECT COALESCE(SUM(rp.points), 0) AS total_points
+        FROM reward_points rp
+        INNER JOIN orders o ON rp.order_id = o.order_id
+        WHERE rp.cust_id = ? AND o.status != 'Pending'
+    ");
+    $rewardStmt->execute([$custId]);
+    $rewardResult = $rewardStmt->fetch(PDO::FETCH_ASSOC);
+    $rewardPoints = floatval($rewardResult['total_points']);
+} catch (Exception $e) {
+    error_log("Reward Points Error: " . $e->getMessage());
+    $rewardPoints = 0;
 }
+
 // Get cart items for display
 try {
     // Get selected items from query string if present
@@ -241,31 +75,151 @@ try {
     $subtotal = $tax = $total = 0;
 }
 
-// Get user details
-try {
-    $stmt = $_db->prepare("SELECT * FROM customer WHERE cust_id = ?");
-    $stmt->execute([$custId]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
-} catch (Exception $e) {
-    error_log("User Fetch Error: " . $e->getMessage());
-    $user = [];
+// Initialize applied points
+$appliedPoints = isset($_SESSION['applied_reward_points']) ? $_SESSION['applied_reward_points'] : 0;
+$afterPointsTotal = $total;
+
+// Handle reward points application
+if (isset($_POST['apply_reward_points']) && !empty($_POST['points'])) {
+    $pointsToUse = floatval($_POST['points']); // Convert input to a float for validation
+
+    // Validate reward points
+    if ($pointsToUse <= 0) {
+        $error = "Reward points must be greater than 0.";
+    } elseif ($pointsToUse > $rewardPoints) {
+        $error = "You cannot use more reward points than you have.";
+    } elseif ($pointsToUse > $total) {
+        $error = "Reward points cannot exceed the total amount.";
+    } else {
+        // Deduct reward points from the total
+        $afterPointsTotal = $total - $pointsToUse;
+
+        // Ensure the total is not less than the minimum payable amount
+        if ($afterPointsTotal < 0.01) {
+            $afterPointsTotal = 0.01; // Set the minimum payable amount
+        }
+
+        // Store applied reward points in the session
+        $_SESSION['applied_reward_points'] = $pointsToUse;
+        $_SESSION['checkout_total'] = $afterPointsTotal; // Update the session total
+
+        $success = "Reward points applied successfully.";
+    }
+    // Prevent form resubmission by redirecting back to the checkout page
+    header("Location: checkout.php");
+    exit();
 }
-try {
-    $rewardStmt = $_db->prepare("
-        SELECT COALESCE(SUM(points), 0) as total_points
-        FROM reward_points
-        WHERE cust_id = ?
-    ");
-    $rewardStmt->execute([$custId]);
-    $rewardResult = $rewardStmt->fetch(PDO::FETCH_ASSOC);
-    $rewardPoints = floatval($rewardResult['total_points']);
-} catch (Exception $e) {
-    error_log("Reward Points Error: " . $e->getMessage());
-    $rewardPoints = 0;
+
+if (isset($_POST['remove_reward_points'])) {
+    unset($_SESSION['applied_reward_points']);
+    $appliedPoints = 0;
+    $_SESSION['checkout_total'] = $total; // Reset the session total
+    $success = "Reward points removed.";
+
+    // Prevent form resubmission by redirecting back to the checkout page
+    header("Location: checkout.php");
+    exit();
 }
-$appliedPoints = $_SESSION['applied_reward_points'] ?? 0;
-$afterPointsTotal = $total - $appliedPoints;
-if ($afterPointsTotal < 0) $afterPointsTotal = 0;
+// Process checkout form submission when the complete order button is clicked
+elseif (isset($_POST['complete_order'])) {
+    try {
+        // Clear applied reward points for the new order
+        unset($_SESSION['applied_reward_points']);
+
+        // Validate required fields
+        $required = ['name', 'email', 'address', 'payment_method'];
+        foreach ($required as $field) {
+            if (empty($_POST[$field])) {
+                throw new Exception("Please fill in all required fields");
+            }
+            // Extra validation for address
+            if ($field === 'address') {
+                $address = trim($_POST['address']);
+                if (strlen($address) < 10) {
+                    throw new Exception("Shipping address must be at least 10 characters long");
+                }
+            }
+        }
+
+        // Payment Method
+        $paymentMethod = $_POST['payment_method'];
+        $validPaymentMethods = ['Debit/Credit Card', 'DuitNow QR'];
+        if (!in_array($paymentMethod, $validPaymentMethods)) {
+            throw new Exception("Invalid payment method selected");
+        }
+
+        // Calculate final total with applied points
+        if ($appliedPoints > 0) {
+            $afterPointsTotal = $total - $appliedPoints;
+            if ($afterPointsTotal < 0.01) {
+                $afterPointsTotal = 0.01; // Minimum payable amount
+            }
+        } else {
+            $afterPointsTotal = $total;
+        }
+
+        // Store checkout total in session
+        $_SESSION['checkout_total'] = $afterPointsTotal;
+
+        // Start transaction
+        $_db->beginTransaction();
+
+        $orderStmt = $_db->prepare("
+            INSERT INTO orders (cust_id, order_date, total_amount, reward_used, status, payment_id, payment_status, shipping_address, payment_method)
+            VALUES (?, NOW(), ?, ?, 'Pending', NULL, 'Unpaid', ?, ?)
+        ");
+        $orderStmt->execute([
+            $custId,
+            $afterPointsTotal, // Total after applying reward points
+            $appliedPoints,    // Reward points used
+            $_POST['address'],
+            $paymentMethod
+        ]);
+        $orderId = $_db->lastInsertId();
+        $_SESSION['order_id'] = $orderId;
+
+        // Insert order items
+        foreach ($cartItems as $item) {
+            $itemStmt = $_db->prepare("
+                INSERT INTO order_items (order_id, prod_id, quantity, price)
+                VALUES (?, ?, ?, ?)
+            ");
+            $itemStmt->execute([
+                $orderId,
+                $item['prod_id'],
+                $item['quantity'],
+                $item['price']
+            ]);
+        }
+
+        // Commit transaction before redirecting
+        $_db->commit();
+
+        // Handle different payment methods
+        if ($paymentMethod === 'Debit/Credit Card') {
+            header("Location: stripe.php");
+            exit();
+        } elseif ($paymentMethod === 'DuitNow QR') {
+            header("Location: duitnow.php");
+            exit();
+        }
+
+    } catch (Exception $e) {
+        if ($_db->inTransaction()) {
+            $_db->rollBack();
+        }
+        $error = $e->getMessage();
+    }
+}
+// Calculate total after points deduction for display
+if ($appliedPoints > 0) {
+    $afterPointsTotal = $total - $appliedPoints;
+    if ($afterPointsTotal < 0.01) {
+        $afterPointsTotal = 0.01; // Minimum payable amount
+    }
+} else {
+    $afterPointsTotal = $total;
+}
 
 $_title = 'Checkout';
 include '../_head.php';
@@ -285,6 +239,12 @@ include '../_head.php';
         <?php if (isset($error)): ?>
             <div class="alert alert-error">
                 <i class="fas fa-exclamation-circle"></i> <?= htmlspecialchars($error) ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if (isset($success)): ?>
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i> <?= htmlspecialchars($success) ?>
             </div>
         <?php endif; ?>
 
@@ -396,7 +356,7 @@ include '../_head.php';
                         <div class="reward-points-section">
                             <h4>Reward Points</h4>
                             <p>You have <strong><?= number_format($rewardPoints, 0) ?></strong> reward points available</p>
-                            
+                                
                             <?php if ($rewardPoints > 0): ?>
                                 <div class="points-form">
                                     <input type="number" name="points" id="points" min="0" max="<?= min($rewardPoints, $total) ?>" 
@@ -416,18 +376,33 @@ include '../_head.php';
                             <span>RM <?= number_format($afterPointsTotal, 2) ?></span>
                         </div>
 
-                        <button type="submit" class="btn-checkout">
+                        <!-- Give Complete Order Button a name -->
+                        <button type="submit" name="complete_order" class="btn-checkout">
                             <i class="fas fa-lock"></i> Complete Order
                         </button>
-                        
+                            
                         <div class="secure-checkout">
                             <i class="fas fa-shield-alt"></i> Secure checkout
                         </div>
                     </div>
-                </div>
+                </div>      
             </div>
         </form>
     </div>
 </div>
+
+<style>
+/* Success alert style */
+.alert-success {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+</style>
 
 <?php include '../_foot.php'; ?>
