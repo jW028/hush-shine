@@ -202,9 +202,9 @@ include '../_head.php';
         <?php if (empty($pendingOrders)): ?>
             <p>No pending orders found.</p>
         <?php else: ?>
-            <div class="orders-list">
+            <div class="purchase-orders">
                 <?php foreach ($pendingOrders as $order): ?>
-                    <div class="order-card">
+                    <div class="puchase-order-card">
                         <h3>Order #<?= $order['order_id'] ?></h3>
                         <p>Placed on <?= date('F j, Y', strtotime($order['order_date'])) ?></p>
                         <p>Status: <?= htmlspecialchars($order['status']) ?></p>
@@ -213,8 +213,8 @@ include '../_head.php';
                         <form method="POST" class="order-actions">
                             <input type="hidden" name="order_id" value="<?= $order['order_id'] ?>">
                             <input type="hidden" name="total_amount" value="<?= $order['total_amount'] ?>">
-                            <button type="submit" name="cancel_order" class="btn-cancel">Cancel</button>
-                            <button type="submit" name="pay_now" class="btn-pay">Pay Now</button>
+                            <button type="submit" name="cancel_order" class="purchase-btn-cancel">Cancel</button>
+                            <button type="submit" name="pay_now" class="purchase-btn-pay">Pay Now</button>
                         </form>
                     </div>
                 <?php endforeach; ?>
@@ -225,9 +225,9 @@ include '../_head.php';
         <?php if (empty($confirmedOrders)): ?>
             <p>No confirmed orders found.</p>
         <?php else: ?>
-            <div class="orders-list">
+            <div class="purchase-orders">
                 <?php foreach ($confirmedOrders as $order): ?>
-                    <div class="order-card">
+                    <div class="puchase-puchase-order-card">
                         <h3>Order #<?= $order['order_id'] ?></h3>
                         <p>Placed on <?= date('F j, Y', strtotime($order['order_date'])) ?></p>
                         <p>Status: <?= htmlspecialchars($order['status']) ?></p>
@@ -236,13 +236,13 @@ include '../_head.php';
                         <?php if ($order['status'] === 'Delivered'): ?>
                             <form method="POST" class="order-actions">
                                 <input type="hidden" name="order_id" value="<?= $order['order_id'] ?>">
-                                <button type="submit" name="mark_received" class="btn-received">Mark as Received</button>
+                                <button type="submit" name="mark_received" class="purchase-btn-received">Mark as Received</button>
                             </form>
                             <form method="POST" enctype="multipart/form-data" class="order-actions">
                                 <input type="hidden" name="order_id" value="<?= $order['order_id'] ?>">
                                 <textarea name="reason" placeholder="Reason for return/refund" required></textarea>
                                 <input type="file" name="photo" accept="image/*" required>
-                                <button type="submit" name="request_return_refund" class="btn-return-refund">Return/Refund</button>
+                                <button type="submit" name="request_return_refund" class="purchase-btn-return-refund">Return/Refund</button>
                             </form>
                         <?php endif; ?>
                     </div>
@@ -254,9 +254,9 @@ include '../_head.php';
     <?php if (empty($completedOrders)): ?>
         <p>No completed orders found.</p>
     <?php else: ?>
-        <div class="orders-list">
+        <div class="purchase-orders">
             <?php foreach ($completedOrders as $order): ?>
-                <div class="order-card">
+                <div class="puchase-order-card">
                     <h3>Order #<?= $order['order_id'] ?></h3>
                     <p>Placed on <?= date('F j, Y', strtotime($order['order_date'])) ?></p>
                     <p>Status: <?= htmlspecialchars($order['status']) ?></p>
@@ -295,7 +295,7 @@ include '../_head.php';
                                         <label for="review-<?= $item['prod_id'] ?>">Review:</label>
                                         <textarea name="review" id="review-<?= $item['prod_id'] ?>" rows="3" required></textarea>
 
-                                        <button type="submit" name="submit_review" class="btn-submit-review">Submit Review</button>
+                                        <button type="submit" name="submit_review" class="purchase-btn-submit-review">Submit Review</button>
                                     </form>
                                 <?php else: ?>
                                     <p><strong>Review Submitted:</strong> Thank you for your feedback!</p>
@@ -312,9 +312,9 @@ include '../_head.php';
         <?php if (empty($cancelledOrders)): ?>
             <p>No cancelled orders found.</p>
         <?php else: ?>
-            <div class="orders-list">
+            <div class="purchase-orders">
                 <?php foreach ($cancelledOrders as $order): ?>
-                    <div class="order-card">
+                    <div class="puchase-order-card">
                         <h3>Order #<?= $order['order_id'] ?></h3>
                         <p>Placed on <?= date('F j, Y', strtotime($order['order_date'])) ?></p>
                         <p>Status: <?= htmlspecialchars($order['status']) ?></p>
@@ -328,10 +328,10 @@ include '../_head.php';
     <?php if (empty($returnRefundOrders)): ?>
         <p>No return/refund requests found.</p>
     <?php else: ?>
-        <div class="orders-list">
+        <div class="purchase-orders">
             <?php 
             foreach ($returnRefundOrders as $request): ?>
-                <div class="order-card">
+                <div class="puchase-order-card">
                     <h3>Order #<?= $request['order_id'] ?></h3>
                     <p>Requested on <?= date('F j, Y', strtotime($request['created_at'])) ?></p>
                     <p><strong>Total Amount:</strong> RM <?= number_format($request['total_amount'], 2) ?></p>
@@ -344,132 +344,5 @@ include '../_head.php';
     <?php endif; ?>
 <?php endif; ?>
 </div>
-
-<style>
-/* Add styles for the Cancel, Pay Now, and Mark as Received buttons */
-.order-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.btn-cancel {
-    background: #f44336;
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background 0.3s;
-}
-
-.btn-cancel:hover {
-    background: #d32f2f;
-}
-
-.btn-pay {
-    background: #4CAF50;
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background 0.3s;
-}
-
-.btn-pay:hover {
-    background: #45a049;
-}
-
-.btn-received {
-    background: #4CAF50;
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background 0.3s;
-}
-
-.btn-received:hover {
-    background: #45a049;
-}
-</style>
-
-<style>
-/* Add styles for the Cancel, Pay Now, and Mark as Received buttons */
-.order-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.btn-cancel {
-    background: #f44336;
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background 0.3s;
-}
-
-.btn-cancel:hover {
-    background: #d32f2f;
-}
-
-.btn-pay {
-    background: #4CAF50;
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background 0.3s;
-}
-
-.btn-pay:hover {
-    background: #45a049;
-}
-
-.btn-received {
-    background: #4CAF50;
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background 0.3s;
-}
-
-.btn-received:hover {
-    background: #45a049;
-}
-.btn-return-refund {
-    background: #FF9800;
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background 0.3s;
-}
-
-.btn-return-refund:hover {
-    background: #F57C00;
-}
-
-textarea {
-    width: 100%;
-    margin-bottom: 10px;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-
-input[type="file"] {
-    margin-bottom: 10px;
-}
-</style>
 
 <?php include '../_foot.php'; ?>

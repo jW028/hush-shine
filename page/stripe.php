@@ -289,11 +289,4 @@ $(document).ready(function() {
 });
 </script>
 
-<style>
-.discount-row {
-    color: #28a745;
-    font-weight: bold;
-}
-</style>
-
 <?php include '../_foot.php'; ?>

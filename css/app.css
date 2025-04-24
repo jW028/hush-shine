@@ -2037,6 +2037,12 @@ img.product-image {
 }
 
 /* Payment Pages Styling */
+
+.discount-row {
+    color: #28a745;
+    font-weight: bold;
+}
+
 .stripe-page,
 .duitnow-page {
     --primary: #4CAF50;
@@ -3243,6 +3249,17 @@ input[type="number"] {
 .points-applied {
     font-weight: bold;
     color: #4caf50;
+}
+
+.alert-success {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 /* Responsive adjustments */
@@ -4843,4 +4860,121 @@ input[type="number"] {
     .order-card {
         padding: 15px;
     }
+}
+
+/* mypurchase page */
+
+.mypurchase-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.purchase-nav {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.purchase-nav a {
+    text-decoration: none;
+    transition: transform 0.3s ease;
+}
+
+.purchase-nav a:hover {
+    background: #ccc;
+}
+
+.purchase-nav a.active {
+    background: #333;
+    color: #fff;
+}
+
+.purchase-orders {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.puchase-order-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    background-color: #fafafa;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.puchase-order-card h3 {
+    margin: 0 0 0.5rem;
+    color: #222;
+}
+
+.order-actions,
+.review-form {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.order-actions button,
+.review-form button {
+    padding: 0.5rem;
+    border: none;
+    border-radius: 5px;
+    background: #333;
+    color: white;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.order-actions button:hover,
+.review-form button:hover {
+    background: #555;
+}
+
+.purchase-btn-cancel {
+    background: #e74c3c;
+}
+
+.purchase-btn-pay {
+    background: #27ae60;
+}
+
+.purchase-btn-received {
+    background: #2980b9;
+}
+
+.purchase-btn-return-refund {
+    background: #f39c12;
+}
+
+.purchase-btn-submit-review {
+    background: #8e44ad;
+}
+
+textarea,
+select,
+input[type="file"] {
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 100%;
+    font-size: 1rem;
+}
+
+.order-products {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #ddd;
+}
+
+.product-review {
+    margin-top: 1rem;
+    background: #fff;
+    padding: 1rem;
+    border: 1px dashed #ccc;
+    border-radius: 6px;
 }

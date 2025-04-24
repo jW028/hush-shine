@@ -391,18 +391,4 @@ include '../_head.php';
     </div>
 </div>
 
-<style>
-/* Success alert style */
-.alert-success {
-    background: rgba(40, 167, 69, 0.1);
-    color: #28a745;
-    padding: 1rem;
-    border-radius: 6px;
-    margin-bottom: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-</style>
-
 <?php include '../_foot.php'; ?>
