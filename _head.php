@@ -45,8 +45,7 @@ $isAdminSection = strpos($_SERVER['REQUEST_URI'], '/admin/') !== false;
                     <li><a href="/admin/admin_category.php"><i class="fas fa-tags"></i> Categories</a></li>
                     <li><a href="/admin/admin_orders.php"><i class="fas fa-shopping-cart"></i> Orders</a></li>
                     <li><a href="/admin/admin_customer.php"><i class="fas fa-users"></i> Customers</a></li>
-                    <li><a href="/admin/admin_profile.php"><i class="fas fa-user"></i> Profile</a></li>
-                </nav>
+            </nav>
 
     <?php else: ?>
         <?php if (isset($_SESSION['user']) && $_SESSION['user'] == "admin"): ?>

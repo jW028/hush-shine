@@ -313,8 +313,20 @@ footer {
     flex: 1;
 }
 
+.container.admin-margin-top {
+    margin-bottom: 250px;
+    align-content:unset;
+}
+
 .container.margin-top {
-    top: 150px;
+    margin-top: 150px;
+    margin-bottom: 250px;
+    align-content:unset;
+}
+
+.container.user-margin-top {
+    padding-top: 150px;
+    align-content:unset;
 }
 
 .profile-container {
@@ -326,6 +338,11 @@ footer {
 .profile-form {
     flex: 1;
     padding: 0 50px;
+}
+
+.profile-picture label{
+    font-weight: bold;
+    margin-top: 10px;
 }
 
 form {
@@ -1983,6 +2000,122 @@ img.product-image {
     transform: scale(0.95);
 }
 
+/* DuitNow Payment Page */
+/*.duitnow-page {
+    --primary: #4CAF50;
+    --primary-dark: #388E3C;
+    --secondary: #607D8B;
+    --light: #f8f9fa;
+    --dark: #343a40;
+    --border: #e0e0e0;
+    --success: #28a745;
+    --danger: #dc3545;
+    --warning: #ffc107;
+}
+
+.duitnow-container {
+    max-width: 1200px;
+    margin: 10rem auto;
+    padding: 0 1rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.duitnow-container h1 {
+    color: var(--dark);
+    font-weight: 600;
+    text-align: center;
+    margin: 2rem 0 1.5rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.duitnow-box {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    padding: 2rem;
+    text-align: center;
+    margin: 2rem auto;
+    max-width: 600px;
+}
+
+.duitnow-box p {
+    color: var(--dark);
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.qr-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.qr-image {
+    width: 250px;
+    height: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    background: var(--light);
+}
+
+.qr-total {
+    font-size: 1.1rem;
+    color: var(--dark);
+    margin-top: 1rem;
+}
+
+.duitnow-form {
+    display: flex;
+    justify-content: center;
+}
+
+.btn-confirm {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-confirm:hover {
+    background: var(--primary-dark);
+}
+
+.duitnow-grid { 
+    display: flex;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .display-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .duitnow-container {
+        padding: 1rem;
+    }
+
+    .qr-image {
+        width: 100%;
+        max-width: 250px;
+    }
+}*/
+
 /* Product details & add to cart button container */
 .product-detail-button {
     width: 50%;
@@ -2019,6 +2152,240 @@ img.product-image {
     min-height: 100px;
 }
 
+/* Payment Pages Styling */
+.stripe-page,
+.duitnow-page {
+    --primary: #4CAF50;
+    --primary-dark: #388E3C;
+    --secondary: #607D8B;
+    --light: #f8f9fa;
+    --dark: #343a40;
+    --border: #e0e0e0;
+    --success: #28a745;
+    --danger: #dc3545;
+    --warning: #ffc107;
+}
+
+.stripe-container,
+.duitnow-container {
+    max-width: 1200px;
+    margin: 10rem auto;
+    padding: 0 2rem;
+}
+
+/* Payment Header */
+.checkout-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.checkout-header h1 {
+    color: var(--dark);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Payment Grid Layout */
+.payment-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+}
+
+/* Order Summary Section */
+.order-summary {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    padding: 1.5rem;
+    height: fit-content;
+}
+
+.order-summary h2 {
+    color: var(--dark);
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Order Items */
+.order-items {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 1.5rem;
+    padding-right: 0.5rem;
+}
+
+.order-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.order-item:last-child {
+    border-bottom: none;
+}
+
+/* Item Image and Quantity Badge */
+.item-image {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.item-image img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.item-quantity {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: var(--primary);
+    color: white;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+}
+
+/* Payment Form Section */
+.payment-form {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    padding: 2rem;
+    height: 100%;
+    min-height: 500px;
+    display: flex;
+    flex-direction: column;
+}
+
+.payment-form h2 {
+    color: var(--dark);
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#payment-element {
+    margin: 1.5rem 0;
+    min-height: 250px;
+    width: 250%;
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    flex: 1;
+}
+
+.payment-form-footer {
+    margin-top: auto;
+}
+
+.payment-button {
+    background: var(--primary);
+    color: white;
+    padding: 1rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 250%;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    height: 48px;
+    margin-left: 25px;
+}
+
+.payment-button:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+.payment-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.payment-button .spinner {
+    margin-left: 0.5rem;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.hidden {
+    display: none !important;
+}
+
+#payment-message {
+    color: var(--danger);
+    padding: 1rem;
+    border-radius: 6px;
+    margin-top: 1rem;
+    text-align: center;
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    font-size: 0.9rem;
+}
+
+/* Responsive Design */
+@media (max-width: 968px) {
+    .payment-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .stripe-container,
+    .duitnow-container {
+        margin-top: 5rem;
+        padding: 1rem;
+    }
+
+    .order-summary,
+    .payment-form {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .payment-form {
+        min-height: 400px;
+        padding: 1.5rem;
+    }
+
+    #payment-element {
+        min-height: 200px;
+    }
+}
 
 /* Shopping Cart CSS */
 .cart-page-container {
@@ -2650,169 +3017,6 @@ input[type="number"] {
     }
 }
 
-
-/*Payment Stripe*/
-/* Stripe Payment Page CSS */
-.stripe-container {
-    max-width: 1200px;
-    margin: 150px auto 50px;
-    padding: 30px;
-    display: flex;
-    gap: 40px;
-}
-
-/* Left Column - Order Summary */
-.order-summary {
-    flex: 1.2;
-    background: #f9f9f9;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
-}
-
-.items-list {
-    max-height: 400px;
-    overflow-y: auto;
-    padding-right: 15px;
-    margin-bottom: 30px;
-}
-
-.item {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 15px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid #eee;
-    align-items: center;
-}
-
-.item img {
-    width: 80px;
-    height: 80px;
-    object-fit: cover;
-    border-radius: 4px;
-}
-
-.item-details {
-    flex: 1;
-}
-
-.item-details h3 {
-    margin: 0 0 10px 0;
-    color: #333;
-    font-size: 16px;
-}
-
-.total-summary {
-    background: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    margin-top: 20px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.row {
-    display: flex;
-    justify-content: space-between;
-    margin: 10px 0;
-    color: #666;
-}
-
-.row.total {
-    font-weight: bold;
-    font-size: 1.2em;
-    border-top: 1px solid #ddd;
-    padding-top: 10px;
-    margin-top: 15px;
-    color: #333;
-}
-
-/* Right Column - Payment Form */
-.payment-form {
-    flex: 1;
-    background: #f9f9f9;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
-    position: sticky;
-    top: 30px;
-    align-self: flex-start;
-    height: fit-content;
-    min-width: 400px;
-}
-
-#payment-form {
-    width: 100%;
-}
-
-#payment-element {
-    margin-bottom: 24px;
-    min-height: 250px;
-    width: 100%;
-    background: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.payment-button {
-    background: #4CAF50;
-    color: white;
-    padding: 12px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    width: 100%;
-    font-size: 1.1em;
-    transition: all 0.2s ease;
-}
-
-.payment-button:hover {
-    background: #45a049;
-}
-
-.payment-button:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-}
-
-.spinner {
-    margin-left: 8px;
-}
-
-.hidden {
-    display: none;
-}
-
-#payment-message {
-    color: #dc3545;
-    padding: 12px;
-    border-radius: 4px;
-    margin-top: 15px;
-    text-align: center;
-    background: #f8d7da;
-    border: 1px solid #f5c6cb;
-}
-
-/* Responsive Design */
-@media (max-width: 968px) {
-    .stripe-container {
-        flex-direction: column;
-        margin-top: 100px;
-        padding: 15px;
-    }
-
-    .order-summary,
-    .payment-form {
-        width: 100%;
-        min-width: auto;
-    }
-
-    .payment-form {
-        position: relative;
-        top: 0;
-    }
-}
 
 /*Admin*/
 .admin-body {
@@ -4185,7 +4389,7 @@ input[type="number"] {
     height: 100px;
     border-radius: 50%;
     object-fit: cover;
-    margin-bottom: 20px;
+    margin: 20px 0;
     border: 2px solid #ccc;
 }
 
@@ -4193,6 +4397,8 @@ input[type="number"] {
     text-align: center;
     max-width: 200px;
 }
+
+
 
 /* Change Password link styling */
 .change-password-link {
@@ -4211,9 +4417,20 @@ input[type="number"] {
     white-space: nowrap;
 }
 
+.change-password-container h3 {
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
 .content.profile {
     flex: 1;
 }
+
+.content.admin-profile {
+    margin: 50px 100px 0 250px;
+    flex: 1;
+}
+
 
 .page-wrapper {
     display: flex;
