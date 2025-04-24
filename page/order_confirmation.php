@@ -81,56 +81,64 @@ try {
 $_title = 'Order Confirmation';
 include '../_head.php';
 ?>
-
-<div class="confirmation-container">
-    <h2>Thank you for your payment!</h2>
-    <p>Your order <strong><?= htmlspecialchars($orderId) ?></strong> has been confirmed.</p>
-
-    <div class="order-summary">
-        <h3>Order Summary</h3>
-        <div class="shipping-address">
-            <h4>Shipping Address</h4>
-            <p><?= nl2br(htmlspecialchars($shippingAddress)) ?></p>
-            <p><strong>Estimated Delivery Date:</strong> <?= htmlspecialchars($deliveryDate) ?></p>
-        </div>
-
-        <div class="items-list">
-            <?php foreach ($items as $item): ?>
-                <div class="item">
-                    <img src="/images/prod_img/<?= htmlspecialchars($item['image']) ?>" 
-                         alt="<?= htmlspecialchars($item['prod_name']) ?>">
-                    <div class="item-details">
-                        <h4><?= htmlspecialchars($item['prod_name']) ?></h4>
-                        <p>Quantity: <?= $item['quantity'] ?></p>
-                        <p>Price: RM <?= number_format($item['price'], 2) ?></p>
-                    </div>
+<div class="confirmation-page">
+    <div class="confirmation-container">
+        <div class="checkout-header">
+                <h1><i class="fas fa-shopping-bag"></i> Checkout</h1>
+                <div class="checkout-steps">
+                    <div class="step"><span>1</span> Shipping</div>
+                    <div class="step"><span>2</span> Payment</div>
+                    <div class="step active"><span>3</span> Confirmation</div>
                 </div>
-            <?php endforeach; ?>
-        </div>
+            </div>
+        <h2>Thank you for your payment!</h2>
+        <p>Your order <strong><?= htmlspecialchars($orderId) ?></strong> has been confirmed.</p>
 
-        <div class="total-summary">
-            <div class="row">
-                <span>Subtotal:</span>
-                <span>RM <?= number_format($subtotal, 2) ?></span>
+        <div class="order-summary">
+            <h3>Order Summary</h3>
+            <div class="shipping-address">
+                <h4>Shipping Address</h4>
+                <p><?= nl2br(htmlspecialchars($shippingAddress)) ?></p>
+                <p><strong>Estimated Delivery Date:</strong> <?= htmlspecialchars($deliveryDate) ?></p>
             </div>
-            <div class="row">
-                <span>Tax (6%):</span>
-                <span>RM <?= number_format($tax, 2) ?></span>
+
+            <div class="items-list">
+                <?php foreach ($items as $item): ?>
+                    <div class="item">
+                        <img src="/images/prod_img/<?= htmlspecialchars($item['image']) ?>" 
+                            alt="<?= htmlspecialchars($item['prod_name']) ?>">
+                        <div class="item-details">
+                            <h4><?= htmlspecialchars($item['prod_name']) ?></h4>
+                            <p>Quantity: <?= $item['quantity'] ?></p>
+                            <p>Price: RM <?= number_format($item['price'], 2) ?></p>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
             </div>
-            <div class="row total">
-                <span>Total:</span>
-                <span>RM <?= number_format($total, 2) ?></span>
+
+            <div class="total-summary">
+                <div class="row">
+                    <span>Subtotal:</span>
+                    <span>RM <?= number_format($subtotal, 2) ?></span>
+                </div>
+                <div class="row">
+                    <span>Tax (6%):</span>
+                    <span>RM <?= number_format($tax, 2) ?></span>
+                </div>
+                <div class="row total">
+                    <span>Total:</span>
+                    <span>RM <?= number_format($total, 2) ?></span>
+                </div>
             </div>
-        </div>
-        <div class="confirmation-actions" style="margin-top: 30px; text-align: center;">
-            <a href="products.php" class="action-button" style="display: inline-block; margin: 0 10px; padding: 10px 20px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">
-                Continue Shopping
-            </a>
-            <a href="order_history.php" class="action-button" style="display: inline-block; margin: 0 10px; padding: 10px 20px; background-color: #2196F3; color: white; text-decoration: none; border-radius: 5px;">
-                View My Orders
-            </a>
+            <div class="confirmation-actions" style="margin-top: 30px; text-align: center;">
+                <a href="products.php" class="action-button" style="display: inline-block; margin: 0 10px; padding: 10px 20px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">
+                    Continue Shopping
+                </a>
+                <a href="order_history.php" class="action-button" style="display: inline-block; margin: 0 10px; padding: 10px 20px; background-color: #2196F3; color: white; text-decoration: none; border-radius: 5px;">
+                    View My Orders
+                </a>
+            </div>
         </div>
     </div>
 </div>
-
 <?php include '../_foot.php'; ?>
