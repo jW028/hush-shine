@@ -12,26 +12,16 @@ $orderId = $_SESSION['order_id'];
 
 // Get cart items for display
 try {
-    // Get selected items from query string if present
-    $selectedItems = isset($_GET['items']) ? explode(',', $_GET['items']) : [];
-
+    // Get order items instead of cart items
     $query = "
-        SELECT ci.prod_id, ci.quantity, p.prod_name, p.price, p.image 
-        FROM cart_item ci
-        JOIN product p ON ci.prod_id = p.prod_id
-        JOIN shopping_cart sc ON ci.cart_id = sc.cart_id
-        WHERE sc.cust_id = ?
+        SELECT oi.prod_id, oi.quantity, oi.price, p.prod_name, p.image 
+        FROM order_items oi
+        JOIN product p ON oi.prod_id = p.prod_id
+        WHERE oi.order_id = ?
     ";
-
-    if (!empty($selectedItems)) {
-        $query .= " AND ci.prod_id IN (" . implode(',', array_fill(0, count($selectedItems), '?')) . ")";
-        $params = array_merge([$userId], $selectedItems);
-    } else {
-        $params = [$userId];
-    }
-
+    
     $stmt = $_db->prepare($query);
-    $stmt->execute($params);
+    $stmt->execute([$orderId]);
     $cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Calculate totals
@@ -39,11 +29,11 @@ try {
     foreach ($cartItems as $item) {
         $subtotal += $item['price'] * $item['quantity'];
     }
-    $tax = $subtotal * 0.06; // Example 6% tax
+    $tax = $subtotal * 0.06;
     $total = $subtotal + $tax;
 
 } catch (Exception $e) {
-    error_log("Checkout Error: " . $e->getMessage());
+    error_log("Stripe Error: " . $e->getMessage());
     $cartItems = [];
     $subtotal = $tax = $total = 0;
 }
@@ -93,13 +83,10 @@ include '../_head.php';
                     <h2><i class="fas fa-receipt"></i> Order Summary</h2>
                     
                     <div class="order-items">
-                        <?php foreach ($cartItems as $item): 
-                            $images = json_decode($item['image'], true);
-                            $firstImage = is_array($images) ? $images[0] : 'default.jpg';
-                        ?>
+                        <?php foreach ($cartItems as $item): ?>
                             <div class="order-item">
                                 <div class="item-image">
-                                    <img src="/images/prod_img/<?= htmlspecialchars($firstImage) ?>" 
+                                    <img src="/images/prod_img/<?= htmlspecialchars('image') ?>" 
                                          alt="<?= htmlspecialchars($item['prod_name']) ?>">
                                     <span class="item-quantity"><?= $item['quantity'] ?></span>
                                 </div>
