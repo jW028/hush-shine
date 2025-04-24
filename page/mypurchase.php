@@ -177,32 +177,6 @@ if (isset($_POST['update_refund_status'])) {
         $stmt = $_db->prepare("UPDATE return_refund_requests SET status = ? WHERE request_id = ?");
         $stmt->execute([$newStatus, $requestId]);
 
-        if ($newStatus === 'Refund Completed') {
-            $refundStmt = $_db->prepare("
-                SELECT rr.order_id, rr.cust_id, o.total_amount
-                FROM return_refund_requests rr
-                JOIN orders o ON rr.order_id = o.order_id
-                WHERE rr.request_id = ?
-            ");
-            $refundStmt->execute([$requestId]);
-            $refundDetails = $refundStmt->fetch(PDO::FETCH_ASSOC);
-
-            if ($refundDetails) {
-                $custId = $refundDetails['cust_id'];
-                $totalAmount = $refundDetails['total_amount'];
-
-                $rewardStmt = $_db->prepare("
-                    INSERT INTO reward_points (cust_id, points, description)
-                    VALUES (?, ?, ?)
-                ");
-                $rewardStmt->execute([
-                    $custId,
-                    $totalAmount,
-                    "Refund for Order #" . $refundDetails['order_id']
-                ]);
-            }
-        }
-
         header("Location: mypurchase.php?tab=return_refund");
         exit();
     } catch (Exception $e) {
