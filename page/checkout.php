@@ -284,16 +284,6 @@ include '../_head.php';
                             </label>
 
                             <label class="payment-option">
-                                <input type="radio" name="payment_method" value="Bank Transfer">
-                                <div class="payment-content">
-                                    <div class="payment-icon">
-                                        <i class="fas fa-university"></i>
-                                    </div>
-                                    <span>Bank Transfer</span>
-                                </div>
-                            </label>
-
-                            <label class="payment-option">
                                 <input type="radio" name="payment_method" value="DuitNow QR">
                                 <div class="payment-content">
                                     <div class="payment-icon">

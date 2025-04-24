@@ -75,56 +75,81 @@ $_title = 'Complete Payment';
 include '../_head.php';
 ?>
 
-<div class="stripe-container">  
-    <div class="order-summary">
-        <h2>Order Summary</h2>
-        <div class="order-items">
-            <?php foreach ($cartItems as $item): ?>
-                        <div class="order-item">
-                    <div class="item-image">
-                        <img src="/images/prod_img/<?= htmlspecialchars($item['image']) ?>" alt="<?= htmlspecialchars($item['prod_name']) ?>">
-                        <span class="item-quantity"><?= $item['quantity'] ?></span>
+<div class="stripe-page">
+    <div class="stripe-container">
+        <div class="checkout-header">
+            <h1><i class="fas fa-shopping-bag"></i> Checkout</h1>
+            <div class="checkout-steps">
+                <div class="step"><span>1</span> Shipping</div>
+                <div class="step active"><span>2</span> Payment</div>
+                <div class="step"><span>3</span> Confirmation</div>
+            </div>
+        </div>
+
+        <div class="payment-grid">
+            <!-- Order Summary -->
+            <div class="order-summary">
+                <div class="summary-card">
+                    <h2><i class="fas fa-receipt"></i> Order Summary</h2>
+                    
+                    <div class="order-items">
+                        <?php foreach ($cartItems as $item): 
+                            $images = json_decode($item['image'], true);
+                            $firstImage = is_array($images) ? $images[0] : 'default.jpg';
+                        ?>
+                            <div class="order-item">
+                                <div class="item-image">
+                                    <img src="/images/prod_img/<?= htmlspecialchars($firstImage) ?>" 
+                                         alt="<?= htmlspecialchars($item['prod_name']) ?>">
+                                    <span class="item-quantity"><?= $item['quantity'] ?></span>
+                                </div>
+                                <div class="item-details">
+                                    <h4><?= htmlspecialchars($item['prod_name']) ?></h4>
+                                    <p>RM <?= number_format($item['price'], 2) ?></p>
+                                </div>
+                                <div class="item-total">
+                                    RM <?= number_format($item['price'] * $item['quantity'], 2) ?>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
                     </div>
-                    <div class="item-details">
-                        <h4><?= htmlspecialchars($item['prod_name']) ?></h4>
-                        <p>RM <?= number_format($item['price'], 2) ?></p>
-                    </div>
-                    <div class="item-total">
-                        RM <?= number_format($item['price'] * $item['quantity'], 2) ?>
+
+                    <div class="order-totals">
+                        <div class="total-row">
+                            <span>Subtotal</span>
+                            <span>RM <?= number_format($subtotal, 2) ?></span>
+                        </div>
+                        <div class="total-row">
+                            <span>Tax (6%)</span>
+                            <span>RM <?= number_format($tax, 2) ?></span>
+                        </div>
+                        <div class="total-row grand-total">
+                            <span>Total</span>
+                            <span>RM <?= number_format($total, 2) ?></span>
+                        </div>
                     </div>
                 </div>
-            <?php endforeach; ?>
-        </div>
-        
-        <div class="order-totals">
-            <div class="total-row">
-                <span>Subtotal</span>
-                <span>RM <?= number_format($subtotal, 2) ?></span>
             </div>
-            <div class="total-row">
-                <span>Tax (6%)</span>
-                <span>RM <?= number_format($tax, 2) ?></span>
-            </div>
-            <div class="total-row grand-total">
-                <span>Total</span>
-                <span>RM <?= number_format($total, 2) ?></span>
-            </div>
-        </div>
 
-    </div>
-
-    <div class="payment-form">
-        <form id="payment-form">
-            <div id="payment-element"></div>
-            <button id="submit-button" class="payment-button">
-                <span id="button-text">Pay RM <?= number_format($totalAmount, 2) ?></span>
-                <span id="spinner" class="spinner hidden"></span>
-            </button>
-            <div id="payment-message" class="hidden"></div>
-        </form>
+            <!-- Payment Form -->
+            <div class="payment-form">
+                <h2><i class="fas fa-credit-card"></i> Card Payment</h2>
+                <form id="payment-form">
+                    <div id="payment-element"></div>
+                    <button id="submit-button" class="payment-button">
+                        <i class="fas fa-lock"></i>
+                        <span id="button-text">Pay RM <?= number_format($total, 2) ?></span>
+                        <div id="spinner" class="spinner hidden"></div>
+                    </button>
+                    <div id="payment-message" class="hidden"></div>
+                </form>
+                <div class="secure-checkout">
+                    <i class="fas fa-shield-alt"></i> Secure payment powered by Stripe
+                </div>
+            </div>
+        </div>
     </div>
 </div>
-
 <script src="https://js.stripe.com/v3/"></script>
 <script>
 $(document).ready(function() {
