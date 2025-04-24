@@ -2,14 +2,17 @@
 require '../_base.php';
 require_once '../vendor/autoload.php';
 
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['checkout_total']) || !isset($_SESSION['order_id'])) {
-    header("Location: ../checkout.php");
+if (!isset($_SESSION['cust_id']) || !isset($_SESSION['checkout_total']) || !isset($_SESSION['order_id'])) {
+    header("Location: ../page/checkout.php");
     exit();
 }
 $totalAmount = $_SESSION['checkout_total'];
-$userId = $_SESSION['user_id']; 
+$custId = $_SESSION['cust_id'];
 $orderId = $_SESSION['order_id'];
 
+$isExistingOrder = isset($_SESSION['is_existing_order']) && $_SESSION['is_existing_order'] === true;
+
+if (!$isExistingOrder) {
 // Get cart items for display
 try {
     // Get selected items from query string if present
@@ -25,9 +28,9 @@ try {
 
     if (!empty($selectedItems)) {
         $query .= " AND ci.prod_id IN (" . implode(',', array_fill(0, count($selectedItems), '?')) . ")";
-        $params = array_merge([$userId], $selectedItems);
+        $params = array_merge([$custId], $selectedItems);
     } else {
-        $params = [$userId];
+        $params = [$custId];
     }
 
     $stmt = $_db->prepare($query);
@@ -47,17 +50,57 @@ try {
     $cartItems = [];
     $subtotal = $tax = $total = 0;
 }
+} else {
+    // For existing orders, fetch order items instead of cart items
+    try {
+        $query = "
+            SELECT oi.prod_id, oi.quantity, p.prod_name, p.price, p.image 
+            FROM order_items oi
+            JOIN product p ON oi.prod_id = p.prod_id
+            WHERE oi.order_id = ?
+        ";
+        
+        $stmt = $_db->prepare($query);
+        $stmt->execute([$orderId]);
+        $cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Calculate totals for display only - actual payment amount is from $_SESSION['checkout_total']
+        $subtotal = 0;
+        foreach ($cartItems as $item) {
+            $subtotal += $item['price'] * $item['quantity'];
+        }
+        $tax = $subtotal * 0.06;
+        $total = $subtotal + $tax;
+        
+    } catch (Exception $e) {
+        error_log("Order Items Error: " . $e->getMessage());
+        $cartItems = [];
+        $subtotal = $tax = $total = 0;
+    }
+}
+$totalAmount = $_SESSION['checkout_total'];
 
+// Apply reward points if any
+if (isset($_SESSION['applied_reward_points']) && $_SESSION['applied_reward_points'] > 0) {
+    $pointsToUse = $_SESSION['applied_reward_points'];
+
+    // Deduct reward points from the total
+    $totalAmount -= $pointsToUse;
+
+    // Ensure the total is not negative
+    if ($totalAmount < 0) {
+        $totalAmount = 0;
+    }
+}
 try {
     // Create Stripe payment intent
     \Stripe\Stripe::setApiKey('sk_test_51R6kNpFNb65u1viGxsiDLhrmT5wfQNQtzlOhGp6Ldu7uMbQ577pvupwdb1D1dzcYdtvD2O28QevBeriOyNBaOoyJ00DgX8TQNp');
-    
     
     $paymentIntent = \Stripe\PaymentIntent::create([
         'amount' => round($totalAmount * 100), // in cents
         'currency' => 'myr',
         'metadata' => [
-            'customer_id' => $_SESSION['user_id'],
+            'customer_id' => $_SESSION['cust_id'],
             'order_id' => $orderId
         ]
     ]);

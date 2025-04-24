@@ -1,26 +1,26 @@
 <?php
 require '../_base.php';
 
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['order_id'])) {
+if (!isset($_SESSION['cust_id']) || !isset($_SESSION['order_id'])) {
     header("Location: ../index.php");
     exit();
 }
 
 $orderId = $_SESSION['order_id'];
-$userId = $_SESSION['user_id'];
+$custId = $_SESSION['cust_id'];
 
 try {
     // Debug session values
-    if (!$orderId || !$userId) {
+    if (!$orderId || !$custId) {
         throw new Exception("Missing session values: orderId or userId");
     }
 
     // Update order status
     $stmt = $_db->prepare("UPDATE orders SET payment_status = 'Paid', status = 'Confirmed' WHERE order_id = ? AND cust_id = ?");
-    if (!$stmt->execute([$orderId, $userId])) {
+    if (!$stmt->execute([$orderId, $custId])) {
         throw new Exception("Failed to update order status.");
     }
-
+    
     // Fetch order items
     $stmt = $_db->prepare("
         SELECT oi.prod_id, oi.quantity, p.prod_name, p.price, p.image
@@ -39,7 +39,7 @@ try {
 
     // Fetch order details including shipping address
     $stmt = $_db->prepare("SELECT shipping_address FROM orders WHERE order_id = ? AND cust_id = ?");
-    if (!$stmt->execute([$orderId, $userId])) {
+    if (!$stmt->execute([$orderId, $custId])) {
         throw new Exception("Failed to fetch order details.");
     }
     $orderDetails = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -68,7 +68,7 @@ try {
         JOIN shopping_cart sc ON ci.cart_id = sc.cart_id
         WHERE sc.cust_id = ? AND ci.prod_id IN (SELECT prod_id FROM order_items WHERE order_id = ?)
     ");
-    $deleteStmt->execute([$userId, $orderId]);
+    $deleteStmt->execute([$custId, $orderId]);
 
 
 } catch (Exception $e) {
@@ -77,6 +77,53 @@ try {
     exit();
 }
 
+if (isset($_SESSION['applied_reward_points']) && $_SESSION['applied_reward_points'] > 0) {
+    $pointsUsed = $_SESSION['applied_reward_points'];
+    
+    try {
+        // Insert a negative entry into the reward_points table to track the deduction
+        $deductStmt = $_db->prepare("
+            INSERT INTO reward_points (cust_id, points, description, created_at)
+            VALUES (?, ?, ?, NOW())
+        ");
+        $deductStmt->execute([
+            $_SESSION['cust_id'],
+            -$pointsUsed, // Negative points to deduct
+            "Redeemed for Order #" . $_SESSION['order_id']
+        ]);
+        
+        // Clear the applied reward points from session
+        unset($_SESSION['applied_reward_points']);
+    } catch (Exception $e) {
+        error_log("Reward Points Deduction Error: " . $e->getMessage());
+    }
+}
+
+// Award new reward points for this purchase (e.g., 1 point per RM 1 spent)
+try {
+    // Get the order total
+    $orderStmt = $_db->prepare("SELECT total_amount FROM orders WHERE order_id = ?");
+    $orderStmt->execute([$_SESSION['order_id']]);
+    $order = $orderStmt->fetch(PDO::FETCH_ASSOC);
+    
+    if ($order) {
+        $orderTotal = $order['total_amount'];
+        $pointsToAward = floor($orderTotal); // 1 point per RM 1
+        
+        // Insert points record
+        $awardStmt = $_db->prepare("
+            INSERT INTO reward_points (cust_id, points, description, created_at)
+            VALUES (?, ?, ?, NOW())
+        ");
+        $awardStmt->execute([
+            $_SESSION['cust_id'],
+            $pointsToAward,
+            "Earned from Order #" . $_SESSION['order_id']
+        ]);
+    }
+} catch (Exception $e) {
+    error_log("Reward Points Award Error: " . $e->getMessage());
+}
 
 $_title = 'Order Confirmation';
 include '../_head.php';
@@ -126,7 +173,7 @@ include '../_head.php';
             <a href="products.php" class="action-button" style="display: inline-block; margin: 0 10px; padding: 10px 20px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">
                 Continue Shopping
             </a>
-            <a href="order_history.php" class="action-button" style="display: inline-block; margin: 0 10px; padding: 10px 20px; background-color: #2196F3; color: white; text-decoration: none; border-radius: 5px;">
+            <a href="mypurchase.php?tab=confirmed" class="action-button" style="display: inline-block; margin: 0 10px; padding: 10px 20px; background-color: #2196F3; color: white; text-decoration: none; border-radius: 5px;">
                 View My Orders
             </a>
         </div>

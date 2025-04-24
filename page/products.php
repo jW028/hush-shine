@@ -33,17 +33,17 @@ if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQU
                     if (!$product) throw new Exception("Product not available (ID: $productId)");
                     
                     // FOR TESTING - Always use database storage
-                    $testUserId = "C0001"; // Hardcoded test user ID
+                    $custId = $_SESSION['cust_id'];
 
                     // Check if test user has an active cart
                     $stmt = $_db->prepare("SELECT cart_id FROM shopping_cart WHERE cust_id = ?");
-                    $stmt->execute([$testUserId]);
+                    $stmt->execute([$custId]);
                     $cart = $stmt->fetch();
 
                     // Create new cart if doesn't exist
                     if (!$cart) {
                         $stmt = $_db->prepare("INSERT INTO shopping_cart (cust_id, created_at) VALUES (?, NOW())");
-                        $stmt->execute([$testUserId]);
+                        $stmt->execute([$cartId]);
                         $cartId = $_db->lastInsertId();
                     } else {
                         $cartId = $cart->cart_id;

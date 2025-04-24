@@ -12,8 +12,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Handle quantity updates
     if (isset($_POST['action']) && $_POST['action'] === 'update_quantity') {
         // Check if user is logged in
-        if (!isset($_SESSION['user_id'])) {
-            echo json_encode(['success' => false, 'message' => 'User not logged in']);
+        if (!isset($_SESSION['cust_id']) || empty($_SESSION['cust_id'])) {
+            header("Location: ../page/login.php");
             exit();
         }
 
@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $productId = $_POST['product_id'];
         $newQuantity = (int)$_POST['quantity'];
-        $userId = $_SESSION['user_id'];
+        $custId = $_SESSION['cust_id'];
 
         // Validate quantity
         if ($newQuantity < 1 || $newQuantity > 99) {
@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 JOIN shopping_cart sc ON ci.cart_id = sc.cart_id
                 WHERE ci.prod_id = ? AND sc.cust_id = ?
             ");
-            $verifyStmt->execute([$productId, $userId]);
+            $verifyStmt->execute([$productId, $custId]);
             
             if ($verifyStmt->rowCount() === 0) {
                 echo json_encode(['success' => false, 'message' => 'Product not in cart']);
@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 SET ci.quantity = ?
                 WHERE ci.prod_id = ? AND sc.cust_id = ?
             ");
-            $updateStmt->execute([$newQuantity, $productId, $userId]);
+            $updateStmt->execute([$newQuantity, $productId, $custId]);
             
             echo json_encode([
                 'success' => true,
@@ -73,8 +73,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         error_log("Delete action detected"); // Debugging line
 
         // Check if user is logged in
-        if (!isset($_SESSION['user_id'])) {
-            echo json_encode(['success' => false, 'message' => 'User not logged in']);
+        if (!isset($_SESSION['cust_id']) || empty($_SESSION['cust_id'])) {
+            header("Location: ../page/login.php");
             exit();
         }
 
@@ -86,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $cartId = $_POST['cart_id'];
         $prodId = $_POST['prod_id'];
-        $userId = $_SESSION['user_id'];
+        $custId = $_SESSION['cust_id'];
 
         try {
             // First verify that this cart item belongs to the current user
@@ -96,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 JOIN shopping_cart sc ON ci.cart_id = sc.cart_id
                 WHERE ci.cart_id = ? AND ci.prod_id = ? AND sc.cust_id = ?
             ");
-            $verifyStmt->execute([$cartId, $prodId, $userId]);
+            $verifyStmt->execute([$cartId, $prodId, $cartId]);
             
             if ($verifyStmt->rowCount() === 0) {
                 // No matching cart item found for this user
@@ -133,7 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 JOIN shopping_cart sc ON ci.cart_id = sc.cart_id
                 WHERE sc.cust_id = ?
             ");
-            $stmt->execute([$_SESSION['user_id'] ?? 'C0001']); // Fallback to test user
+            $stmt->execute([$_SESSION['cust_id']]);
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
             
             echo json_encode([
@@ -153,14 +153,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 //Normal cart
-$_SESSION['user_id'] = 'C0001';  // Hardcoded user ID for testing
-
-if (!isset($_SESSION['user_id'])) {
-    header("Location: ../login.php");
+if (!isset($_SESSION['cust_id']) || empty($_SESSION['cust_id'])) {
+    header("Location: ../page/login.php");
     exit();
 }
 
-$userId = $_SESSION['user_id'];
+$custId = $_SESSION['cust_id'];
 
 // Retrieve cart item data from database (based on which users logged in)
 try {
@@ -171,7 +169,7 @@ try {
         JOIN shopping_cart sc ON ci.cart_id = sc.cart_id
         WHERE sc.cust_id = ?
     ");
-    $stmt->execute([$userId]);
+    $stmt->execute([$custId]);
     $cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     $subtotal = 0;

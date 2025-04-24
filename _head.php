@@ -45,7 +45,8 @@ $isAdminSection = strpos($_SERVER['REQUEST_URI'], '/admin/') !== false;
                     <li><a href="/admin/admin_category.php"><i class="fas fa-tags"></i> Categories</a></li>
                     <li><a href="/admin/admin_orders.php"><i class="fas fa-shopping-cart"></i> Orders</a></li>
                     <li><a href="/admin/admin_customer.php"><i class="fas fa-users"></i> Customers</a></li>
-            </nav>
+                    <li><a href="/admin/admin_profile.php"><i class="fas fa-user"></i> Profile</a></li>
+                </nav>
 
     <?php else: ?>
         <?php if (isset($_SESSION['user']) && $_SESSION['user'] == "admin"): ?>
@@ -81,6 +82,7 @@ $isAdminSection = strpos($_SERVER['REQUEST_URI'], '/admin/') !== false;
                                 <p>Welcome, <?= htmlspecialchars($_SESSION['admin_name']) ?>!</p> 
                             </div>
                             <a href="/index.php" class="sidebar-link">Home</a>
+                            <a href="/admin/admin_profile.php" class="sidebar-link">Profile</a>
                             <a href="/page/logout.php" class="sidebar-link">Log out</a>
 
                         <?php elseif ($_SESSION['user'] === "customer"): ?>
@@ -88,15 +90,22 @@ $isAdminSection = strpos($_SERVER['REQUEST_URI'], '/admin/') !== false;
                             $stm = $_db->prepare("SELECT cust_name, cust_photo FROM customer WHERE cust_id = ?");
                             $stm->execute([$_SESSION['cust_id']]);
                             $user = $stm->fetch(PDO::FETCH_ASSOC);
+                            $rewardStmt = $_db->prepare("
+                                SELECT SUM(points) AS total_points
+                                FROM reward_points
+                                WHERE cust_id = ?
+                            ");
+                            $rewardStmt->execute([$custId]);
+                            $rewardPoints = $rewardStmt->fetch(PDO::FETCH_ASSOC)['total_points'] ?? 0;
                             $_SESSION['cust_name'] = $user['cust_name'];
                             $_SESSION['cust_photo'] = $user['cust_photo'];
                             ?>
                             <img src="/images/customer_img/<?= htmlspecialchars($user['cust_photo']) ?>" alt="Profile Picture" class="profile-pic">
                             <p>Welcome, <?= htmlspecialchars($_SESSION['cust_name']) ?>!</p>
+                            <p>Your Reward Points: <strong><?= number_format($rewardPoints, 2) ?></strong></p>
                             <a href="/index.php" class="sidebar-link">Home</a>
                             <a href="/page/profile.php" class="sidebar-link">Profile</a>
                             <a href="/page/logout.php" class="sidebar-link">Log out</a>
-                            ?>
                         <?php endif; ?>
                     <?php else: ?>
                         <p>Please log in to access your account.</p>
@@ -123,20 +132,20 @@ $isAdminSection = strpos($_SERVER['REQUEST_URI'], '/admin/') !== false;
 
                 <div class = "right-nav">
                     <a href="#" onclick="toggleSidebar()"><i class = "fas fa-user"></i></a>
-                    <?php if (isset($_SESSION['user_id'])): ?>
+                    <?php if (isset($_SESSION['cust_id'])): ?>
                         <a href="/page/order_history.php"><i class="fas fa-clock-rotate-left"></i></a>
                     <?php endif; ?>
-                    <a href="#"><i class = "fas fa-truck-fast"></i></a>
+                    <a href="/page/mypurchase.php"><i class = "fas fa-truck-fast"></i></a>
                     <a href="/page/cart.php" class="cart-link">
                         <i class = "fas fa-cart-shopping"></i>
                         <span class="cart-count" id="cart-count-badge">
                             <!-- TODO -->
                             <?php
                             // For testing - hardcode user C0001
-                            $testUserId = "C0001";
+                            $custId = $_SESSION['cust_id'];
                             $count = 0;
                             
-                            if ($testUserId) {
+                            if ($custId) {
                                 try {
                                     global $_db;
                                     $stmt = $_db->prepare("
@@ -145,11 +154,11 @@ $isAdminSection = strpos($_SERVER['REQUEST_URI'], '/admin/') !== false;
                                         JOIN shopping_cart sc ON ci.cart_id = sc.cart_id
                                         WHERE sc.cust_id = ?
                                     ");
-                                    $stmt->execute([$testUserId]);
+                                    $stmt->execute([$custId]);
                                     $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
                                     if (!$result || !isset($result['total_items'])) {
-                                        error_log("No cart items found for user: $testUserId or query returned null");
+                                        error_log("No cart items found for user: $custId or query returned null");
                                         $count = 0;
                                     } else {
                                         $count = $result['total_items'];

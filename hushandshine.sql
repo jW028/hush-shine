@@ -302,18 +302,6 @@ INSERT INTO `product` (`prod_id`, `prod_name`, `prod_desc`, `price`, `quantity`,
 
 -- --------------------------------------------------------
 
---
--- Table structure for table `return_refund`
---
-
-CREATE TABLE `return_refund` (
-  `return_id` char(4) NOT NULL,
-  `payment_id` char(4) NOT NULL,
-  `return_desc` varchar(100) NOT NULL,
-  `refund_amount` double(7,2) NOT NULL,
-  `refund_date` date NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
 -- --------------------------------------------------------
 
 --
@@ -329,16 +317,51 @@ CREATE TABLE `shipping` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
+--
+-- Table structure for table `prod_fav`
+--
 
 CREATE TABLE `prod_fav` (
-  `favorite_id` int(11) NOT NULL AUTO_INCREMENT,
+  `favorite_id` int(11) NOT NULL,
   `cust_id` char(5) NOT NULL,
-  `prod_id` char(4) NOT NULL,
-  PRIMARY KEY (`favorite_id`),
-  UNIQUE KEY `unique_favorite` (`cust_id`,`prod_id`),
-  KEY `prod_id` (`prod_id`)
+  `prod_id` char(4) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `prod_reviews`
+--
+
+CREATE TABLE `prod_reviews` (
+  `review_id` INT AUTO_INCREMENT PRIMARY KEY,
+   `cust_id` char(5) NOT NULL,
+  `prod_id` char(4) NOT NULL,
+  `order_id` int(11) NOT NULL,
+  `rating` INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+  `review` int(11) NOT NULL,
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+CREATE TABLE `return_refund_requests` (
+  `request_id` INT AUTO_INCREMENT PRIMARY KEY, 
+  `order_id` INT NOT NULL,                    
+  `cust_id` CHAR(5) NOT NULL,                 
+  `reason` TEXT NOT NULL,                     
+  `photo` VARCHAR(255),              
+  `status` VARCHAR(50) NOT NULL DEFAULT 'Request Pending',
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `reward_points` (
+  `reward_id` INT AUTO_INCREMENT PRIMARY KEY, 
+  `cust_id` CHAR(5) NOT NULL,                 
+  `points` DECIMAL(10,2) NOT NULL,            
+  `description` TEXT NOT NULL,                
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 --
 -- Table structure for table `shopping_cart`
 --
@@ -464,13 +487,6 @@ ALTER TABLE `product`
   ADD KEY `cat_id` (`cat_id`);
 
 --
--- Indexes for table `return_refund`
---
-ALTER TABLE `return_refund`
-  ADD PRIMARY KEY (`return_id`),
-  ADD KEY `payment_id` (`payment_id`);
-
---
 -- Indexes for table `shipping`
 --
 ALTER TABLE `shipping`
@@ -534,6 +550,18 @@ ALTER TABLE `prod_fav`
   ADD CONSTRAINT `fk_fav_customer` FOREIGN KEY (`cust_id`) REFERENCES `customer` (`cust_id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_fav_product` FOREIGN KEY (`prod_id`) REFERENCES `product` (`prod_id`) ON DELETE CASCADE;
 
+ALTER TABLE `prod_reviews`
+  ADD CONSTRAINT `fk_prod_reviews_customer` FOREIGN KEY (`cust_id`) REFERENCES `customer` (`cust_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_prod_reviews_product` FOREIGN KEY (`prod_id`) REFERENCES `product` (`prod_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_prod_reviews_order` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`) ON DELETE CASCADE;
+
+ALTER TABLE `return_refund_requests`
+  ADD CONSTRAINT `fk_return_refund_customer` FOREIGN KEY (`cust_id`) REFERENCES `customer` (`cust_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_return_refund_order` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`) ON DELETE CASCADE;
+
+ALTER TABLE `reward_points`
+  ADD CONSTRAINT `fk_reward_points_customer` FOREIGN KEY (`cust_id`) REFERENCES `customer` (`cust_id`) ON DELETE CASCADE;
+
 --
 -- Constraints for table `orders`
 --
@@ -566,12 +594,6 @@ ALTER TABLE `payment`
 --
 ALTER TABLE `product`
   ADD CONSTRAINT `product_ibfk_1` FOREIGN KEY (`cat_id`) REFERENCES `category` (`cat_id`);
-
---
--- Constraints for table `return_refund`
---
-ALTER TABLE `return_refund`
-  ADD CONSTRAINT `return_refund_ibfk_1` FOREIGN KEY (`payment_id`) REFERENCES `payment` (`payment_id`);
 
 --
 -- Constraints for table `shipping`

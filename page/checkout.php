@@ -2,12 +2,12 @@
 require '../_base.php';
 
 // Check if user is logged in
-if (!isset($_SESSION['user_id'])) {
+if (!isset($_SESSION['cust_id'])) {
     header("Location: ../login.php?redirect=checkout");
     exit();
 }
 
-$userId = $_SESSION['user_id'];
+$custId = $_SESSION['cust_id'];
 
 // Process checkout form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $_db->prepare($query);
 
         // Merge the user ID with selected items as parameters
-        $params = array_merge([$userId], $selectedItems);
+        $params = array_merge([$custId], $selectedItems);
 
         // Execute the query
         $stmt->execute($params);
@@ -86,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             VALUES (?, NOW(), ?, 'Pending', NULL, 'Unpaid', ?)
         ");
         $orderStmt->execute([
-            $userId, 
+            $custId, 
             $total, 
             $_POST['address']
         ]);
@@ -154,7 +154,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = $e->getMessage();
     }
 }
+if (isset($_POST['apply_reward_points']) && !empty($_POST['points'])) {
+    try {
+        $pointsToUse = floatval($_POST['points']);
 
+        // Validate reward points
+        if ($pointsToUse <= 0) {
+            throw new Exception("Reward points must be greater than 0.");
+        }
+
+        // Make sure we have the current reward points balance
+        $rewardStmt = $_db->prepare("
+            SELECT COALESCE(SUM(points), 0) as total_points
+            FROM reward_points
+            WHERE cust_id = ?
+        ");
+        $rewardStmt->execute([$custId]);
+        $rewardResult = $rewardStmt->fetch(PDO::FETCH_ASSOC);
+        $currentRewardPoints = floatval($rewardResult['total_points']);
+
+        if ($pointsToUse > $currentRewardPoints) {
+            throw new Exception("You cannot use more reward points than you have.");
+        }
+        
+        if ($pointsToUse > $total) {
+            $pointsToUse = $total; // Limit points to the total amount
+        }
+
+        // Store applied reward points in the session
+        $_SESSION['applied_reward_points'] = $pointsToUse;
+        
+        // Recalculate total after points
+        $afterPointsTotal = $total - $pointsToUse;
+        if ($afterPointsTotal < 0) $afterPointsTotal = 0;
+        
+        // Success message
+        $success = "Successfully applied " . number_format($pointsToUse, 0) . " reward points.";
+        
+    } catch (Exception $e) {
+        $error = $e->getMessage();
+    }
+}
+
+// Handle removing reward points
+if (isset($_POST['remove_reward_points'])) {
+    unset($_SESSION['applied_reward_points']);
+    $appliedPoints = 0;
+    $afterPointsTotal = $total;
+    $success = "Reward points removed.";
+}
 // Get cart items for display
 try {
     // Get selected items from query string if present
@@ -170,9 +218,9 @@ try {
 
     if (!empty($selectedItems)) {
         $query .= " AND ci.prod_id IN (" . implode(',', array_fill(0, count($selectedItems), '?')) . ")";
-        $params = array_merge([$userId], $selectedItems);
+        $params = array_merge([$custId], $selectedItems);
     } else {
-        $params = [$userId];
+        $params = [$custId];
     }
 
     $stmt = $_db->prepare($query);
@@ -196,12 +244,28 @@ try {
 // Get user details
 try {
     $stmt = $_db->prepare("SELECT * FROM customer WHERE cust_id = ?");
-    $stmt->execute([$userId]);
+    $stmt->execute([$custId]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 } catch (Exception $e) {
     error_log("User Fetch Error: " . $e->getMessage());
     $user = [];
 }
+try {
+    $rewardStmt = $_db->prepare("
+        SELECT COALESCE(SUM(points), 0) as total_points
+        FROM reward_points
+        WHERE cust_id = ?
+    ");
+    $rewardStmt->execute([$custId]);
+    $rewardResult = $rewardStmt->fetch(PDO::FETCH_ASSOC);
+    $rewardPoints = floatval($rewardResult['total_points']);
+} catch (Exception $e) {
+    error_log("Reward Points Error: " . $e->getMessage());
+    $rewardPoints = 0;
+}
+$appliedPoints = $_SESSION['applied_reward_points'] ?? 0;
+$afterPointsTotal = $total - $appliedPoints;
+if ($afterPointsTotal < 0) $afterPointsTotal = 0;
 
 $_title = 'Checkout';
 include '../_head.php';
@@ -338,10 +402,28 @@ include '../_head.php';
                                 <span>Tax (6%)</span>
                                 <span>RM <?= number_format($tax, 2) ?></span>
                             </div>
-                            <div class="total-row grand-total">
-                                <span>Total</span>
-                                <span>RM <?= number_format($total, 2) ?></span>
-                            </div>
+                        </div>
+                        <div class="reward-points-section">
+                            <h4>Reward Points</h4>
+                            <p>You have <strong><?= number_format($rewardPoints, 0) ?></strong> reward points available</p>
+                            
+                            <?php if ($rewardPoints > 0): ?>
+                                <div class="points-form">
+                                    <input type="number" name="points" id="points" min="0" max="<?= min($rewardPoints, $total) ?>" 
+                                        value="<?= $appliedPoints ?>" placeholder="Points to use">
+                                    
+                                    <?php if ($appliedPoints > 0): ?>
+                                        <span class="points-applied">-RM <?= number_format($appliedPoints, 2) ?></span>
+                                        <button type="submit" name="remove_reward_points" class="btn-remove-points">Remove</button>
+                                    <?php else: ?>
+                                        <button type="submit" name="apply_reward_points" class="btn-apply-points">Apply</button>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                        <div class="total-row grand-total">
+                            <span>Total</span>
+                            <span>RM <?= number_format($afterPointsTotal, 2) ?></span>
                         </div>
 
                         <button type="submit" class="btn-checkout">
