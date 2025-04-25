@@ -24,14 +24,28 @@ try {
 // Get reward points
 try {
     $rewardStmt = $_db->prepare("
-        SELECT COALESCE(SUM(rp.points), 0) AS total_points
-        FROM reward_points rp
-        INNER JOIN orders o ON rp.order_id = o.order_id
-        WHERE rp.cust_id = ? AND o.status != 'Pending'
+        SELECT
+            (
+                -- Total earned reward points from the reward_points table
+                (SELECT COALESCE(SUM(rp.points), 0)
+                FROM reward_points rp
+                INNER JOIN orders o ON rp.order_id = o.order_id
+                WHERE rp.cust_id = ? AND o.status NOT IN ('Pending', 'Cancelled'))
+                +
+                -- Total earned reward points from the reward_get column in the orders table
+                (SELECT COALESCE(SUM(o.reward_get), 0)
+                FROM orders o
+                WHERE o.cust_id = ? AND o.status NOT IN ('Pending', 'Cancelled'))
+            ) AS total_earned,
+            -- Total used reward points from the reward_used column in the orders table
+            (SELECT COALESCE(SUM(o.reward_used), 0)
+            FROM orders o
+            WHERE o.cust_id = ? AND o.status != 'Cancelled') AS total_used
     ");
-    $rewardStmt->execute([$custId]);
+    $rewardStmt->execute([$custId, $custId]);
     $rewardResult = $rewardStmt->fetch(PDO::FETCH_ASSOC);
-    $rewardPoints = floatval($rewardResult['total_points']);
+    // Calculate available points (earned minus used)
+    $rewardPoints = floatval($rewardResult['total_earned']) - floatval($rewardResult['total_used']);
 } catch (Exception $e) {
     error_log("Reward Points Error: " . $e->getMessage());
     $rewardPoints = 0;
@@ -164,14 +178,19 @@ elseif (isset($_POST['complete_order'])) {
         // Start transaction
         $_db->beginTransaction();
 
+        // Calculate reward points 
+        $rewardPoints = $afterPointsTotal * 0.01;
+
+        // Insert the order into the database
         $orderStmt = $_db->prepare("
-            INSERT INTO orders (cust_id, order_date, total_amount, reward_used, status, payment_id, payment_status, shipping_address, payment_method)
-            VALUES (?, NOW(), ?, ?, 'Pending', NULL, 'Unpaid', ?, ?)
+            INSERT INTO orders (cust_id, order_date, total_amount, reward_used, reward_get, status, payment_id, payment_status, shipping_address, payment_method)
+            VALUES (?, NOW(), ?, ?, ?, 'Pending', NULL, 'Unpaid', ?, ?)
         ");
         $orderStmt->execute([
             $custId,
             $afterPointsTotal, // Total after applying reward points
             $appliedPoints,    // Reward points used
+            $rewardPoints,     // Reward points earned
             $_POST['address'],
             $paymentMethod
         ]);

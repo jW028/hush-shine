@@ -105,16 +105,26 @@ $isAdminSection = strpos($_SERVER['REQUEST_URI'], '/admin/') !== false;
                                 try {
                                     $stmt = $_db->prepare("
                                         SELECT
-                                            (SELECT COALESCE(SUM(rp.points), 0)
-                                             FROM reward_points rp
-                                             INNER JOIN orders o ON rp.order_id = o.order_id
-                                             WHERE rp.cust_id = ? AND o.status != 'Pending') AS total_earned,
-                                            (SELECT COALESCE(SUM(reward_used), 0)
-                                             FROM orders
-                                             WHERE cust_id = ?) AS total_used
+                                            (
+                                                -- Total earned reward points from the reward_points table
+                                                (SELECT COALESCE(SUM(rp.points), 0)
+                                                FROM reward_points rp
+                                                INNER JOIN orders o ON rp.order_id = o.order_id
+                                                WHERE rp.cust_id = ? AND o.status NOT IN ('Pending', 'Cancelled'))
+                                                +
+                                                -- Total earned reward points from the reward_get column in the orders table
+                                                (SELECT COALESCE(SUM(o.reward_get), 0)
+                                                FROM orders o
+                                                WHERE o.cust_id = ? AND o.status NOT IN ('Pending', 'Cancelled'))
+                                            ) AS total_earned,
+                                            -- Total used reward points from the reward_used column in the orders table
+                                            (SELECT COALESCE(SUM(o.reward_used), 0)
+                                            FROM orders o
+                                            WHERE o.cust_id = ? AND o.status != 'Cancelled') AS total_used
                                     ");
-                                    $stmt->execute([$custId, $custId]);
+                                    $stmt->execute([$custId, $custId,$custId]);
                                     $result = $stmt->fetch(PDO::FETCH_ASSOC);
+                                    $rewardPoints = 0;
                                     $rewardPoints = ($result['total_earned'] ?? 0) - ($result['total_used'] ?? 0);
                                 } catch (Exception $e) {
                                     error_log("Reward Points Calculation Error: " . $e->getMessage());

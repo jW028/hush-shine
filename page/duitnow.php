@@ -3,7 +3,7 @@ require '../_base.php';
 
 // Check if order_id and total exist in session
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['checkout_total']) || !isset($_SESSION['order_id'])) {
-    header("Location: ../checkout.php");
+    header("Location: ../page/checkout.php");
     exit();
 }
 
