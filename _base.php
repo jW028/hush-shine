@@ -205,7 +205,7 @@ function is_phone($value) {
 function html_password($key, $attr = '') {
     $value = encode($GLOBALS[$key] ?? '');
     echo "<input type='password' id='$key' name='$key' value='$value' $attr>";
-}
+} 
 
 function get_mail() {
     require_once 'lib/PHPMailer.php';

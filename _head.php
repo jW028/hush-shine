@@ -142,6 +142,7 @@ $isAdminSection = strpos($_SERVER['REQUEST_URI'], '/admin/') !== false;
         <div class="top-nav">
                 <div class = "left-nav">
                     <a href="/index.php"><i class = "fas fa-home"></i></a>
+                    <a href="/page/aboutus.php"><i class="fas fa-users"></i></a>
                     <a href="/page/contact.php"><i class = "fas fa-circle-exclamation"></i></a>
                     <a href="/page/fav.php"><i class = "fas fa-heart"></i></a>
                 </div>

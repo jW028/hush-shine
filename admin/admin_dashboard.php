@@ -139,7 +139,7 @@ function getDashboardStats() {
         ];
         
         // Total sales (all time)
-        $stmt = $_db->query("SELECT SUM(total_amount) as total FROM orders");
+        $stmt = $_db->query("SELECT SUM(total_amount) as total FROM orders WHERE payment_status = 'Paid'");
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         $stats['total_sales'] = $result['total'] ?? 0;
         
