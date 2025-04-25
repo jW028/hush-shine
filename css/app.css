@@ -3928,6 +3928,13 @@ input[type="number"] {
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
+.view-order {
+    width: 100%;
+    margin: 0 auto;
+    height: 100%;
+    background-color: white;
+}
+
 .image-preview-item {
     background-color: #f8f9fa;
     border-radius: 4px;
@@ -4977,4 +4984,76 @@ input[type="file"] {
     padding: 1rem;
     border: 1px dashed #ccc;
     border-radius: 6px;
+}
+
+
+.status-progression-container {
+    margin-bottom: 20px;
+}
+
+.status-track {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.status-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+.status-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: #e9ecef;
+    border: 2px solid #ced4da;
+}
+
+.status-step.active .status-dot {
+    background-color: #28a745;
+    border-color: #218838;
+}
+
+.status-line {
+    flex-grow: 1;
+    height: 3px;
+    background-color: #e9ecef;
+    margin: 0 5px;
+}
+
+.status-step.active + .status-line {
+    background-color: #28a745;
+}
+
+.status-label {
+    font-size: 12px;
+    margin-top: 5px;
+    color: #6c757d;
+}
+
+.status-step.active .status-label {
+    color: #212529;
+    font-weight: bold;
+}
+
+.special-status {
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+.special-status.cancelled {
+    background-color: #ffecef;
+    color: #dc3545;
+    border-left: 4px solid #dc3545;
+}
+
+.special-status.refunded {
+    background-color: #fff3cd;
+    color: #856404;
+    border-left: 4px solid #ffc107;
 }

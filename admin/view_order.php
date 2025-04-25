@@ -19,11 +19,67 @@ if (!$order_id) {
     exit;
 }
 
+$status_options = [
+    'Confirmed' => 'Confirmed',
+    'Processing' => 'Processing',
+    'Shipped' => 'Shipped',
+    'Delivered' => 'Delivered',
+    'Cancelled' => 'Cancelled',
+    'Refunded' => 'Refunded'
+];
+
+$status_weights = [
+    'Confirmed' => 10,
+    'Processing' => 20,
+    'Shipped' => 30,
+    'Delivered' => 40,
+    'Cancelled' => 50,
+    'Refunded' => 60
+];
+
+function getAvailableStatuses($currentStatus, $allStatuses, $status_weights) {
+    if ($currentStatus === 'Cancelled') {
+        return [
+            'Cancelled' => 'Cancelled',
+            'Refunded' => 'Refunded'
+        ];
+    }
+
+    if ($currentStatus === 'Delivered') {
+        return [
+            'Delivered' => 'Delivered',
+            'Refunded' => 'Refunded'
+        ];
+    }
+
+    $currentWeight = $status_weights[$currentStatus] ?? 0;
+    $available = [];
+
+    foreach($allStatuses as $status => $label) {
+        $statusWeight = $status_weights[$status] ?? 999;
+        if ($statusWeight >= $currentWeight) {
+            $available[$status] = $label;
+        }
+    }
+    
+    return $available;
+    }
+
 // Handle status update if form submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
     $new_status = $_POST['status'];
     
     try {
+        $stmt = $_db->prepare("SELECT status FROM orders WHERE order_id = ?");
+        $stmt->execute([$order_id]);
+        $current_status = $stmt->fetchColumn();
+
+        $available_statuses = getAvailableStatuses($current_status, $status_options, $status_weights);
+        if (!array_key_exists($new_status, $available_statuses)) {
+            $error_message = "Invalid status update. Order status can only progress forward.";
+            header('Location: view_order.php?id=' . $order_id);
+            exit;
+        }
         // Begin transaction
         $_db->beginTransaction();
         
@@ -143,17 +199,6 @@ try {
 } catch (PDOException $e) {
     $error_message = "Error fetching order details: " . $e->getMessage();
 }
-
-// Define status options for dropdown
-$status_options = [
-    'Pending' => 'Pending',
-    'Confirmed' => 'Confirmed',
-    'Processing' => 'Processing',
-    'Shipped' => 'Shipped',
-    'Delivered' => 'Delivered',
-    'Cancelled' => 'Cancelled',
-    'Refunded' => 'Refunded'
-];
 ?>
 
 <div class="admin-container">
@@ -195,16 +240,25 @@ $status_options = [
                         </div>
                     </div>
                     <div class="card-body">
-                        <form action="view_order.php?id=<?= $order_id ?>" method="POST">
+                        <form action="view_order.php?id=<?= $order_id ?>" class="view-order" method="POST">
                             <div class="form-group">
                                 <label for="status">Update Status:</label>
                                 <select name="status" id="status" class="form-control">
-                                    <?php foreach ($status_options as $value => $label): ?>
+                                    <?php
+                                    $available_statuses = getAvailableStatuses($order['status'], $status_options, $status_weights);
+
+                                    foreach ($available_statuses as $value => $label): ?>
                                         <option value="<?= $value ?>" <?= $order['status'] === $value ? 'selected' : '' ?>>
                                             <?= htmlspecialchars($label) ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
+                                <?php if (count($available_statuses) < count($status_options)): ?>
+                                    <small class="form-text text-muted">
+                                        <i class="fas fa-info-circle"></i>
+                                        Order status can only progress forward in the workflow.
+                                    </small>
+                                <?php endif; ?>
                             </div>
                             
                             <div id="shipping-info" class="mt-3 <?= $order['status'] === 'Shipped' ? '' : 'd-none' ?>">
@@ -390,9 +444,72 @@ $status_options = [
                         </ul>
                     </div>
                 </div>
+                <div class="order-actions">
+                    <a href="generate_invoice.php?id=<?= $order_id ?>" class="admin-submit-btn" target="_blank">
+                        <i class="fas fa-file-pdf"></i> Download Invoice
+                    </a>
+
+                    <a href="generate_invoice.php?id=<?= $order_id ?>&email=1" class="admin-submit-btn secondary">
+                        <i class="fas fa-envelope"></i> Send Invoice to Customer
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const currentStatus = '<?= $order['status'] ?>';
+    const statuses = ['Confirmed', 'Processing', 'Shipped', 'Delivered'];
+    const statusIndices = {
+        'Confirmed': 0,
+        'Processing': 1,
+        'Shipped': 2,
+        'Delivered': 3,
+        'Cancelled': -1,
+        'Refunded': -1
+    };
+    
+    // Create status progression visualization
+    const container = document.createElement('div');
+    container.className = 'status-progression-container';
+    container.innerHTML = `
+        <div class="status-track">
+            ${statuses.map((status, index) => {
+                const isActive = statusIndices[currentStatus] >= index;
+                return `
+                <div class="status-step ${isActive ? 'active' : ''}">
+                    <div class="status-dot"></div>
+                    <div class="status-label">${status}</div>
+                </div>`;
+            }).join('<div class="status-line"></div>')}
+        </div>
+    `;
+    
+    // Special statuses
+    if (currentStatus === 'Cancelled' || currentStatus === 'Refunded') {
+        const specialStatus = document.createElement('div');
+        specialStatus.className = 'special-status ' + currentStatus.toLowerCase();
+        specialStatus.innerHTML = `<i class="fas fa-exclamation-circle"></i> This order has been ${currentStatus.toLowerCase()}`;
+        container.appendChild(specialStatus);
+    }
+    
+    // Insert before the form
+    const formElement = document.querySelector('.order-status-section .card-body form');
+    formElement.parentNode.insertBefore(container, formElement);
+    
+    // Show shipping info when status is Shipped
+    document.getElementById('status').addEventListener('change', function() {
+        const shippingInfo = document.getElementById('shipping-info');
+        if (this.value === 'Shipped') {
+            shippingInfo.classList.remove('d-none');
+        } else {
+            shippingInfo.classList.add('d-none');
+        }
+    });
+});
+    
+</script>
 
 <?php include '../_foot.php'; ?>

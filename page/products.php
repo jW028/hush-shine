@@ -14,9 +14,13 @@ if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQU
         try {
             switch ($_POST['action']) {
                 case 'add_to_cart':
+                    // Check if user is logged in
+                    if (!isset($_SESSION['cust_id'])) {
+                        throw new Exception('Please log in to add items to your cart');
+                    }
+                    
                     $productId = $_POST['product_id'];
-                    error_log("Product ID: $productId"); // Debugging line
-                    $quantity = isset($_POST['quantity']) ? (int)$_POST['quantity'] : 1; // Get quantity from POST
+                    $quantity = isset($_POST['quantity']) ? (int)$_POST['quantity'] : 1;
                     
                     // Validate quantity
                     if ($quantity < 1) {
@@ -32,10 +36,9 @@ if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQU
                     
                     if (!$product) throw new Exception("Product not available (ID: $productId)");
                     
-                    // FOR TESTING - Always use database storage
                     $custId = $_SESSION['cust_id'];
 
-                    // Check if test user has an active cart
+                    // Check if user has an active cart
                     $stmt = $_db->prepare("SELECT cart_id FROM shopping_cart WHERE cust_id = ?");
                     $stmt->execute([$custId]);
                     $cart = $stmt->fetch();
@@ -43,7 +46,7 @@ if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQU
                     // Create new cart if doesn't exist
                     if (!$cart) {
                         $stmt = $_db->prepare("INSERT INTO shopping_cart (cust_id, created_at) VALUES (?, NOW())");
-                        $stmt->execute([$cartId]);
+                        $stmt->execute([$custId]);  // FIXED: Using custId instead of cartId
                         $cartId = $_db->lastInsertId();
                     } else {
                         $cartId = $cart->cart_id;
@@ -63,12 +66,20 @@ if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQU
                         $stmt->execute([$cartId, $productId, $quantity]);
                     }
                     
+                    // Get cart count for response
+                    $stmt = $_db->prepare("SELECT SUM(quantity) FROM cart_item WHERE cart_id = ?");
+                    $stmt->execute([$cartId]);
+                    $response['cart_count'] = $stmt->fetchColumn() ?: 0;
+                    
                     $response['success'] = true;
+                    $response['message'] = 'Product added to cart!';
                     break;
-                    default:
+                    
+                default:
                     throw new Exception("Invalid action");
             }
         } catch (Exception $e) {
+            $response['success'] = false;
             $response['message'] = $e->getMessage();
         }
         

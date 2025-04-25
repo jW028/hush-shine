@@ -210,37 +210,49 @@ include '../_head.php';
     }
 
     // Add to cart functionality
-    function addToCart() {
-        const productId = $('#product-modal').data('product-id');
-        const quantity = parseInt($('#quantity').val());
-        
-        if (!productId || isNaN(quantity) || quantity < 1) {
-            alert('Invalid product or quantity');
-            return;
-        }
-        
-        $.ajax({
-            url: '/page/favorites.php',
-            type: 'POST',
-            dataType: 'json',
-            data: {
-                action: 'add_to_cart',
-                product_id: productId,
-                quantity: quantity
-            },
-            success: function(response) {
-                if (response.success) {
-                    alert('Product added to cart successfully!');
-                    $('#product-modal').hide();
-                } else {
-                    alert(response.message || 'Failed to add product to cart');
-                }
-            },
-            error: function() {
-                alert('An error occurred. Please try again.');
-            }
-        });
+    // Fix the addToCart function in your JavaScript
+// Replace this section of code:
+
+function addToCart() {
+    const productId = $('.product.active').data('id') || $('#modal-favorite-btn').data('product-id');
+    const quantity = parseInt($('#quantity').val());
+    
+    if (!productId) {
+        console.error('Product ID not found');
+        return;
     }
+    
+    $.ajax({
+        url: '/page/products.php',
+        method: 'POST',
+        data: {
+            action: 'add_to_cart',
+            product_id: productId,
+            quantity: quantity
+        },
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        success: function(response) {
+            if (response.success) {
+                // Show success message
+                alert('Product added to cart!');
+                $('#product-modal').hide();
+                
+                // Update cart count if available
+                if (typeof updateCartCount === 'function') {
+                    updateCartCount();
+                }
+            } else {
+                alert(response.message || 'Failed to add product to cart');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("Error response:", xhr.responseText);
+            alert('An error occurred. Please try again.');
+        }
+    });
+}
 
     $(document).ready(function() {
         // Handle product click to show modal
