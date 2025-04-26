@@ -196,22 +196,22 @@ include '../_head.php';
         <?php endif; ?>
     <?php endif; ?>
 
-    <div class="custView-order-summary-section">
-        <div class="custView-order-status">
-            <h3>Order Status: <span class="custView-status-badge status-<?= strtolower($order['status']) ?>"><?= htmlspecialchars($order['status']) ?></span></h3>
-            <div class="custView-status-progression-container">
-        <div class="custView-status-track">
+    <div class="order-summary-section">
+        <div class="order-status">
+            <h3>Order Status: <span class="status-badge status-<?= strtolower($order['status']) ?>"><?= htmlspecialchars($order['status']) ?></span></h3>
+            <div class="status-progression-container">
+        <div class="status-track">
             <?php
             $statuses = ['Confirmed', 'Processing', 'Shipped', 'Delivered'];
             if (in_array($order['status'], $statuses)):
                 $currentStatusIndex = array_search($order['status'], $statuses);
                 foreach ($statuses as $index => $status): ?>
-                    <div class="custView-status-step <?= $index <= $currentStatusIndex ? 'active' : '' ?>">
-                        <div class="custView-status-dot"></div>
-                        <div class="custView-status-label"><?= htmlspecialchars($status) ?></div>
+                    <div class="status-step <?= $index <= $currentStatusIndex ? 'active' : '' ?>">
+                        <div class="status-dot"></div>
+                        <div class="status-label"><?= htmlspecialchars($status) ?></div>
                     </div>
                     <?php if ($index < count($statuses) - 1): ?>
-                        <div class="custView-status-line"></div>
+                        <div class="status-line"></div>
                     <?php endif; ?>
                 <?php endforeach;
             endif; ?>

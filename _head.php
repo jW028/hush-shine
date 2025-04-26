@@ -2,6 +2,32 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
+define('LOW_STOCK_THRESHOLD', 10);
+
+function hasLowStockProducts() {
+    global $_db;
+    try {
+        $stmt = $_db->prepare("SELECT COUNT(*) FROM product WHERE quantity <= ? AND quantity > 0");
+        $stmt->execute([LOW_STOCK_THRESHOLD]);
+        return $stmt->fetchColumn() > 0;
+    } catch (PDOException $e) {
+        return false;
+    }
+}
+
+$checkLowStock = false;
+if (isset($_SESSION['user']) && $_SESSION['user'] == "admin") {
+    $checkLowStock = true;
+}
+
+$hasLowStock = false;
+if ($checkLowStock) {
+    $hasLowStock = hasLowStockProducts();
+}
+
+
+
 if (isset($_SESSION['cust_id'])) {
     $custId = $_SESSION['cust_id'];
 } else {
@@ -9,6 +35,9 @@ if (isset($_SESSION['cust_id'])) {
 }
 $isAdminSection = strpos($_SERVER['REQUEST_URI'], '/admin/') !== false;
     $_adminContext = $_adminContext ?? $isAdminSection;
+
+
+
 ?>
 
 <!DOCTYPE html>
@@ -45,8 +74,16 @@ $isAdminSection = strpos($_SERVER['REQUEST_URI'], '/admin/') !== false;
         <div class="admin-container">
             <nav class="admin-sidebar">
                 <ul>
+                    <li><a href="../index.php"> <i class="fas fa-home"></i>Home Page</a></li>
                     <li><a href="/admin/admin_dashboard.php"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                    <li><a href="/admin/admin_products.php"><i class="fas fa-box"></i> Products</a></li>
+                    <li>
+                        <a href="/admin/admin_products.php">
+                            <i class="fas fa-box"></i> Products
+                            <?php if ($hasLowStock): ?>
+                                <span class="notification-dot" title="Products with low stock">!</span>
+                            <?php endif; ?>
+                        </a>
+                    </li>
                     <li><a href="/admin/admin_category.php"><i class="fas fa-tags"></i> Categories</a></li>
                     <li><a href="/admin/admin_orders.php"><i class="fas fa-shopping-cart"></i> Orders</a></li>
                     <li><a href="/admin/admin_customer.php"><i class="fas fa-users"></i> Customers</a></li>
@@ -59,8 +96,11 @@ $isAdminSection = strpos($_SERVER['REQUEST_URI'], '/admin/') !== false;
                 <a href="/admin/admin_dashboard.php" title="Dashboard">
                     <i class="fas fa-tachometer-alt"></i>
                 </a>
-                <a href="/admin/admin_products.php" title="Products">
+                <a href="/admin/admin_products.php" title="Products <?= $hasLowStock ? '(Low Stock)' : '' ?>">
                     <i class="fas fa-box"></i>
+                    <?php if ($hasLowStock): ?>
+                        <span class="notification-dot-small" title="Products with low stock">!</span>
+                    <?php endif; ?>
                 </a>
                 <a href="/admin/admin_orders.php" title="Orders">
                     <i class="fas fa-shopping-cart"></i>

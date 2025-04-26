@@ -1,10 +1,10 @@
 <?php
 require_once '../_base.php';
-include '../_head.php';
 
 // Check if user is logged in and has admin privileges
 auth('admin');
-
+$_title = 'Add Product';
+include '../_head.php';
 $_adminContext = true;
 
 // Initialize variables

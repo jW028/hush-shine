@@ -79,6 +79,15 @@ include '../_head.php';
 
 <div class="page-wrapper">
     <div class="container margin-top">
+        <?php if ($_err): ?>
+            <div class="alert alert-danger">
+                <ul>
+                    <?php foreach ($_err as $error): ?>
+                        <li><?= $error ?></li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php endif; ?>
         <form method="post" class="reset-password-form">
             <h2>Reset Password</h2>
             <div class="form-group">

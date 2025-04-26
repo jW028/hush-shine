@@ -3779,7 +3779,7 @@ input[type="number"] {
 
 .order-status-section {
     width: 100%;
-    max-width: 350px;
+    max-width: fit-content;
 }
 
 .order-details-grid {
@@ -4179,6 +4179,7 @@ input[type="number"] {
     padding: 12px;
     border-radius: 4px;
     margin-bottom: 15px;
+    height: fit-content;
 }
 
 .alert-success {
@@ -4345,6 +4346,16 @@ input[type="number"] {
 .status-refunded {
     background-color: #e2e3e5;
     color: #383d41;
+}
+
+.status-received {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.status-request.pending {
+    background-color: #FF9800;
+    color: white;
 }
 
 /* Payment status */
@@ -4955,6 +4966,7 @@ input[type="number"] {
     display: inline-flex;
     padding: 5px;
     transition: transform 0.2s;
+    position: relative;
 }
 
 .admin-toolbar a:hover {
@@ -5127,19 +5139,13 @@ input[type="number"] {
     opacity: 0.9;
 }
 
-/* Order Cards */
-.purchase-order-cards {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-}
+/* mypurchase page */
 
-.purchase-order-card {
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    padding: 1rem;
-    background: #fff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+.mypurchase-page {
+    max-width: 900px;
+    margin: 120px auto;
+    padding: 2rem;
+    font-family: 'Segoe UI', sans-serif;
 }
 
 .purchase-order-card-header {
@@ -5203,7 +5209,7 @@ input[type="number"] {
     font-size: 1rem;
     color: #666;
 }
-
+/* 
 /* cust_viewOrder */
 .custView-order-details-page {
     max-width: 1100px;
@@ -5221,6 +5227,7 @@ input[type="number"] {
     margin-bottom: 30px;
 }
 
+
 .custView-page-header h2 {
     margin: 0;
     font-size: 26px;
@@ -5237,109 +5244,97 @@ input[type="number"] {
     margin-bottom: 30px;
 }
 
-.custView-order-status h3 {
-    font-size: 20px;
-    margin-bottom: 10px;
+.puchase-order-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    background-color: #fafafa;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
-.custView-status-badge {
-    display: inline-block;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 14px;
+.puchase-order-card h3 {
+    margin: 0 0 0.5rem;
+    color: #222;
 }
 
-.custView-status-progression-container {
-    margin: 20px 0;
-}
-
-.custView-status-track {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.custView-status-step {
+.order-actions,
+.review-form {
+    margin-top: 1rem;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    position: relative;
-    flex: 1;
+    gap: 0.5rem;
 }
 
-.custView-status-dot {
-    width: 16px;
-    height: 16px;
-    background: #ccc;
-    border-radius: 50%;
-    margin-bottom: 6px;
-}
-
-.custView-status-step.active .custView-status-dot {
-    background: #4caf50;
-}
-
-.custView-status-label {
-    font-size: 13px;
-    text-align: center;
-}
-
-.custView-status-line {
-    height: 2px;
-    flex: 1;
-    background: #ccc;
-    margin: 0 5px;
-}
-
-.custView-order-actions {
-    display: flex;
-    gap: 12px;
-    margin-top: 15px;
-}
-
-.custView-btn {
-    padding: 10px 20px;
+.order-actions button,
+.review-form button {
+    padding: 0.5rem;
     border: none;
-    border-radius: 6px;
-    font-weight: 600;
+    border-radius: 5px;
+    background: #333;
+    color: white;
     cursor: pointer;
-    transition: 0.3s ease;
+    transition: background 0.3s ease;
 }
 
-.custView-order-details-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    margin-top: 20px;
+.order-actions button:hover,
+.review-form button:hover {
+    background: #555;
 }
 
-.full-width {
-    grid-column: 1 / -1;
+.purchase-btn-cancel {
+    background: #e74c3c;
 }
 
-.custView-detail-card {
-    background: #fafafa;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    padding: 16px 20px;
+.purchase-btn-pay {
+    background: #27ae60;
 }
 
-.custView-detail-card h3 {
-    margin-top: 0;
-    font-size: 18px;
-    margin-bottom: 12px;
+.purchase-btn-received {
+    background: #2980b9;
 }
 
-.custView-card-content p,
-.custView-card-content address {
-    font-size: 14px;
-    line-height: 1.6;
+.purchase-btn-return-refund {
+    background: #f39c12;
 }
 
-.custView-order-items-table {
+.purchase-btn-submit-review {
+    background: #8e44ad;
+}
+
+textarea,
+select,
+input[type="file"] {
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
     width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
+    font-size: 1rem;
+}
+
+.order-products {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #ddd;
+}
+
+.product-review {
+    margin-top: 1rem;
+    background: #fff;
+    padding: 1rem;
+    border: 1px dashed #ccc;
+    border-radius: 6px;
+}
+
+.status-path-header {
+    margin-bottom: 15px;
+    color: #495057;
+    font-size: 1rem;
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 8px;
+}
+
+.status-progression-container {
+    margin-bottom: 20px;
 }
 
 .custView-order-items-table th,
@@ -5372,47 +5367,375 @@ input[type="number"] {
     text-align: right;
 }
 
-.custView-return-form {
-    margin-top: 12px;
+.custView-status-line {
+    flex-grow: 1;
+    height: 3px;
+    background-color: #e9ecef;
+    margin: 0 5px;
+    position: relative;
+    z-index: 0;
 }
 
 .custView-form-group {
     margin-bottom: 15px;
+} */
+
+.status-progression-container {
+    margin-bottom: 25px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
 }
 
-.custView-form-group label {
-    display: block;
+.status-track {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.status-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+}
+
+.status-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: #e9ecef;
+    border: 2px solid #ced4da;
+}
+
+.status-step.active .status-dot {
+    background-color: #28a745;
+    border-color: #218838;
+}
+
+.status-line {
+    flex-grow: 1;
+    height: 3px;
+    background-color: #e9ecef;
+    margin: 0 5px;
+}
+
+.status-step.active + .status-line {
+    background-color: #28a745;
+}
+
+.status-label {
+    font-size: 12px;
+    margin-top: 5px;
+    color: #6c757d;
+    text-align: center;
+    max-width: 80px;
+}
+
+.status-step.active .status-label {
+    color: #212529;
+    font-weight: 500;
+}
+/* Issue path styling */
+.status-step.issue-status.active .status-dot {
+    background-color: #fd7e14;  /* Orange for issue statuses */
+    border-color: #dc3545;
+}
+
+.status-step.issue-status.active + .status-line {
+    background-color: #fd7e14;
+}
+
+.status-step.issue-status.active .status-label {
+    color: #dc3545;
+}
+
+/* Request Pending specific */
+.status-step.issue-status.active.current .status-dot {
+    animation: pulse-orange 2s infinite;
+}
+
+/* Cancelled specific */
+.status-step.issue-status.active.current .status-dot {
+    background-color: #dc3545;  /* Red for cancelled */
+    border-color: #bd2130;
+}
+
+/* Refunded specific */
+.status-step.issue-status.active.current.refunded .status-dot {
+    background-color: #6c757d;  /* Gray for refunded */
+    border-color: #5a6268;
+}
+
+.special-status {
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+.special-status.request-pending {
+    background-color: #fff3cd;
+    color: #856404;
+    border-left: 4px solid #ffc107;
+}
+
+.special-status.cancelled {
+    background-color: #f8d7da;
+    color: #721c24;
+    border-left: 4px solid #dc3545;
+}
+
+.special-status.refunded {
+    background-color: #e2e3e5;
+    color: #383d41;
+    border-left: 4px solid #6c757d;
+}
+
+.status-note {
+    font-size: 0.85rem;
+    color: #495057;
+    padding: 10px;
+    margin: 10px 0;
+    background-color: #e9ecef;
+    border-left: 3px solid #6c757d;
+    border-radius: 2px;
+}
+
+.status-note ul {
+    margin-top: 5px;
+    margin-bottom: 0;
+    padding-left: 20px;
+}
+
+/* Animations */
+@keyframes pulse-orange {
+    0% { box-shadow: 0 0 0 0 rgba(253, 126, 20, 0.7); }
+    70% { box-shadow: 0 0 0 6px rgba(253, 126, 20, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(253, 126, 20, 0); }
+}
+
+/* Status badges */
+.status-badge.status-request-pending {
+    background-color: #fd7e14;
+    color: white;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+.stock-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 0.9em;
+}
+
+.low-stock {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+.low-stock .fas {
+    color: #f0ad4e;
+    margin-left: 6px;
+}
+
+.out-of-stock {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.out-of-stock .fas {
+    color: #dc3545;
+    margin-left: 6px;
+}
+
+.in-stock {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.stock-summary {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    border-left: 4px solid #6c757d;
+}
+
+.stock-alert {
+    margin-top: 10px;
+}
+
+.stock-alert-item {
+    display: inline-block;
+    margin-right: 20px;
+}
+
+.stock-alert-count {
     font-weight: bold;
-    margin-bottom: 5px;
+    margin: 0 5px;
 }
 
-.custView-form-group textarea,
-.custView-form-group input[type="file"] {
-    width: 100%;
-    padding: 8px;
-    font-size: 14px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
+.critical-alert {
+    color: #dc3545;
+}
+
+.warning-alert {
+    color: #f0ad4e;
+}
+
+.stock-management-container {
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    background-color: #f8f9fa;
+}
+
+.stock-option {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px dashed #dee2e6;
+}
+
+.stock-option:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.stock-option input[type="radio"] {
+    margin-right: 10px;
+}
+
+.stock-option label {
+    font-weight: 600;
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+.quantity-input-wrapper {
+    margin-left: 25px;
+    margin-top: 5px;
+}
+
+.input-note {
+    display: block;
+    color: #6c757d;
+    font-size: 0.875rem;
+    margin-top: 5px;
+}
+
+/* Style for logging section */
+#edit_desc {
     resize: vertical;
 }
 
-@media (max-width: 768px) {
-    .custView-order-details-grid {
-        grid-template-columns: 1fr;
-    }
+/* Additional styling for the update history section */
+.update-history {
+    margin-top: 30px;
+    border-top: 1px solid #dee2e6;
+    padding-top: 20px;
+}
 
-    .custView-page-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
+.update-history h3 {
+    margin-bottom: 15px;
+}
 
-    .custView-product-info {
-        flex-direction: column;
-        align-items: flex-start;
-    }
+.update-record {
+    background-color: #f8f9fa;
+    border-left: 4px solid #6c757d;
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
 
-    .custView-order-actions {
-        flex-direction: column;
+.update-date {
+    color: #495057;
+    font-size: 0.875rem;
+}
+
+.update-admin {
+    font-weight: 600;
+}
+
+.update-desc {
+    margin-top: 5px;
+}
+
+/* Animation for stock changes */
+@keyframes highlight {
+    0% { background-color: #fff3cd; }
+    100% { background-color: transparent; }
+}
+
+.highlight-change {
+    animation: highlight 2s ease-out;
+}
+
+.notification-dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    background-color: #ff5722;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 50%;
+    margin-left: 8px;
+    animation: pulse 2s infinite;
+}
+
+/* Smaller notification dot for the toolbar */
+.notification-dot-small {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
+    background-color: #ff5722;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    animation: pulse 2s infinite;
+}
+
+/* Pulse animation */
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 87, 34, 0.7);
     }
+    70% {
+        box-shadow: 0 0 0 6px rgba(255, 87, 34, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 87, 34, 0);
+    }
+}
+
+.account-locked {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin-top: 15px;
+    text-align: center;
+    font-weight: 500;
+}
+
+.account-locked i {
+    margin-right: 8px;
 }
