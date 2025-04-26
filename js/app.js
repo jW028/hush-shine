@@ -875,4 +875,32 @@ $(document).ready(function() {
     });
 });
 
+// Sound effect for checkout button
+document.addEventListener('DOMContentLoaded', function() {
+    // Select the checkout button and audio element
+    const checkoutButton = document.querySelector('button[name="complete_order"]');
+    const buttonSound = document.getElementById('buttonSound');
 
+    if (checkoutButton && buttonSound) {
+        checkoutButton.addEventListener('click', function(e) {
+            // Prevent the default form submission temporarily
+            e.preventDefault();
+
+            // Play the sound
+            buttonSound.currentTime = 0;
+            buttonSound.volume = 0.5;
+            
+            // Play sound and submit form
+            buttonSound.play().then(function() {
+                // Small delay to let sound play
+                setTimeout(function() {
+                    e.target.form.submit();
+                }, 100);
+            }).catch(function(error) {
+                console.log('Sound playback failed:', error);
+                // Submit form anyway if sound fails
+                e.target.form.submit();
+            });
+        });
+    }
+});

@@ -395,7 +395,7 @@ include '../_head.php';
                             <span>RM <?= number_format($afterPointsTotal, 2) ?></span>
                         </div>
 
-                        <!-- Give Complete Order Button a name -->
+                        
                         <button type="submit" name="complete_order" class="btn-checkout">
                             <i class="fas fa-lock"></i> Complete Order
                         </button>
@@ -406,8 +406,11 @@ include '../_head.php';
                     </div>
                 </div>      
             </div>
+            
         </form>
     </div>
 </div>
-
+<audio id="buttonSound" preload="auto">
+    <source src="../sound/buy_1.mp3" type="audio/mpeg">
+</audio>
 <?php include '../_foot.php'; ?>
