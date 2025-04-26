@@ -1,8 +1,10 @@
 <?php
 require_once '../_base.php';
-include '../_head.php';
 
 auth('admin');
+
+$_title = 'Products';
+include '../_head.php';
 
 $_adminContext = true;
 
@@ -18,6 +20,8 @@ $offset = ($page - 1) * $itemsPerPage;
 $searchTerm = isset($_GET['search']) ? trim($_GET['search']) : '';
 $categoryFilter = isset($_GET['category']) ? $_GET['category'] : '';
 $sortBy = isset($_GET['sort']) ? $_GET['sort'] : 'newest';
+
+$stockFilter = isset($_GET['stock_filter']) ? $_GET['stock_filter'] : '';
 
 // Building WHERE clause for filtering
 $where = [];
@@ -36,6 +40,15 @@ if (!empty($categoryFilter)) {
     $params[] = $categoryFilter;
 }
 
+if (!empty($stockFilter)) {
+    if ($stockFilter == 'low') {
+        $where[] = "p.quantity <= ? AND p.quantity > 0";
+        $params[] = LOW_STOCK_THRESHOLD;
+    } else if ($stockFiler === 'out') {
+        $where[] = "p.quantity = 0";
+    }
+}
+
 // Combine WHERE clauses
 $whereClause = !empty($where) ? ' WHERE ' . implode(' AND ', $where) : '';
 
@@ -43,6 +56,8 @@ $whereClause = !empty($where) ? ' WHERE ' . implode(' AND ', $where) : '';
 $orderBy = match($sortBy) {
     'price_high' => 'p.price DESC',
     'price_low' => 'p.price ASC',
+    'stock_high' => 'p.quantity DESC',
+    'stock_low' => 'p.quantity ASC',
     'name_asc' => 'p.prod_name ASC',
     'name_desc' => 'p.prod_name DESC',
     'oldest' => 'p.prod_id ASC',
@@ -125,8 +140,23 @@ try {
                                     <option value="oldest" <?= $sortBy == 'oldest' ? 'selected' : '' ?>>Oldest First</option>
                                     <option value="price_high" <?= $sortBy == 'price_high' ? 'selected' : '' ?>>Price (High to Low)</option>
                                     <option value="price_low" <?= $sortBy == 'price_low' ? 'selected' : '' ?>>Price (Low to High)</option>
+                                    <option value="stock_high" <?= $sortBy == 'stock_high' ? 'selected' : '' ?>>Stock (High to Low)</option>
+                                    <option value="stock_low" <?= $sortBy == 'stock_low' ? 'selected' : '' ?>>Stock (Low to High)</option>
                                     <option value="name_asc" <?= $sortBy == 'name_asc' ? 'selected' : '' ?>>Name (A-Z)</option>
                                     <option value="name_desc" <?= $sortBy == 'name_desc' ? 'selected' : '' ?>>Name (Z-A)</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-group">
+                                <label for="stock-filter" class="filter-label">Stock Status:</label>
+                                <select name="stock_filter" id="stock-filter" class="filter-select">
+                                    <option value="" <?= !isset($_GET['stock_filter']) ? 'selected' : '' ?>>All Products</option>
+                                    <option value="low" <?= isset($_GET['stock_filter']) && $_GET['stock_filter'] === 'low' ? 'selected' : '' ?>>
+                                        Low Stock (≤ <?= LOW_STOCK_THRESHOLD ?>)
+                                    </option>
+                                    <option value="out" <?= isset($_GET['stock_filter']) && $_GET['stock_filter'] === 'out' ? 'selected' : '' ?>>
+                                        Out of Stock
+                                    </option>
                                 </select>
                             </div>
                             
@@ -140,6 +170,44 @@ try {
                         <input type="hidden" name="page" value="1">
                     </form>
                 </div>
+                    <?php
+                        // Get stock summary counts
+                        try {
+                            $lowStockQuery = $_db->prepare("SELECT COUNT(*) FROM product WHERE quantity <= ? AND quantity > 0");
+                            $lowStockQuery->execute([LOW_STOCK_THRESHOLD]);
+                            $lowStockCount = $lowStockQuery->fetchColumn();
+                            
+                            $outOfStockQuery = $_db->query("SELECT COUNT(*) FROM product WHERE quantity = 0");
+                            $outOfStockCount = $outOfStockQuery->fetchColumn();
+                        } catch (PDOException $e) {
+                            $lowStockCount = 0;
+                            $outOfStockCount = 0;
+                        }
+
+                        // Only show the summary if there are low stock or out of stock items
+                        if ($lowStockCount > 0 || $outOfStockCount > 0):
+                        ?>
+                        <div class="stock-summary">
+                            <h3><i class="fas fa-chart-bar"></i> Inventory Status</h3>
+                            <div class="stock-alert">
+                                <?php if ($outOfStockCount > 0): ?>
+                                    <div class="stock-alert-item critical-alert">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        <span class="stock-alert-count"><?= $outOfStockCount ?></span> products out of stock
+                                        <a href="admin_products.php?stock_filter=out" class="btn btn-sm btn-outline-danger">View All</a>
+                                    </div>
+                                <?php endif; ?>
+                                
+                                <?php if ($lowStockCount > 0): ?>
+                                    <div class="stock-alert-item warning-alert">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        <span class="stock-alert-count"><?= $lowStockCount ?></span> products with low stock
+                                        <a href="admin_products.php?stock_filter=low" class="btn btn-sm btn-outline-warning">View All</a>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    <?php endif; ?>
 
                 <div class="product-info-bar">
                 <div class="product-count">
@@ -209,7 +277,23 @@ try {
                                             <img src="<?= htmlspecialchars($productImage) ?>" alt="<?= htmlspecialchars($product['prod_name']) ?>">
                                         </td>
                                         <td><?= number_format($product['price'], 2) ?></td>
-                                        <td><?= htmlspecialchars($product['quantity']) ?></td>
+                                        <td>
+                                            <?php if($product['quantity'] <= LOW_STOCK_THRESHOLD): ?>
+                                                <span class="stock-badge low-stock" title="Low stock alert">
+                                                    <?= htmlspecialchars($product['quantity']) ?>
+                                                    <i class="fas fa-exclamation-triangle"></i>
+                                                </span>
+                                            <?php elseif($product['quantity'] == 0): ?>
+                                                <span class="stock-badge out-of-stock">
+                                                    <?= htmlspecialchars($product['quantity']) ?>
+                                                    <i class="fas fa-times-circle"></i>
+                                                </span>
+                                            <?php else: ?>
+                                                <span class="stock-badge in-stock">
+                                                    <?= htmlspecialchars($product['quantity']) ?>
+                                                </span>
+                                            <?php endif; ?>
+                                        </td>
                                         <td><?= htmlspecialchars($category_name) ?></td>
                                         <td class="actions">
                                             <a href="view_product.php?id=<?= $product['prod_id'] ?>" class="btn">
@@ -235,7 +319,7 @@ try {
             <?php if ($totalPages > 1): ?>
             <div class="pagination">
                 <?php if ($page > 1): ?>
-                    <a href="?page=<?= $page - 1 ?>&search=<?php echo urlencode($searchTerm); ?>&category=<?= urlencode($categoryFilter); ?>&sort=<?php echo urlencode($sortBy); ?>">&laquo; Previous</a>
+                    <a href="?page=<?= $page - 1 ?>&search=<?= urlencode($searchTerm) ?>&category=<?= urlencode($categoryFilter) ?>&sort=<?= urlencode($sortBy) ?>&stock_filter=<?= urlencode($stockFilter) ?>">&laquo; Previous</a>
                 <?php endif; ?>
 
                 <?php 
@@ -244,14 +328,14 @@ try {
                 $endPage = min($totalPages, $page + $range);
                 
                 if ($startPage > 1) {
-                    echo "<a href=\"?page=1&search=" . urlencode($searchTerm) . "&category=" . urlencode($categoryFilter) . "&sort=" . urlencode($sortBy) . "\">1</a>";
+                    echo "<a href=\"?page=1&search=" . urlencode($searchTerm) . "&category=" . urlencode($categoryFilter) . "&sort=" . urlencode($sortBy) . "&stock_filter=" . urlencode($stockFilter) . "\">1</a>";
                     if ($startPage > 2) {
                         echo "<span class=\"ellipsis\">...</span>";
                     }
                 }
 
                 for ($i = $startPage; $i <= $endPage; $i++) {
-                    echo '<a href="?page=' . $i . '&search=' . urlencode($searchTerm) . '&category=' . urlencode($categoryFilter) . '&sort=' . urlencode($sortBy) . '"';
+                    echo '<a href="?page=' . $i . '&search=' . urlencode($searchTerm) . '&category=' . urlencode($categoryFilter) . '&sort=' . urlencode($sortBy) . "&stock_filter=" . urlencode($stockFilter) . '"';
                     echo ($i == $page) ? ' class="active"' : '';
                     echo '>' . $i . '</a>';
                 }
@@ -260,12 +344,12 @@ try {
                     if ($endPage < $totalPages - 1) {
                         echo "<span class=\"ellipsis\">...</span>";
                     }
-                    echo "<a href=\"?page=$totalPages&search=" . urlencode($searchTerm) . "&category=" . urlencode($categoryFilter) . "&sort=" . urlencode($sortBy) . "\">$totalPages</a>";
+                    echo "<a href=\"?page=$totalPages&search=" . urlencode($searchTerm) . "&category=" . urlencode($categoryFilter) . "&sort=" . urlencode($sortBy) . "&stock_filter=" . urlencode($stockFilter) . "\">$totalPages</a>";
                 }
                 ?>
 
                 <?php if ($page < $totalPages): ?>
-                    <a href="?page=<?= $page + 1 ?>&search=<?= urlencode($searchTerm) ?>&category=<?= urlencode($categoryFilter) ?>&sort=<?= urlencode($sortBy) ?>">Next &raquo;</a>
+                    <a href="?page=<?= $page + 1 ?>&search=<?= urlencode($searchTerm) ?>&category=<?= urlencode($categoryFilter) ?>&sort=<?= urlencode($sortBy) ?>&stock_filter=<?= urlencode($stockFilter) ?>">Next &raquo;</a>
                 <?php endif; ?>
             </div>
             <?php endif; ?>

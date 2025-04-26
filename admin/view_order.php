@@ -24,6 +24,8 @@ $status_options = [
     'Processing' => 'Processing',
     'Shipped' => 'Shipped',
     'Delivered' => 'Delivered',
+    'Received' => 'Received',
+    'Request Pending' => 'Request Pending', 
     'Cancelled' => 'Cancelled',
     'Refunded' => 'Refunded'
 ];
@@ -33,37 +35,75 @@ $status_weights = [
     'Processing' => 20,
     'Shipped' => 30,
     'Delivered' => 40,
+    'Received' => 45,
+    'Request Pending' => 47,
     'Cancelled' => 50,
     'Refunded' => 60
 ];
 
 function getAvailableStatuses($currentStatus, $allStatuses, $status_weights) {
-    if ($currentStatus === 'Cancelled') {
-        return [
-            'Cancelled' => 'Cancelled',
-            'Refunded' => 'Refunded'
-        ];
-    }
-
-    if ($currentStatus === 'Delivered') {
-        return [
-            'Delivered' => 'Delivered',
-            'Refunded' => 'Refunded'
-        ];
-    }
-
-    $currentWeight = $status_weights[$currentStatus] ?? 0;
-    $available = [];
-
-    foreach($allStatuses as $status => $label) {
-        $statusWeight = $status_weights[$status] ?? 999;
-        if ($statusWeight >= $currentWeight) {
-            $available[$status] = $label;
-        }
-    }
+    // Create a copy of all statuses that excludes customer-only actions
+    $adminStatuses = $allStatuses;
     
-    return $available;
+    // Customer-only statuses that admin can't directly set
+    unset($adminStatuses['Received']);      // Only customer can mark as received
+    unset($adminStatuses['Request Pending']); // Only customer can request return/refund
+    
+    // Special cases that should still have restrictions
+    switch ($currentStatus) {
+        case 'Request Pending':
+            // From Request Pending, admin can only maintain it, cancel or refund
+            return [
+                'Request Pending' => 'Request Pending', 
+                'Cancelled' => 'Cancelled',
+                'Refunded' => 'Refunded'
+            ];
+            
+        case 'Cancelled':
+            // From Cancelled, only allow staying cancelled or issuing refund
+            return [
+                'Cancelled' => 'Cancelled',
+            ];
+            
+        case 'Refunded':
+            // Once refunded, it stays refunded
+            return [
+                'Refunded' => 'Refunded'
+            ];
+            
+        default:
+            // For all other states, allow flexible status changes to any admin-accessible status
+            // This gives admins the ability to fix mistakes
+            
+            // Add current status to options if not already included
+            if (isset($allStatuses[$currentStatus])) {
+                $adminStatuses[$currentStatus] = $allStatuses[$currentStatus];
+            }
+            
+            // Sort statuses by weight for logical display order
+            $sortedStatuses = [];
+            foreach ($adminStatuses as $status => $label) {
+                $weight = $status_weights[$status] ?? 999;
+                $sortedStatuses[$status] = [
+                    'label' => $label,
+                    'weight' => $weight
+                ];
+            }
+            
+            // Sort by weight
+            uasort($sortedStatuses, function($a, $b) {
+                return $a['weight'] <=> $b['weight'];
+            });
+            
+            // Convert back to simple array format
+            $result = [];
+            foreach ($sortedStatuses as $status => $data) {
+                $result[$status] = $data['label'];
+            }
+            
+            return $result;
     }
+}
 
 // Handle status update if form submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
@@ -86,6 +126,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
         // Update order status
         $stmt = $_db->prepare("UPDATE orders SET status = ? WHERE order_id = ?");
         $stmt->execute([$new_status, $order_id]);
+
+        if ($new_status === 'Refunded' && ($current_status === 'Request Pending' || $current_status === 'Cancelled')) {
+            $requestStmt = $_db->prepare("
+                SELECT request_id FROM return_refund_requests
+                WHERE order_id = ? AND status != 'Refunded'
+            ");
+            $requestStmt->execute([$order_id]);
+            $requestId = $requestStmt->fetchColumn();
+
+            if ($requestId) {
+                $updateRequestStmt = $_db->prepare("
+                    UPDATE return_refund_requests
+                    SET status = 'Refunded' WHERE request_id = ?
+                ");
+                $updateRequestStmt->execute([$requestId]);
+            }
+        }
         
         // Store shipping info in shipping_address field if status is "Shipped"
         if ($new_status === 'Shipped' && !empty($_POST['tracking_number'])) {
@@ -253,14 +310,22 @@ try {
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
-                                <?php if (count($available_statuses) < count($status_options)): ?>
-                                    <small class="form-text text-muted">
-                                        <i class="fas fa-info-circle"></i>
-                                        Order status can only progress forward in the workflow.
-                                    </small>
-                                <?php endif; ?>
+                                <small class="form-text text-muted">
+                                    <i class="fas fa-info-circle"></i>
+                                    <?php if ($order['status'] == 'Cancelled'): ?>
+                                        Cancelled orders can only be refunded or remain cancelled.
+                                    <?php elseif ($order['status'] == 'Refunded'): ?>
+                                        Refunded orders cannot change status.
+                                    <?php elseif ($order['status'] == 'Request Pending'): ?>
+                                        Request Pending orders can only be cancelled or refunded.
+                                    <?php else: ?>
+                                        As an admin, you can change to any available status to correct mistakes.
+                                    <?php endif; ?>
+                                    <br>
+                                    <span class="text-info"><strong>Note:</strong> 'Received' and 'Request Pending' can only be set by customers.</span>
+                                </small>
                             </div>
-                            
+
                             <div id="shipping-info" class="mt-3 <?= $order['status'] === 'Shipped' ? '' : 'd-none' ?>">
                                 <div class="form-group">
                                     <label for="courier">Courier Service:</label>
@@ -276,11 +341,6 @@ try {
                                 <label for="admin_notes">Admin Notes:</label>
                                 <textarea name="admin_notes" id="admin_notes" class="form-control" rows="3"></textarea>
                                 <small class="form-text text-muted">For internal reference only. Not stored in database.</small>
-                            </div>
-                            
-                            <div class="form-check mt-3">
-                                <input type="checkbox" name="notify_customer" id="notify_customer" value="1" class="form-check-input" checked>
-                                <label for="notify_customer" class="form-check-label">Notify customer of status change</label>
                             </div>
                             
                             <div class="mt-3">
@@ -411,105 +471,183 @@ try {
                         </table>
                     </div>
                 </div>
-                
-                <!-- Order Status History -->
-                <div class="card order-history-card">
-                    <div class="card-header">
-                        <h3>Order Timeline</h3>
-                    </div>
-                    <div class="card-body">
-                        <ul class="timeline">
-                            <li class="timeline-item">
-                                <div class="timeline-marker"></div>
-                                <div class="timeline-content">
-                                    <h4 class="timeline-title">
-                                        Order <?= htmlspecialchars($order['status']) ?>
-                                        <span class="timeline-date">
-                                            Current Status
-                                        </span>
-                                    </h4>
-                                </div>
-                            </li>
-                            <li class="timeline-item">
-                                <div class="timeline-marker"></div>
-                                <div class="timeline-content">
-                                    <h4 class="timeline-title">
-                                        Order Placed
-                                        <span class="timeline-date">
-                                            <?= date('M j, Y g:i A', strtotime($order['order_date'])) ?>
-                                        </span>
-                                    </h4>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="order-actions">
-                    <a href="generate_invoice.php?id=<?= $order_id ?>" class="admin-submit-btn" target="_blank">
-                        <i class="fas fa-file-pdf"></i> Download Invoice
-                    </a>
-
-                    <a href="generate_invoice.php?id=<?= $order_id ?>&email=1" class="admin-submit-btn secondary">
-                        <i class="fas fa-envelope"></i> Send Invoice to Customer
-                    </a>
-                </div>
-            </div>
         </div>
     </div>
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const currentStatus = '<?= $order['status'] ?>';
-    const statuses = ['Confirmed', 'Processing', 'Shipped', 'Delivered'];
+document.addEventListener('DOMContentLoaded', function() {
+    const currentStatus = '<?= htmlspecialchars($order['status']) ?>';
+    const paymentStatus = '<?= htmlspecialchars($order['payment_status'] ?? 'Unpaid') ?>';
+
+    
+    
+    // Determine which status timeline to show based on current status
+    // Different flows:
+    // 1. Standard Flow: Confirmed → Processing → Shipped → Delivered → Received
+    // 2. Request/Issue Flow: Delivered → Request Pending → Cancelled/Refunded
+    // 3. Direct Cancel Flow: Pending → Cancelled (special case)
+    
+    let displayStatuses = [];
+    let headerText = '';
+    
+    // Check if this was likely a direct cancellation from Pending state
+    const isPendingCancellation = currentStatus === 'Cancelled' && 
+                                 (paymentStatus === 'Unpaid' || paymentStatus === 'Pending');
+    
+    if (isPendingCancellation) {
+        // This order was likely cancelled while still pending payment
+        displayStatuses = ['Cancelled'];
+        headerText = 'Order Cancelled Before Payment';
+    } else if (currentStatus === 'Received') {
+        // Show the "happy path"
+        displayStatuses = ['Confirmed', 'Processing', 'Shipped', 'Delivered', 'Received'];
+        headerText = 'Order Fulfillment Flow';
+    } else if (currentStatus === 'Request Pending' || currentStatus === 'Refunded') {
+        // Show the "issue path"
+        displayStatuses = ['Confirmed', 'Processing', 'Shipped', 'Delivered', 'Request Pending'];
+        // Add the final state if we're there
+        if (currentStatus === 'Refunded') {
+            displayStatuses.push('Refunded');
+        }
+        headerText = 'Return/Refund Flow';
+    } else if (currentStatus === 'Cancelled' && !isPendingCancellation) {
+        // Standard cancellation (not from pending)
+        if (order['status_history'] && order['status_history'].includes('Delivered')) {
+            // If it was cancelled after delivery, show the full flow
+            displayStatuses = ['Confirmed', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
+        } else {
+            // Otherwise show a simple cancellation
+            displayStatuses = ['Confirmed', 'Cancelled'];
+        }
+        headerText = 'Order Cancelled';
+    } else {
+        // Normal fulfillment flow for other statuses
+        displayStatuses = ['Confirmed', 'Processing', 'Shipped', 'Delivered'];
+        headerText = 'Order Fulfillment Flow';
+    }
+
     const statusIndices = {
         'Confirmed': 0,
         'Processing': 1,
         'Shipped': 2,
         'Delivered': 3,
-        'Cancelled': -1,
-        'Refunded': -1
+        'Received': 4,
+        'Request Pending': 4,  // Same level as Received but different path
+        'Cancelled': isPendingCancellation ? 0 : 5,  // If pending cancellation, it's the only status
+        'Refunded': 5
     };
     
     // Create status progression visualization
     const container = document.createElement('div');
     container.className = 'status-progression-container';
-    container.innerHTML = `
-        <div class="status-track">
-            ${statuses.map((status, index) => {
-                const isActive = statusIndices[currentStatus] >= index;
+    
+    // Create the header
+    const header = document.createElement('h4');
+    header.className = 'status-path-header';
+    header.textContent = headerText;
+    container.appendChild(header);
+    
+    // Create the status track visualization
+    const trackHTML = `
+        <div class="status-track ${isPendingCancellation ? 'single-status' : ''}">
+            ${displayStatuses.map((status, index) => {
+                // For pending cancellations, always mark as active
+                const isActive = isPendingCancellation ? true : 
+                               (index <= statusIndices[currentStatus] || status === currentStatus);
+                
+                // Special class for current status
+                const isCurrent = status === currentStatus ? 'current' : '';
+                
+                // Special class for issue statuses
+                const statusClass = ['Request Pending', 'Cancelled', 'Refunded'].includes(status) 
+                    ? 'issue-status' 
+                    : '';
+                
                 return `
-                <div class="status-step ${isActive ? 'active' : ''}">
+                <div class="status-step ${isActive ? 'active' : ''} ${isCurrent} ${statusClass}">
                     <div class="status-dot"></div>
                     <div class="status-label">${status}</div>
                 </div>`;
             }).join('<div class="status-line"></div>')}
         </div>
     `;
+    container.innerHTML += trackHTML;
     
-    // Special statuses
-    if (currentStatus === 'Cancelled' || currentStatus === 'Refunded') {
+    // Add special status messages
+    if (isPendingCancellation) {
         const specialStatus = document.createElement('div');
-        specialStatus.className = 'special-status ' + currentStatus.toLowerCase();
-        specialStatus.innerHTML = `<i class="fas fa-exclamation-circle"></i> This order has been ${currentStatus.toLowerCase()}`;
+        specialStatus.className = 'special-status cancelled pending-cancelled';
+        specialStatus.innerHTML = `<i class="fas fa-ban"></i> This order was cancelled before payment was completed.`;
         container.appendChild(specialStatus);
+    } else if (currentStatus === 'Request Pending') {
+        const specialStatus = document.createElement('div');
+        specialStatus.className = 'special-status request-pending';
+        specialStatus.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Customer has requested a return/refund. Please review and take appropriate action.`;
+        container.appendChild(specialStatus);
+    } else if (currentStatus === 'Cancelled' && !isPendingCancellation) {
+        const specialStatus = document.createElement('div');
+        specialStatus.className = 'special-status cancelled';
+        specialStatus.innerHTML = `<i class="fas fa-ban"></i> This order has been cancelled.`;
+        container.appendChild(specialStatus);
+    } else if (currentStatus === 'Refunded') {
+        const specialStatus = document.createElement('div');
+        specialStatus.className = 'special-status refunded';
+        specialStatus.innerHTML = `<i class="fas fa-undo"></i> This order has been refunded.`;
+        container.appendChild(specialStatus);
+    }
+    
+    // Add note about customer actions for delivered orders
+    if (currentStatus === 'Delivered') {
+        const deliveredNote = document.createElement('div');
+        deliveredNote.className = 'status-note';
+        deliveredNote.innerHTML = `
+            <i class="fas fa-info-circle"></i> <strong>Waiting for customer action:</strong><br>
+            After delivery, the customer can either:
+            <ul>
+                <li><strong>Mark as 'Received'</strong> if they're satisfied with the order</li>
+                <li><strong>Request a refund/return</strong> if there's an issue (changes status to 'Request Pending')</li>
+            </ul>
+        `;
+        container.appendChild(deliveredNote);
     }
     
     // Insert before the form
     const formElement = document.querySelector('.order-status-section .card-body form');
-    formElement.parentNode.insertBefore(container, formElement);
+    if (formElement) {
+        formElement.parentNode.insertBefore(container, formElement);
+    } else {
+        // Fallback if the form element isn't found
+        const cardBody = document.querySelector('.order-status-section .card-body');
+        if (cardBody) {
+            cardBody.insertBefore(container, cardBody.firstChild);
+        } else {
+            // Last resort fallback
+            const orderStatusSection = document.querySelector('.order-status-section');
+            if (orderStatusSection) {
+                const cardBody = orderStatusSection.querySelector('.card-body');
+                if (cardBody) {
+                    cardBody.insertBefore(container, cardBody.firstChild);
+                }
+            }
+        }
+    }
     
     // Show shipping info when status is Shipped
-    document.getElementById('status').addEventListener('change', function() {
-        const shippingInfo = document.getElementById('shipping-info');
-        if (this.value === 'Shipped') {
-            shippingInfo.classList.remove('d-none');
-        } else {
-            shippingInfo.classList.add('d-none');
-        }
-    });
+    const statusSelect = document.getElementById('status');
+    if (statusSelect) {
+        statusSelect.addEventListener('change', function() {
+            const shippingInfo = document.getElementById('shipping-info');
+            if (shippingInfo) {
+                if (this.value === 'Shipped') {
+                    shippingInfo.classList.remove('d-none');
+                } else {
+                    shippingInfo.classList.add('d-none');
+                }
+            }
+        });
+    }
 });
-    
 </script>
 
 <?php include '../_foot.php'; ?>

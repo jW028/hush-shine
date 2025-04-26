@@ -123,7 +123,7 @@ try {
         throw new Exception("Order not found.");
     }
 
-    $totalAmount = $order['total_amount'] - $order['reward_used'];
+    $totalAmount = $order['total_amount'];
     if ($totalAmount < 0.01) {
         $totalAmount = 0.01;
     }
