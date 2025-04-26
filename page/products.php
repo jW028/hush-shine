@@ -283,7 +283,7 @@ include '../_head.php';
             <?php endif; ?>
 
             <div class="column-container">
-                <a class="product" href="products.php?id=<?= $productId ?>&category=<?= $categoryId ?>"
+                <a class="product" href="product_details.php?id=<?= $productId ?>"
                     data-id="<?= $productId ?>"
                     data-name="<?= htmlspecialchars($s->prod_name) ?>" 
                     data-desc="<?= htmlspecialchars($s->prod_desc) ?>" 
@@ -297,7 +297,16 @@ include '../_head.php';
                                 <i class="far fa-heart"></i>
                             </button>
                         </div>
-                        <img class="product-image" src="/images/product_img/<?= htmlspecialchars($s->image) ?>" alt="<?= htmlspecialchars($s->prod_name) ?>">
+                        <?php
+                        // Extract the first image
+                        if ($s && !empty($s->image)) {
+                            $productImages = json_decode($s->image) ?: [];
+                            $firstImage = !empty($productImages) ? $productImages[0] : 'default-product-image.jpg';                            
+                        } else {
+                            $firstImage = 'default_image.webp'; // Fallback image if no images are found
+                        }
+                        ?>
+                        <img class="product-image" src="/images/products/<?= htmlspecialchars($firstImage) ?>" alt="<?= htmlspecialchars($s->prod_name) ?>">
                         <div class="prod-description">
                             <p><?= htmlspecialchars($s->prod_name) ?></p>
                         </div>
@@ -329,9 +338,9 @@ include '../_head.php';
                     <!-- <img class="preview active" src="/images/image1.jpg" alt="Preview 1" onclick="changeImage(this, '/images/image1.jpg')">
                     <img class="preview" src="/images/image2.jpg" alt="Preview 2" onclick="changeImage(this, '/images/image2.jpg')">
                     <img class="preview" src="/images/image3.jpg" alt="Preview 3" onclick="changeImage(this, '/images/image3.jpg')"> -->
-                    <img class="preview active" src="/images/product_img/blue_ring1.jpg" alt="Preview 1" onclick="changeImage(this, '/images/product_img/blue_ring1.jpg')">
-                    <img class="preview" src="/images/product_img/Red_ring2.jpg" alt="Preview 2" onclick="changeImage(this, '/images/product_img/Red_ring2.jpg')">
-                    <img class="preview" src="/images/product_img/heart_ear2.webp" alt="Preview 3" onclick="changeImage(this, '/images/product_img/heart_ear2.webp')">
+                    <img class="preview active" src="/images/products/blue_ring1.jpg" alt="Preview 1" onclick="changeImage(this, '/images/products/blue_ring1.jpg')">
+                    <img class="preview" src="/images/products/Red_ring2.jpg" alt="Preview 2" onclick="changeImage(this, '/images/products/Red_ring2.jpg')">
+                    <img class="preview" src="/images/products/heart_ear2.webp" alt="Preview 3" onclick="changeImage(this, '/images/products/heart_ear2.webp')">
                 </div>
             </div>
 

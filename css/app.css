@@ -261,7 +261,6 @@ body {
     50% { background-color: #ff6b6b; }
 }
 
-/* Add to your app.css */
 .cart-particle {
     position: fixed;
     width: 8px;
@@ -269,7 +268,7 @@ body {
     background-color: #ff4757; /* Particle color */
     border-radius: 50%;
     pointer-events: none;
-    z-index: 1000;
+    z-index: 10000;
     animation: particle-fly 0.8s ease-out forwards;
     opacity: 0.8;
 }
@@ -1976,6 +1975,11 @@ fieldset {
     justify-content: center;
 }
 
+/* .column-container:hover{
+    transform: scale(1.02);
+    transition: all 0.3s ease;
+} */
+
 /* Favorite button */
 .product-actions {
     position: absolute;
@@ -2078,8 +2082,8 @@ fieldset {
 }
 
 img.product-image {
-    width: 20em;
-    height: auto;
+    width: 240px;
+    height: 240px;
     object-fit: cover;
     border-bottom: 3px solid #f6f6f6;
 }
@@ -2936,7 +2940,7 @@ img.product-image {
     text-align: right !important;
 }
 .cart-product-img {
-    max-width: 10em;
+    max-width: 5em;
     height: auto;
     border-radius: 4px;
 }
