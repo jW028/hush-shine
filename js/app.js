@@ -237,34 +237,39 @@ document.addEventListener('DOMContentLoaded', function() {
 //       quantityInput.value = 1;
 //   }
 
-//   const quantityInput = document.getElementById('quantity');
-//   const minusBtn = document.querySelector('.qty-btn.minus');
-//   const plusBtn = document.querySelector('.qty-btn.plus');
-  
+  const quantityInput = document.getElementById('quantity');
+  const minusBtn = document.querySelector('.qty-btn.minus');
+  const plusBtn = document.querySelector('.qty-btn.plus');
+  const maxStock = parseInt(quantityInput.getAttribute('max')) || 99;
+
+
 //   // Quantity buttons functionality
-//   minusBtn.addEventListener('click', function() {
-//       let value = parseInt(quantityInput.value);
-//       if (value > 1) {
-//           quantityInput.value = value - 1;
-//       }
-//   });
+  minusBtn.addEventListener('click', function() {
+      let value = parseInt(quantityInput.value);
+      if (value > 1) {
+          quantityInput.value = value - 1;
+      }
+  });
   
-//   plusBtn.addEventListener('click', function() {
-//       let value = parseInt(quantityInput.value);
-//       if (value < 99) {
-//           quantityInput.value = value + 1;
-//       }
-//   });
+  plusBtn.addEventListener('click', function() {
+      let value = parseInt(quantityInput.value);
+      if (value < maxStock) {
+          quantityInput.value = value + 1;
+      } else {
+        alert(`Only ${maxStock} items available in stock`);
+      }
+  });
   
 //   // Ensure valid quantity input
-//   quantityInput.addEventListener('change', function() {
-//       let value = parseInt(this.value);
-//       if (isNaN(value) || value < 1) {
-//           this.value = 1;
-//       } else if (value > 99) {
-//           this.value = 99;
-//       }
-//   });
+  quantityInput.addEventListener('change', function() {
+      let value = parseInt(this.value);
+      if (isNaN(value) || value < 1) {
+          this.value = 1;
+      } else if (value > maxStock) {
+          this.value = maxStock;
+          alert(`Only ${maxStock} items available in stock`);
+      }
+  });
 
 //   addToCartBtn.addEventListener("click", function() {
 //       if (!currentProduct) {

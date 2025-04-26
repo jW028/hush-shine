@@ -56,8 +56,8 @@ if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQU
                     // Validate quantity
                     if ($quantity < 1) {
                         $quantity = 1;
-                    } elseif ($quantity > 99) {
-                        $quantity = 99;
+                    } elseif ($quantity > $product->quantity) {
+                        throw new Exception('Requested quantity exceeds available stock');
                     }
                     
                     $custId = $_SESSION['cust_id'];
@@ -272,18 +272,23 @@ $(document).ready(function() {
     $('.qty-plus').click(function() {
         let $input = $('#quantity');
         let value = parseInt($input.val());
-        if (value < 99) {
+        let maxStock = parseInt($input.attr('max')) || 99;
+        if (value < maxStock) {
             $input.val(value + 1);
+        } else {
+            alert(`Only ${maxStock} items available in stock`);
         }
     });
     
     // Ensure valid quantity
     $('#quantity').change(function() {
         let value = parseInt($(this).val());
+        let maxStock = parseInt($input.attr('max')) || 99;
         if (isNaN(value) || value < 1) {
             $(this).val(1);
-        } else if (value > 99) {
-            $(this).val(99);
+        } else if (value > maxStock) {
+            $(this).val(maxStock);
+            alert(`Only ${maxStock} items available in stock`);
         }
     });
     
@@ -837,6 +842,7 @@ function createParticles(sourceElement, count = 20) {
 }
 
 .product-image {
+    width: 300px; 
     height: 200px;
     display: flex;
     align-items: center;
