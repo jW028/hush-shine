@@ -8,12 +8,20 @@ $_adminContext = true;
 
 $action = isset($_GET['action']) ? $_GET['action'] : 'list';
 
+try {
+    $stmt = $_db->prepare("UPDATE customer SET status = 'active', blocked_until = NULL 
+                            WHERE status='blocked' AND blocked_until < NOW()");
+    $stmt->execute();
+} catch (PDOException $e) {
+    // Do nothing
+}
+
 ?>
 
     <main class="admin-main">
         <?php
             try {
-                $stmt = $_db->query("SELECT cust_id, cust_name, cust_contact, cust_email, cust_gender
+                $stmt = $_db->query("SELECT cust_id, cust_name, cust_contact, cust_email, cust_gender, status, blocked_until
                                     FROM customer 
                                     ORDER BY cust_id ASC");
                 $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -42,6 +50,7 @@ $action = isset($_GET['action']) ? $_GET['action'] : 'list';
                         <th>Contact</th>
                         <th>Email</th>
                         <th>Gender</th>
+                        <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -54,7 +63,15 @@ $action = isset($_GET['action']) ? $_GET['action'] : 'list';
                                 <td><?= htmlspecialchars($customer['cust_contact']) ?></td>
                                 <td><?= htmlspecialchars($customer['cust_email']) ?></td>
                                 <td><?= htmlspecialchars($customer['cust_gender']) ?></td>
-
+                                <td>
+                                    <?php if ($customer['status'] === 'blocked'): ?>
+                                        <span class="status-badge blocked" title="Blocked until: <?= date('F j, Y g:i A', strtotime($customer['blocked_until'])) ?>">
+                                            Blocked
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="status-badge active">Active</span>
+                                    <?php endif; ?>
+                                </td>
                                 <td class="actions">
                                     <a href="view_customer.php?id=<?= $customer['cust_id'] ?>" class="btn">
                                         <i class="fas fa-eye"></i> 

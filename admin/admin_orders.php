@@ -88,8 +88,10 @@ try {
         SUM(CASE WHEN status = 'Confirmed' THEN 1 ELSE 0 END) as confirmed_orders,
         SUM(CASE WHEN status = 'Shipped' THEN 1 ELSE 0 END) as shipped_orders,
         SUM(CASE WHEN status = 'Delivered' THEN 1 ELSE 0 END) as delivered_orders,
+        SUM(CASE WHEN status = 'Received' THEN 1 ELSE 0 END) as received_orders,
+        SUM(CASE WHEN status = 'Refunded' THEN 1 ELSE 0 END) as refunded_orders,
         SUM(CASE WHEN status = 'Cancelled' THEN 1 ELSE 0 END) as cancelled_orders,
-        SUM(total_amount) as total_revenue
+        SUM(CASE WHEN status = 'Received' THEN total_amount ELSE 0 END) as total_revenue
         FROM orders");
     $stats = $stmt->fetch(PDO::FETCH_ASSOC);
     
@@ -147,6 +149,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
             <div class="stat-value"><?= number_format($stats['delivered_orders'] ?? 0) ?></div>
             <div class="stat-label">Delivered</div>
         </div>
+        <div class="stat-card delivered">
+            <div class="stat-value"><?= number_format($stats['received_orders'] ?? 0) ?></div>
+            <div class="stat-label">Received</div>
+        </div>
+        <div class="stat-card delivered">
+            <div class="stat-value"><?= number_format($stats['refunded_orders'] ?? 0) ?></div>
+            <div class="stat-label">Refunded</div>
+        </div>
         <div class="stat-card revenue">
             <div class="stat-value">RM <?= number_format($stats['total_revenue'] ?? 0, 2) ?></div>
             <div class="stat-label">Revenue</div>
@@ -164,6 +174,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
                         <option value="Confirmed" <?= $status_filter === 'Confirmed' ? 'selected' : '' ?>>Confirmed</option>
                         <option value="Shipped" <?= $status_filter === 'Shipped' ? 'selected' : '' ?>>Shipped</option>
                         <option value="Delivered" <?= $status_filter === 'Delivered' ? 'selected' : '' ?>>Delivered</option>
+                        <option value="Request Pending" <?= $status_filter === 'Request Pending' ? 'selected' : '' ?>>Request Pending</option>
+                        <option value="Received" <?= $status_filter === 'Received' ? 'selected' : '' ?>>Received</option>
+                        <option value="Refunded" <?= $status_filter === 'Refunded' ? 'selected' : '' ?>>Refunded</option>
                         <option value="Cancelled" <?= $status_filter === 'Cancelled' ? 'selected' : '' ?>>Cancelled</option>
                     </select>
                 </div>

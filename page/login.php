@@ -8,6 +8,13 @@ define('LOCKOUT_TIME_MINUTES', 1);
 $_title = 'Sign In';
 include '../_head.php';
 
+$registration_success = false;
+
+if (isset($_SESSION['register_success']) && isset($_SESSION['register_time']) && time() - $_SESSION['register_time'] < 60) {
+    $registration_success = true;
+    unset($_SESSION['register_success'], $_SESSION['register_time']);
+}
+
 if (isset($_SESSION['user'])) {
     if ($_SESSION['user'] == "admin") {
         header("Location: ../admin/admin_dashboard.php");
@@ -32,8 +39,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $errors[] = "Email and password are required.";
     } else {
         try {
-            // Check if this email has been locked out
-            $stmt = $_db->prepare("SELECT 
+            $email_exists = false;
+
+            // Check for email in customer table
+            $stmt = $_db->prepare("SELECT COUNT(*) FROM customer WHERE cust_email = ?");
+            $stmt->execute([$email]);
+            if ($stmt->fetchColumn() > 0) {
+                $email_exists = true;
+            }
+
+            // If not found in customer, check admin table
+            if (!$email_exists) {
+                $stmt = $_db->prepare("SELECT COUNT(*) FROM admin WHERE admin_email = ?");
+                $stmt->execute([$email]);
+                if ($stmt->fetchColumn() > 0) {
+                    $email_exists = true;
+                }
+            }
+
+            if ($email_exists) {
+                // Check if this email has been locked out
+                $stmt = $_db->prepare("SELECT 
                 login_attempts, 
                 last_attempt_time,
                 TIMESTAMPDIFF(MINUTE, last_attempt_time, NOW()) as minutes_since_last_attempt
@@ -61,6 +87,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 }
                 
                 $remaining_attempts = MAX_LOGIN_ATTEMPTS - $attempts;
+                }
             }
             
             // Proceed with login if account is not locked
@@ -78,35 +105,74 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $_SESSION["admin_id"] = $admin["admin_id"];
                     $_SESSION["admin_email"] = $admin["admin_email"];
                     $_SESSION["admin_name"] = $admin["admin_name"] ?? "Admin";
+                    $_SESSION['login_success'] = true;
+                    $_SESSION['login_time'] = time();
+
                     header("Location: ../admin/admin_dashboard.php");
                     exit();
                 } 
                 
                 // If not admin, check customer credentials
-                $stmt = $_db->prepare("SELECT cust_id, cust_name, cust_email, cust_password FROM customer WHERE cust_email = ?");
+                $stmt = $_db->prepare("SELECT cust_id, cust_name, cust_email, cust_password, status, blocked_until, block_reason FROM customer WHERE cust_email = ?");
                 $stmt->execute([$email]);
                 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
                 if ($user && password_verify($password, $user["cust_password"])) {
-                    // Successful customer login - reset any login attempts
-                    resetLoginAttempts($email);
-                    
-                    $_SESSION['user'] = "customer";
-                    $_SESSION["cust_id"] = $user["cust_id"];
-                    $_SESSION["cust_email"] = $user["cust_email"];
-                    $_SESSION["cust_name"] = $user["cust_name"];
-                    $_SESSION["admin"] = false;
+                    // Check if user is blocked
+                    if ($user['status'] === 'blocked') {
+                        $block_time = strtotime($user['blocked_until']);
+                        $current_time = time();
 
-                    header("Location: ../index.php");
-                    exit();
-                } else {
-                    // Failed login attempt - increment the counter
-                    incrementLoginAttempts($email);
-                    
-                    if ($remaining_attempts <= 1) {
-                        $errors[] = "Invalid email or password. Your account will be temporarily locked after this final attempt.";
+                        if ($block_time > $current_time) {
+                            $block_end = date('F j, Y g:i A', $block_time);
+                            $errors[] = "Your account has been blocked until $block_end. Reason: " . htmlspecialchars($user['block_reason']);
+
+                            incrementLoginAttempts($email);
+                        } else {
+                            // Block has expired, update status
+                            $update_stmt = $_db->prepare("UPDATE customer SET status = 'active', blocked_until = NULL WHERE cust_id = ?");
+                            $update_stmt->execute([$user['cust_id']]);
+
+                            // Continue with login process
+                            resetLoginAttempts($email);
+                            $_SESSION['user'] = "customer";
+                            $_SESSION["cust_id"] = $user["cust_id"];
+                            $_SESSION["cust_email"] = $user["cust_email"];
+                            $_SESSION["cust_name"] = $user["cust_name"];
+                            $_SESSION["admin"] = false;
+                            $_SESSION['login_success']  = true;
+                            $_SESSION['login_time'] = time();
+                            header("Location: ../index.php");
+                            exit();
+                        }
                     } else {
-                        $errors[] = "Invalid email or password. You have {$remaining_attempts} attempts remaining.";
+                        // Successful customer login - reset any login attempts
+                        resetLoginAttempts($email);
+                        
+                        $_SESSION['user'] = "customer";
+                        $_SESSION["cust_id"] = $user["cust_id"];
+                        $_SESSION["cust_email"] = $user["cust_email"];
+                        $_SESSION["cust_name"] = $user["cust_name"];
+                        $_SESSION["admin"] = false;
+
+                        $_SESSION['login_success']  = true;
+                        $_SESSION['login_time'] = time();
+
+                        header("Location: ../index.php");
+                        exit();
+                    }
+                } else {
+                    // Only increment login attempts for valid emails
+                    if ($email_exists) {
+                        incrementLoginAttempts($email);
+                        if ($remaining_attempts <= 1) {
+                            $errors[] = "Invalid email or password. Your account will be temporarily locked after this final attempt.";
+                        } else {
+                            $errors[] = "Invalid email or password. You have {$remaining_attempts} attempts remaining.";
+                        }
+                    } else {
+                        // Generic error msg for non-existent emails
+                        $errors[] = "Invalid email or password.";
                     }
                 }
             }
@@ -152,6 +218,41 @@ function incrementLoginAttempts($email) {
 ?>
 
     <br>
+
+    <?php if ($registration_success): ?>
+        <div id="register-success-toast" class="success-toast registration-toast">
+            <div class="toast-content">
+                <div class="toast-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="toast-message">
+                    <strong>Registration Successful!</strong>
+                    <span>Your account has been created. You can now log in.</span>
+                </div>
+            </div>
+            <button class="toast-close" onclick="closeRegistrationToast()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <script>
+            // Auto-close the registration toast after 8 seconds
+            setTimeout(function() {
+                closeRegistrationToast();
+            }, 8000);
+            
+            function closeRegistrationToast() {
+                var toast = document.getElementById('register-success-toast');
+                if (toast) {
+                    toast.classList.add('fade-out');
+                    setTimeout(function() {
+                        toast.style.display = 'none';
+                    }, 300);
+                }
+            }
+        </script>
+        <?php endif; ?>
+
     <div class="registration-container">
         <form action="login.php" method="post">
             <h1>Sign In</h1>
@@ -182,6 +283,8 @@ function incrementLoginAttempts($email) {
                     </div>
                 </div>
             <?php endif; ?>
+            <a href="forgot_password.php">Forgot Password</a>
+
         </form>
         <div class="img-wrapper">
             <img src="../images/Hush & Shine.svg">
