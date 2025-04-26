@@ -2,8 +2,8 @@
 require '../_base.php';
 
 // Check if order_id and total exist in session
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['checkout_total']) || !isset($_SESSION['order_id'])) {
-    header("Location: ../checkout.php");
+if (!isset($_SESSION['cust_id']) || !isset($_SESSION['checkout_total']) || !isset($_SESSION['order_id'])) {
+    header("Location: ../page/checkout.php");
     exit();
 }
 
@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $totalAmount = $_SESSION['checkout_total'];
-$userId = $_SESSION['user_id']; 
+$custId = $_SESSION['cust_id'];
 $orderId = $_SESSION['order_id'];
 
 // Get cart items for display

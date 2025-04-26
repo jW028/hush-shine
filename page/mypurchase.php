@@ -9,179 +9,85 @@ if (!isset($_SESSION['cust_id']) || empty($_SESSION['cust_id'])) {
 
 $custId = $_SESSION['cust_id'];
 
+// Fetch order statistics
 try {
-    // Fetch pending orders
-    $pendingStmt = $_db->prepare("
-        SELECT o.*, sp.payment_intent_id, sp.status as payment_status
-        FROM orders o
-        LEFT JOIN stripe_payments sp ON o.order_id = sp.order_id
-        WHERE o.cust_id = ? AND o.status = 'Pending'
-        ORDER BY o.order_date DESC
+    $statsStmt = $_db->prepare("
+        SELECT 
+            SUM(CASE WHEN status = 'Pending' THEN 1 ELSE 0 END) AS pending_orders,
+            SUM(CASE WHEN status IN ('Confirmed', 'Processing', 'Shipped', 'Delivered') THEN 1 ELSE 0 END) AS order_in_process,
+            SUM(CASE WHEN status = 'Received' THEN 1 ELSE 0 END) AS completed_orders,
+            SUM(CASE WHEN status IN ('Approved', 'Rejected', 'Request Pending') AS refunded_orders
+        FROM orders
+        WHERE cust_id = ?
     ");
-    $pendingStmt->execute([$_SESSION['cust_id']]);
-    $pendingOrders = $pendingStmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // Fetch confirmed orders (including Processing, Shipped, Delivered)
-    $confirmedStmt = $_db->prepare("
-        SELECT o.*, sp.payment_intent_id, sp.status as payment_status
-        FROM orders o
-        LEFT JOIN stripe_payments sp ON o.order_id = sp.order_id
-        WHERE o.cust_id = ? AND o.status IN ('Confirmed', 'Processing', 'Shipped', 'Delivered')
-        ORDER BY o.order_date DESC
-    ");
-    $confirmedStmt->execute([$_SESSION['cust_id']]);
-    $confirmedOrders = $confirmedStmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // Fetch completed orders (status = Received)
-    $completedStmt = $_db->prepare("
-        SELECT o.*, sp.payment_intent_id, sp.status as payment_status
-        FROM orders o
-        LEFT JOIN stripe_payments sp ON o.order_id = sp.order_id
-        WHERE o.cust_id = ? AND o.status = 'Received'
-        ORDER BY o.order_date DESC
-    ");
-    $completedStmt->execute([$_SESSION['cust_id']]);
-    $completedOrders = $completedStmt->fetchAll(PDO::FETCH_ASSOC);
-
-    $cancelledStmt = $_db->prepare("
-        SELECT o.*, sp.payment_intent_id, sp.status as payment_status
-        FROM orders o
-        LEFT JOIN stripe_payments sp ON o.order_id = sp.order_id
-        WHERE o.cust_id = ? AND o.status = 'Cancelled'
-        ORDER BY o.order_date DESC
-    ");
-    $cancelledStmt->execute([$_SESSION['cust_id']]);
-    $cancelledOrders = $cancelledStmt->fetchAll(PDO::FETCH_ASSOC);
-
+    $statsStmt->execute([$custId]);
+    $stats = $statsStmt->fetch(PDO::FETCH_ASSOC);
 } catch (Exception $e) {
-    error_log("My Purchase Error: " . $e->getMessage());
-    $pendingOrders = [];
-    $confirmedOrders = [];
-    $completedOrders = [];
-    $cancelledOrders = [];
+    error_log("Order Statistics Error: " . $e->getMessage());
+    $stats = ['pending_orders' => 0, 'order_in_process' => 0, 'completed_orders' => 0, 'refunded_orders' => 0];
 }
 
-// Handle Mark as Received
-if (isset($_POST['mark_received'])) {
-    try {
-        $orderId = $_POST['order_id'];
-        $stmt = $_db->prepare("UPDATE orders SET status = 'Received' WHERE order_id = ? AND cust_id = ?");
-        $stmt->execute([$orderId, $_SESSION['cust_id']]);
-        header("Location: mypurchase.php?tab=completed");
-        exit();
-    } catch (Exception $e) {
-        error_log("Mark Received Error: " . $e->getMessage());
-    }
+// Fetch orders with filters
+$status_filter = $_GET['status'] ?? 'all';
+$date_from = $_GET['date_from'] ?? '';
+$date_to = $_GET['date_to'] ?? '';
+$search = $_GET['search'] ?? '';
+
+$baseQuery = "FROM orders WHERE cust_id = ?";
+$params = [$custId];
+
+if ($status_filter === 'Refunded') {
+    $baseQuery .= " AND status IN ('Request Pending', 'Approved', 'Rejected')";
+} elseif ($status_filter === 'OrderInProcess') {
+    $baseQuery .= " AND status IN ('Confirmed', 'Processing', 'Shipped', 'Delivered')";
+} elseif ($status_filter !== 'all') {
+    $baseQuery .= " AND status = ?";
+    $params[] = $status_filter;
 }
 
-// Handle Cancel Order
-if (isset($_POST['cancel_order'])) {
-    try {
-        $orderId = $_POST['order_id'];
-        $cancelStmt = $_db->prepare("UPDATE orders SET status = 'Cancelled' WHERE order_id = ? AND cust_id = ?");
-        $cancelStmt->execute([$orderId, $_SESSION['cust_id']]);
-        header("Location: mypurchase.php?tab=pending");
-        exit();
-    } catch (Exception $e) {
-        error_log("Cancel Order Error: " . $e->getMessage());
-    }
+if (!empty($date_from)) {
+    $baseQuery .= " AND DATE(order_date) >= ?";
+    $params[] = $date_from;
 }
 
-// Handle Pay Now
-if (isset($_POST['pay_now'])) {
-    try {
-        $orderId = $_POST['order_id'];
-        $_SESSION['checkout_total'] = $_POST['total_amount'];
-        $_SESSION['order_id'] = $orderId;
-        $_SESSION['is_existing_order'] = true; // Add this line
-
-        // Redirect to payment page (e.g., Stripe)
-        header("Location: stripe.php");
-        exit();
-    } catch (Exception $e) {
-        error_log("Pay Now Error: " . $e->getMessage());
-    }
+if (!empty($date_to)) {
+    $baseQuery .= " AND DATE(order_date) <= ?";
+    $params[] = $date_to;
 }
 
-if (isset($_POST['submit_review'])) {
-    try {
-        $orderId = $_POST['order_id'];
-        $prodId = $_POST['prod_id'];
-        $rating = $_POST['rating'];
-        $review = $_POST['review'];
-
-        $stmt = $_db->prepare("
-            INSERT INTO prod_reviews (order_id, prod_id, cust_id, rating, review)
-            VALUES (?, ?, ?, ?, ?)
-        ");
-        $stmt->execute([$orderId, $prodId, $_SESSION['cust_id'], $rating, $review]);
-
-        header("Location: mypurchase.php?tab=completed");
-        exit();
-    } catch (Exception $e) {
-        error_log("Review Submission Error: " . $e->getMessage());
-    }
+if (!empty($search)) {
+    $baseQuery .= " AND order_id LIKE ?";
+    $params[] = "%$search%";
 }
 
-function hasReview($orderId, $prodId, $custId, $db) {
-    $stmt = $db->prepare("
-        SELECT COUNT(*) AS review_count
-        FROM prod_reviews
-        WHERE order_id = ? AND prod_id = ? AND cust_id = ?
-    ");
-    $stmt->execute([$orderId, $prodId, $custId]);
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
-    return $result['review_count'] > 0;
+// Count total orders for pagination
+try {
+    $countQuery = "SELECT COUNT(*) " . $baseQuery;
+    $stmt = $_db->prepare($countQuery);
+    $stmt->execute($params);
+    $totalItems = $stmt->fetchColumn();
+    $itemsPerPage = 10;
+    $totalPages = ceil($totalItems / $itemsPerPage);
+    $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+    if ($page < 1) $page = 1;
+    $offset = ($page - 1) * $itemsPerPage;
+} catch (Exception $e) {
+    error_log("Order Count Error: " . $e->getMessage());
+    $totalItems = 0;
+    $totalPages = 1;
+    $page = 1;
+    $offset = 0;
 }
 
-$returnRefundStmt = $_db->prepare("
-    SELECT rr.*, o.total_amount, o.order_date
-    FROM return_refund_requests rr
-    JOIN orders o ON rr.order_id = o.order_id
-    WHERE rr.cust_id = ?
-    ORDER BY rr.created_at DESC
-");
-$returnRefundStmt->execute([$custId]);
-$returnRefundOrders = $returnRefundStmt->fetchAll(PDO::FETCH_ASSOC);
-
-if (isset($_POST['request_return_refund'])) {
-    try {
-        $orderId = $_POST['order_id'];
-        $reason = $_POST['reason'];
-        $photo = $_FILES['photo'];
-
-        $photoPath = 'uploads/return_refund/' . basename($photo['name']);
-        move_uploaded_file($photo['tmp_name'], $photoPath);
-
-        $stmt = $_db->prepare("
-            INSERT INTO return_refund_requests (order_id, cust_id, reason, photo)
-            VALUES (?, ?, ?, ?)
-        ");
-        $stmt->execute([$orderId, $custId, $reason, $photoPath]);
-
-        $updateStmt = $_db->prepare("UPDATE orders SET status = 'Request Pending' WHERE order_id = ? AND cust_id = ?");
-        $updateStmt->execute([$orderId, $custId]);
-
-        header("Location: mypurchase.php?tab=return_refund");
-        exit();
-    } catch (Exception $e) {
-        error_log("Return/Refund Request Error: " . $e->getMessage());
-    }
-}
-
-if (isset($_POST['update_refund_status'])) {
-    try {
-        $requestId = $_POST['request_id'];
-        $newStatus = $_POST['status'];
-
-        $stmt = $_db->prepare("UPDATE return_refund_requests SET status = ? WHERE request_id = ?");
-        $stmt->execute([$newStatus, $requestId]);
-
-        header("Location: mypurchase.php?tab=return_refund");
-        exit();
-    } catch (Exception $e) {
-        error_log("Refund Status Update Error: " . $e->getMessage());
-    }
+// Fetch paginated orders
+try {
+    $query = "SELECT * " . $baseQuery . " ORDER BY order_date DESC LIMIT $itemsPerPage OFFSET $offset";
+    $stmt = $_db->prepare($query);
+    $stmt->execute($params);
+    $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    error_log("Order Fetch Error: " . $e->getMessage());
+    $orders = [];
 }
 
 $_title = 'My Purchases';
@@ -189,160 +95,109 @@ include '../_head.php';
 ?>
 
 <div class="mypurchase-page">
-    <nav class="purchase-nav">
-        <a href="?tab=pending" class="<?= ($_GET['tab'] ?? 'pending') === 'pending' ? 'active' : '' ?>">Pending</a>
-        <a href="?tab=confirmed" class="<?= ($_GET['tab'] ?? '') === 'confirmed' ? 'active' : '' ?>">Confirmed</a>
-        <a href="?tab=completed" class="<?= ($_GET['tab'] ?? '') === 'completed' ? 'active' : '' ?>">Completed</a>
-        <a href="?tab=cancelled" class="<?= ($_GET['tab'] ?? '') === 'cancelled' ? 'active' : '' ?>">Cancelled</a>
-        <a href="?tab=return_refund" class="<?= ($_GET['tab'] ?? '') === 'return_refund' ? 'active' : '' ?>">Return/Refund</a>
-    </nav>
+    <div class="purchase-stats-tabs">
+        <a href="mypurchase.php?status=Pending" class="purchase-stat-tab <?= $status_filter === 'Pending' ? 'active' : '' ?>">
+            <div class="purchase-stat-label">Pending</div>
+        </a>
+        <a href="mypurchase.php?status=OrderInProcess" class="purchase-stat-tab <?= $status_filter === 'OrderInProcess' ? 'active' : '' ?>">
+            <div class="purchase-stat-label">Order in Process</div>
+        </a>
+        <a href="mypurchase.php?status=Received" class="purchase-stat-tab <?= $status_filter === 'Received' ? 'active' : '' ?>">
+            <div class="purchase-stat-label">Completed</div>
+        </a>
+        <a href="mypurchase.php?status=Refunded" class="purchase-stat-tab <?= $status_filter === 'Refunded' ? 'active' : '' ?>">
+            <div class="purchase-stat-label">Return/Refund</div>
+        </a>
+    </div>
 
-    <?php if (($_GET['tab'] ?? 'pending') === 'pending'): ?>
-        <h2>Pending Orders</h2>
-        <?php if (empty($pendingOrders)): ?>
-            <p>No pending orders found.</p>
-        <?php else: ?>
-            <div class="purchase-orders">
-                <?php foreach ($pendingOrders as $order): ?>
-                    <div class="puchase-order-card">
-                        <h3>Order #<?= $order['order_id'] ?></h3>
-                        <p>Placed on <?= date('F j, Y', strtotime($order['order_date'])) ?></p>
-                        <p>Status: <?= htmlspecialchars($order['status']) ?></p>
-                        <p>Total Amount: RM <?= number_format($order['total_amount'], 2) ?></p>
-
-                        <form method="POST" class="order-actions">
-                            <input type="hidden" name="order_id" value="<?= $order['order_id'] ?>">
-                            <input type="hidden" name="total_amount" value="<?= $order['total_amount'] ?>">
-                            <button type="submit" name="cancel_order" class="purchase-btn-cancel">Cancel</button>
-                            <button type="submit" name="pay_now" class="purchase-btn-pay">Pay Now</button>
-                        </form>
-                    </div>
-                <?php endforeach; ?>
+    <div class="purchase-filter-section">
+        <form action="mypurchase.php" method="GET" class="purchase-filter-form">
+            <div class="purchase-date-range-group">
+                <div class="purchase-date-input">
+                    <input type="date" id="date_from" name="date_from" value="<?= htmlspecialchars($date_from) ?>" class="purchase-date-control" placeholder="From">
+                </div>
+                <span class="purchase-date-separator">to</span>
+                <div class="purchase-date-input">
+                    <input type="date" id="date_to" name="date_to" value="<?= htmlspecialchars($date_to) ?>" class="purchase-date-control" placeholder="To">
+                </div>
             </div>
-        <?php endif; ?>
-    <?php elseif (($_GET['tab'] ?? '') === 'confirmed'): ?>
-        <h2>Confirmed Orders</h2>
-        <?php if (empty($confirmedOrders)): ?>
-            <p>No confirmed orders found.</p>
-        <?php else: ?>
-            <div class="purchase-orders">
-                <?php foreach ($confirmedOrders as $order): ?>
-                    <div class="puchase-puchase-order-card">
-                        <h3>Order #<?= $order['order_id'] ?></h3>
-                        <p>Placed on <?= date('F j, Y', strtotime($order['order_date'])) ?></p>
-                        <p>Status: <?= htmlspecialchars($order['status']) ?></p>
-                        <p>Total Amount: RM <?= number_format($order['total_amount'], 2) ?></p>
 
-                        <?php if ($order['status'] === 'Delivered'): ?>
-                            <form method="POST" class="order-actions">
-                                <input type="hidden" name="order_id" value="<?= $order['order_id'] ?>">
-                                <button type="submit" name="mark_received" class="purchase-btn-received">Mark as Received</button>
-                            </form>
-                            <form method="POST" enctype="multipart/form-data" class="order-actions">
-                                <input type="hidden" name="order_id" value="<?= $order['order_id'] ?>">
-                                <textarea name="reason" placeholder="Reason for return/refund" required></textarea>
-                                <input type="file" name="photo" accept="image/*" required>
-                                <button type="submit" name="request_return_refund" class="purchase-btn-return-refund">Return/Refund</button>
-                            </form>
-                        <?php endif; ?>
-                    </div>
-                <?php endforeach; ?>
+            <div class="purchase-search-box">
+                <input type="text" id="search" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="Search orders...">
+                <button type="submit" class="purchase-search-btn">
+                    <i class="fas fa-search"></i>
+                </button>
             </div>
-        <?php endif; ?>
-        <?php elseif (($_GET['tab'] ?? '') === 'completed'): ?>
-    <h2>Completed Orders</h2>
-    <?php if (empty($completedOrders)): ?>
-        <p>No completed orders found.</p>
-    <?php else: ?>
-        <div class="purchase-orders">
-            <?php foreach ($completedOrders as $order): ?>
-                <div class="puchase-order-card">
-                    <h3>Order #<?= $order['order_id'] ?></h3>
-                    <p>Placed on <?= date('F j, Y', strtotime($order['order_date'])) ?></p>
-                    <p>Status: <?= htmlspecialchars($order['status']) ?></p>
-                    <p>Total Amount: RM <?= number_format($order['total_amount'], 2) ?></p>
 
-                    <!-- Fetch products for this order -->
-                    <?php
-                    $itemStmt = $_db->prepare("
-                        SELECT oi.*, p.prod_name
-                        FROM order_items oi
-                        JOIN product p ON oi.prod_id = p.prod_id
-                        WHERE oi.order_id = ?
-                    ");
-                    $itemStmt->execute([$order['order_id']]);
-                    $orderItems = $itemStmt->fetchAll(PDO::FETCH_ASSOC);
-                    ?>
-                    <div class="order-products">
-                        <?php foreach ($orderItems as $item): ?>
-                            <div class="product-review">
-                                <p><strong>Product:</strong> <?= htmlspecialchars($item['prod_name']) ?></p>
-                                <?php if (!hasReview($order['order_id'], $item['prod_id'], $_SESSION['cust_id'], $_db)): ?>
-                                    <form method="POST" class="review-form">
-                                        <input type="hidden" name="order_id" value="<?= $order['order_id'] ?>">
-                                        <input type="hidden" name="prod_id" value="<?= $item['prod_id'] ?>">
+            <div class="purchase-filter-buttons">
+                <button type="submit" class="purchase-filter-btn">Apply</button>
+                <a href="mypurchase.php" class="purchase-filter-btn secondary">Reset</a>
+            </div>
+        </form>
+    </div>
 
-                                        <label for="rating-<?= $item['prod_id'] ?>">Rating:</label>
-                                        <select name="rating" id="rating-<?= $item['prod_id'] ?>" required>
-                                            <option value="">Select</option>
-                                            <option value="1">1 - Poor</option>
-                                            <option value="2">2 - Fair</option>
-                                            <option value="3">3 - Good</option>
-                                            <option value="4">4 - Very Good</option>
-                                            <option value="5">5 - Excellent</option>
-                                        </select>
-
-                                        <label for="review-<?= $item['prod_id'] ?>">Review:</label>
-                                        <textarea name="review" id="review-<?= $item['prod_id'] ?>" rows="3" required></textarea>
-
-                                        <button type="submit" name="submit_review" class="purchase-btn-submit-review">Submit Review</button>
-                                    </form>
-                                <?php else: ?>
-                                    <p><strong>Review Submitted:</strong> Thank you for your feedback!</p>
-                                <?php endif; ?>
-                            </div>
+    <div class="purchase-order-cards">
+        <?php if (count($orders) > 0): ?>
+            <?php foreach ($orders as $order): ?>
+                <?php
+                // Fetch the number of items in the order
+                $itemStmt = $_db->prepare("
+                   SELECT p.image AS image_url, COUNT(*) AS item_count
+                    FROM order_items oi
+                    INNER JOIN product p ON oi.prod_id = p.prod_id
+                    WHERE oi.order_id = ?
+                    GROUP BY p.image  
+                ");
+                $itemStmt->execute([$order['order_id']]);
+                $items = $itemStmt->fetchAll(PDO::FETCH_ASSOC);
+                $item_count = array_sum(array_column($items, 'item_count'));
+                ?>
+                <div class="purchase-order-card">
+                    <div class="purchase-order-card-header">
+                        <h3>Order #<?= $order['order_id'] ?></h3>
+                        <span class="purchase-status-badge status-<?= strtolower($order['status']) ?>">
+                            <?= htmlspecialchars($order['status']) ?>
+                        </span>
+                    </div>
+                    <div class="purchase-order-img">
+                        <?php foreach ($items as $item): ?>
+                            <img src="<?= htmlspecialchars($item['image_url']) ?>" alt="Product Image" class="product-image">
                         <?php endforeach; ?>
                     </div>
-                </div>
-            <?php endforeach; ?>
-        </div>
-    <?php endif; ?>
-    <?php elseif (($_GET['tab'] ?? '') === 'cancelled'): ?>
-        <h2>Cancelled Orders</h2>
-        <?php if (empty($cancelledOrders)): ?>
-            <p>No cancelled orders found.</p>
-        <?php else: ?>
-            <div class="purchase-orders">
-                <?php foreach ($cancelledOrders as $order): ?>
-                    <div class="puchase-order-card">
-                        <h3>Order #<?= $order['order_id'] ?></h3>
-                        <p>Placed on <?= date('F j, Y', strtotime($order['order_date'])) ?></p>
-                        <p>Status: <?= htmlspecialchars($order['status']) ?></p>
-                        <p>Total Amount: RM <?= number_format($order['total_amount'], 2) ?></p>
+                    <div class="purchase-order-card-body">
+                        <p><strong>Date:</strong> <?= date('M j, Y g:i A', strtotime($order['order_date'])) ?></p>
+                        <p><strong>Items:</strong> <?= $item_count ?> item(s)</p>
+                        <p><strong>Total:</strong> RM <?= number_format($order['total_amount'], 2) ?></p>
                     </div>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>    
-    <?php elseif (($_GET['tab'] ?? '') === 'return_refund'): ?>
-    <h2>Return/Refund Requests</h2>
-    <?php if (empty($returnRefundOrders)): ?>
-        <p>No return/refund requests found.</p>
-    <?php else: ?>
-        <div class="purchase-orders">
-            <?php 
-            foreach ($returnRefundOrders as $request): ?>
-                <div class="puchase-order-card">
-                    <h3>Order #<?= $request['order_id'] ?></h3>
-                    <p>Requested on <?= date('F j, Y', strtotime($request['created_at'])) ?></p>
-                    <p><strong>Total Amount:</strong> RM <?= number_format($request['total_amount'], 2) ?></p>
-                    <p>Status: <?= htmlspecialchars($request['status']) ?></p>
-                    <p>Reason: <?= htmlspecialchars($request['reason']) ?></p>
-                    <img src="<?= htmlspecialchars($request['photo']) ?>" alt="Return/Refund Photo" style="max-width: 200px;">
+
+                    <div class="purchase-order-card-footer">
+                        <a href="cust_viewOrder.php?id=<?= $order['order_id'] ?>" class="purchase-btn purchase-btn-primary">View Order</a>
+                    </div>
                 </div>
             <?php endforeach; ?>
+        <?php else: ?>
+            <p class="purchase-no-results">No orders found matching your criteria.</p>
+        <?php endif; ?>
+    </div>    
+    
+    <div class="pagination-info">
+        <p>Showing <?= $offset + 1 ?> to <?= min($offset + $itemsPerPage, $totalItems) ?> of <?= number_format($totalItems) ?> orders</p>
+        <p class="pagination-info">Page <?= $page ?> of <?= number_format($totalPages) ?></p>
+
+    <?php if ($totalPages > 1): ?>
+        <div class="pagination">
+            <?php if ($page > 1): ?>
+                <a href="?page=<?= $page - 1 ?>&status=<?= urlencode($status_filter) ?>&date_from=<?= urlencode($date_from) ?>&date_to=<?= urlencode($date_to) ?>&search=<?= urlencode($search) ?>">&laquo; Previous</a>
+            <?php endif; ?>
+
+            <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                <a href="?page=<?= $i ?>&status=<?= urlencode($status_filter) ?>&date_from=<?= urlencode($date_from) ?>&date_to=<?= urlencode($date_to) ?>&search=<?= urlencode($search) ?>" <?= $i === $page ? 'class="active"' : '' ?>><?= $i ?></a>
+            <?php endfor; ?>
+
+            <?php if ($page < $totalPages): ?>
+                <a href="?page=<?= $page + 1 ?>&status=<?= urlencode($status_filter) ?>&date_from=<?= urlencode($date_from) ?>&date_to=<?= urlencode($date_to) ?>&search=<?= urlencode($search) ?>">Next &raquo;</a>
+            <?php endif; ?>
         </div>
     <?php endif; ?>
-<?php endif; ?>
 </div>
-
 <?php include '../_foot.php'; ?>

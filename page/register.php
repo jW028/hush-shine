@@ -49,8 +49,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_returning) {
 
     if (empty($contact)) {
         $errors[] = "Contact number is required";
-    } elseif (!preg_match('/^\d{3}-\d{8}$/', $contact)) {
-        $errors[] = "Invalid contact number format. Must be in the format XXX-XXXXXXXX.";
+    } elseif (!preg_match('/^\d{3}-?\d{7,8}$/', $contact)) {
+        $errors[] = "Invalid contact number format. Must be in the format XXX-XXXXXXX or XXX-XXXXXXXX.";
     }
     
 
@@ -94,42 +94,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_returning) {
 ?>
     <br>
     <div class="registration-container">
-        <?php if (!empty($errors)): ?>
-            <div class="error-container">
-                <ul>
-                    <?php foreach ($errors as $error): ?>
-                        <li><?= htmlspecialchars($error) ?></li>
-                    <?php endforeach; ?>
-                </ul>
-            </div>
-        <?php endif; ?>
-        
         <form action="register.php" method="post">
             <h1>Create an Account</h1>
             <h3>Already have an account?</h3><a href="/page/login.php">Login here</a>
             <div class="form-group">
                 <label class="form-label" for="name">Full Name</label>
-                <input class="form-input" type="text" id="name" name="name" value="<?= htmlspecialchars($name ?? '') ?>">
+                <input class="form-input" type="text" id="name" name="name" value="<?= htmlspecialchars($name ?? '') ?>" required>
             </div>
             
             <div class="form-group">
                 <label class="form-label" for="email">Email</label>
-                <input class="form-input" type="email" id="email" name="email" value="<?= htmlspecialchars($email ?? '') ?>">
+                <input class="form-input" type="email" id="email" name="email" value="<?= htmlspecialchars($email ?? '') ?>" required>
             </div>
             
             <div class="form-group">
                 <label class="form-label" for="contact">Contact Number</label>
-                <input class="form-input" type="tel" id="contact" name="contact" value="<?= htmlspecialchars($contact ?? '') ?>">
+                <input class="form-input" type="tel" id="contact" name="contact" value="<?= htmlspecialchars($contact ?? '') ?>" required>
             </div>
             
             <div class="form-group">
                 <label class="form-label" for="password">Password</label>
-                <input class="form-input" type="password" id="password" name="password">
+                <input class="form-input" type="password" id="password" name="password" required>
             </div>
             
             <div class="form-group">
                 <label class="form-label" for="confirm_password">Confirm Password</label>
-                <input class="form-input" type="password" id="confirm_password" name="confirm_password">
+                <input class="form-input" type="password" id="confirm_password" name="confirm_password" required>   
             </div>
 
             <fieldset>
@@ -156,6 +146,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_returning) {
         </div>
         
     </div>
+    <?php if ($errors): ?>
+            <div class="alert alert-danger">
+                <ul>
+                    <?php foreach ($errors as $error): ?>
+                        <li><?= $error ?></li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php endif; ?>
 </body>
 </html>
 

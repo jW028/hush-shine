@@ -1,9 +1,9 @@
 <?php
 require_once '../_base.php';
-include '../_head.php';
-
 auth('admin');
 
+$_title = 'Customers';
+include '../_head.php';
 $_adminContext = true;
 
 $action = isset($_GET['action']) ? $_GET['action'] : 'list';

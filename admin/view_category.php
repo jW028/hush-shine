@@ -1,12 +1,12 @@
 <?php
 require_once '../_base.php';
-include '../_head.php';
 
 auth('admin');
 
 $_adminContext = true;
 
 $title = 'Category Details';
+include '../_head.php';
 
 $cat_id = $_GET['id'] ?? null;
 
