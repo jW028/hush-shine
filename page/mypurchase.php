@@ -165,13 +165,19 @@ include '../_head.php';
                     <div class="purchase-order-img">
                         <?php foreach ($items as $item): ?>
                             <?php
-                                // Decode JSON image data
-                                $productImages = json_decode($item['image'], true) ?: [];
-                                $firstImage = !empty($productImages) ? $productImages[0] : 'default.jpg';
+                            $productImage = '../images/no-image.png'; // Default image
+                            if (!empty($item['image_url'])) {
+                                $imageData = json_decode($item['image_url'], true);
+                                if ($imageData) {
+                                    $imageFile = is_array($imageData) ? $imageData[0] : $imageData;
+                                    $productImage = '../images/products/' . $imageFile;
+                                    if (!file_exists($productImage)) {
+                                        $productImage = '../images/no-image.png';
+                                    }
+                                }
+                            }
                             ?>
-                            <img src="/images/products/<?= htmlspecialchars($firstImage) ?>" 
-                                alt="Product Image" 
-                                class="mypurchase-product-image">
+                            <img src="<?= htmlspecialchars($productImage) ?>" alt="Product Image" class="mypurchase-product-image">
                         <?php endforeach; ?>
                     </div>
                     <div class="purchase-order-card-body">

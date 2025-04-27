@@ -377,11 +377,11 @@ include '../_head.php';
                                 <?php
                                     // Decode JSON image data
                                     $productImages = json_decode($item['image'], true) ?: [];
-                                    $firstImage = !empty($productImages) ? $productImages[0] : 'default.jpg';
+                                    $firstImage = !empty($productImages) ? $productImages[0] : 'no-image.png';
                                 ?>
                                 <div class="order-item">
                                     <div class="item-image">
-                                        <img src="/images/products/<?= htmlspecialchars($firstImage) ?>" 
+                                        <img src="../images/products/<?= htmlspecialchars($firstImage) ?>" 
                                             alt="<?= htmlspecialchars($item['prod_name']) ?>">
                                         <span class="item-quantity"><?= $item['quantity'] ?></span>
                                     </div>

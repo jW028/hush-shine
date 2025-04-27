@@ -55,7 +55,7 @@ if(is_post()) {
 <div class="page-wrapper">
     <div class="container margin-top">
         <form method="post" class="reset-password-form">
-            <h2>Reset Password</h2>
+            <h2><i class="fas fa-edit"></i> Reset Password</h2>
             <div class="form-group">
                 <label for="new_password">New Password:</label>
                 <?= html_password('new_password', 'required') ?>

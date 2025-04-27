@@ -3207,7 +3207,7 @@
     .input-with-icon input,
     .input-with-icon.profile input,
     .input-with-icon textarea {
-        width: 100%;
+        width: 250px;
         padding: 12px 12px 12px 40px;
         border: 1px solid var(--border);
         border-radius: 6px;
@@ -6117,6 +6117,7 @@
         margin-top: 5px;
         color: #6c757d;
         font-size: 12px;
+        width: max-content;
     }
 
     .success-toast {
@@ -6445,6 +6446,7 @@
         font-weight: 500;
         color: #555;
         font-size: 14px;
+        width: max-content;
     }
     
     .input-with-icon.profile {
@@ -6520,6 +6522,7 @@
         transition: background-color 0.2s;
         display: inline-flex;
         align-items: center;
+        width: max-content;
     }
     
     .primary-button:hover {
