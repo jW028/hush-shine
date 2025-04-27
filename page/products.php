@@ -120,6 +120,11 @@ if ($maxPrice !== null) {
     $params[] = $maxPrice;
 }
 
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+if ($page < 1) $page = 1;
+$itemsPerPage = 8; // Products per page
+$offset = ($page - 1) * $itemsPerPage;
+
 $sql = "SELECT * FROM product";
 if (!empty($where)) {
     $sql .= " WHERE " . implode(" AND ", $where);
@@ -145,6 +150,19 @@ if ($sort) {
             break;
     }
 }
+
+// Get total count for pagination
+try {
+    $countQuery = "SELECT COUNT(*) FROM (" . $sql . ") as count_table";
+    $countStmt = $_db->prepare($countQuery);
+    $countStmt->execute($params);
+    $totalItems = $countStmt->fetchColumn();
+    $totalPages = ceil($totalItems / $itemsPerPage);
+} catch (PDOException $e) {
+    error_log("Pagination Error: " . $e->getMessage());
+}
+
+$sql .= " LIMIT " . (int)$itemsPerPage . " OFFSET " . (int)$offset;
 
 $stmt = $_db->prepare($sql);
 $stmt->execute($params);
@@ -321,6 +339,62 @@ include '../_head.php';
             <?php 
             $columnCount++;
         endforeach; ?>
+    </div>
+    <div class="pagination">
+        <?php if ($totalPages > 1): ?>
+            <?php if ($page > 1): ?>
+                <a href="?page=<?= $page - 1 ?><?= $search ? '&search=' . urlencode($search) : '' ?><?= $category ? '&category=' . urlencode($category) : '' ?><?= $sort ? '&sort=' . urlencode($sort) : '' ?><?= isset($_GET['min_price']) ? '&min_price=' . urlencode($_GET['min_price']) : '' ?><?= isset($_GET['max_price']) ? '&max_price=' . urlencode($_GET['max_price']) : '' ?>">&laquo; Previous</a>
+            <?php endif; ?>
+
+            <?php 
+            $range = 2;
+            $startPage = max(1, $page - $range);
+            $endPage = min($totalPages, $page + $range);
+            
+            if ($startPage > 1) {
+                echo "<a href=\"?page=1" . ($search ? '&search=' . urlencode($search) : '') . ($category ? '&category=' . urlencode($category) : '') . ($sort ? '&sort=' . urlencode($sort) : '') . (isset($_GET['min_price']) ? '&min_price=' . urlencode($_GET['min_price']) : '') . (isset($_GET['max_price']) ? '&max_price=' . urlencode($_GET['max_price']) : '') . "\">1</a>";
+                if ($startPage > 2) {
+                    echo "<span class=\"ellipsis\">...</span>";
+                }
+            }
+
+            for ($i = $startPage; $i <= $endPage; $i++) {
+                $params = [
+                    'page' => $i,
+                    'search' => $search,
+                    'category' => $category,
+                    'sort' => $sort,
+                    'min_price' => $_GET['min_price'] ?? null,
+                    'max_price' => $_GET['max_price'] ?? null
+                ];
+                $queryString = http_build_query(array_filter($params));
+                
+                echo '<a href="?' . $queryString . '"';
+                echo ($i == $page) ? ' class="active"' : '';
+                echo '>' . $i . '</a>';
+            }
+
+            if ($endPage < $totalPages) {
+                if ($endPage < $totalPages - 1) {
+                    echo "<span class=\"ellipsis\">...</span>";
+                }
+                $params = [
+                    'page' => $totalPages,
+                    'search' => $search,
+                    'category' => $category,
+                    'sort' => $sort,
+                    'min_price' => $_GET['min_price'] ?? null,
+                    'max_price' => $_GET['max_price'] ?? null
+                ];
+                $queryString = http_build_query(array_filter($params));
+                echo "<a href=\"?$queryString\">$totalPages</a>";
+            }
+            ?>
+
+            <?php if ($page < $totalPages): ?>
+                <a href="?page=<?= $page + 1 ?><?= $search ? '&search=' . urlencode($search) : '' ?><?= $category ? '&category=' . urlencode($category) : '' ?><?= $sort ? '&sort=' . urlencode($sort) : '' ?><?= isset($_GET['min_price']) ? '&min_price=' . urlencode($_GET['min_price']) : '' ?><?= isset($_GET['max_price']) ? '&max_price=' . urlencode($_GET['max_price']) : '' ?>">Next &raquo;</a>
+            <?php endif; ?>
+        <?php endif; ?>
     </div>
 </div>
 
