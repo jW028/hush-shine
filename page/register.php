@@ -2,6 +2,9 @@
 
 require '../_base.php';
 
+define('RECAPTCHA_SITE_KEY', '6LciLSYrAAAAALYKM41_yhNAUWWcOmuTnhQ8Bxsb');
+define('RECAPTCHA_SECRET_KEY', '6LciLSYrAAAAAOewB9gBZDFRLhITz2z3fC_tz-w5');
+
 $_title = 'Create an Account';
 include '../_head.php';
 
@@ -92,6 +95,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_returning) {
             $errors[] = "Database error: " . $e->getMessage();
         }
     }
+
+    $recaptcha_response = $_POST['g-recaptcha-response'] ?? '';
+    if (empty($recaptcha_response)) {
+        $errors[] = "Please complete the CAPTCHA verification";
+    } else {
+        $verify_url = "https://www.google.com/recaptcha/api/siteverify";
+        $data = [
+            'secret' => RECAPTCHA_SECRET_KEY,
+            'response' => $recaptcha_response,
+            'remoteip' => $_SERVER['REMOTE_ADDR']
+        ];
+
+        $options = [
+            'http' => [
+                'header' => "Content-type: application/x-www-form-urlencoded\r\n",
+                'method' => 'POST',
+                'content' => http_build_query($data)
+            ]
+        ];
+
+        $context = stream_context_create($options);
+        $verify_response = file_get_contents($verify_url, false, $context);
+        $response_data = json_decode($verify_response);
+
+        if (!$response_data->success) {
+            $errors[] = "CAPTCHA verification failed";
+        }
+    }
 }
 ?>
     <br>
@@ -136,7 +167,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_returning) {
                     <label for="radMale">Male</label>
                 </div>
             </fieldset>
-            
+
+            <div class="form-group captcha-wrapper">
+                <div class="g-recaptcha" data-sitekey="<?= RECAPTCHA_SITE_KEY ?>"></div>
+            </div>
+    
             <div class="form-group">
                 <button class="submit-button" type="submit" class="btn">Register</button>
             </div>

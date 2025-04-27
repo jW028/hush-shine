@@ -358,9 +358,15 @@ include '../_head.php';
                         
                         <div class="order-items">
                             <?php foreach ($cartItems as $item): ?>
+                                <?php
+                                    // Decode JSON image data
+                                    $productImages = json_decode($item['image'], true) ?: [];
+                                    $firstImage = !empty($productImages) ? $productImages[0] : 'default.jpg';
+                                ?>
                                 <div class="order-item">
                                     <div class="item-image">
-                                        <img src="/images/prod_img/<?= htmlspecialchars($item['image']) ?>" alt="<?= htmlspecialchars($item['prod_name']) ?>">
+                                        <img src="/images/products/<?= htmlspecialchars($firstImage) ?>" 
+                                            alt="<?= htmlspecialchars($item['prod_name']) ?>">
                                         <span class="item-quantity"><?= $item['quantity'] ?></span>
                                     </div>
                                     <div class="item-details">
@@ -373,7 +379,6 @@ include '../_head.php';
                                 </div>
                             <?php endforeach; ?>
                         </div>
-
                         <div class="order-totals">
                             <div class="total-row">
                                 <span>Subtotal</span>

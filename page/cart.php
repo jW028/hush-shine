@@ -96,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 JOIN shopping_cart sc ON ci.cart_id = sc.cart_id
                 WHERE ci.cart_id = ? AND ci.prod_id = ? AND sc.cust_id = ?
             ");
-            $verifyStmt->execute([$cartId, $prodId, $cartId]);
+            $verifyStmt->execute([$cartId, $prodId, $custId]);
             
             if ($verifyStmt->rowCount() === 0) {
                 // No matching cart item found for this user

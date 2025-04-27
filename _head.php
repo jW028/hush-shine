@@ -53,6 +53,7 @@ $isAdminSection = strpos($_SERVER['REQUEST_URI'], '/admin/') !== false;
     <script src="https://kit.fontawesome.com/ff9c54facb.js" crossorigin="anonymous"></script>
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
 <?php 
@@ -237,14 +238,15 @@ $isAdminSection = strpos($_SERVER['REQUEST_URI'], '/admin/') !== false;
                     <?php if (isset($_SESSION['user'])): ?>
                         <?php if ($_SESSION['user'] === "admin"): ?>
                             <?php
-                            $stm = $_db->prepare("SELECT admin_name, admin_email FROM admin where admin_id = ?");
+                            $stm = $_db->prepare("SELECT admin_name, admin_email, admin_photo FROM admin where admin_id = ?");
                             $stm->execute([$_SESSION['admin_id']]);
                             $user = $stm->fetch(PDO::FETCH_ASSOC);
                             $_SESSION['admin_name'] = $user['admin_name'];
                             $_SESSION['admin_email'] = $user['admin_email'];
+                            $_SESSION['admin_photo'] = $user['admin_photo'];
                             ?>
                             <div class="admin-side-profile">
-                                <i class="fas fa-user-shield admin-icon"></i>
+                            <img src="/images/admin_img/<?= htmlspecialchars($_SESSION['admin_photo']) ?>" alt="Profile Picture" class="profile-pic">
                                 <p>Welcome, <?= htmlspecialchars($_SESSION['admin_name']) ?>!</p> 
                             </div>
                             <a href="/index.php" class="sidebar-link">Home</a>

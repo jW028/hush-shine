@@ -1,12 +1,13 @@
 <?php
 require '../_base.php';
 
-if (!isset($_SESSION['cust_id']) || !isset($_SESSION['order_id'])) {
+if (!isset($_SESSION['cust_id'])) {
     header("Location: ../index.php");
     exit();
 }
 
-$orderId = $_SESSION['order_id'];
+// Get order ID from either session or URL parameter
+$orderId = isset($_GET['id']) ? $_GET['id'] : (isset($_SESSION['order_id']) ? $_SESSION['order_id'] : null);
 $custId = $_SESSION['cust_id'];
 
 if (!isset($_SESSION['applied_reward_points'])) {
@@ -25,16 +26,16 @@ try {
         throw new Exception("Failed to update order status.");
     }
     
-    // // Fetch order items
-    // $stmt = $_db->prepare("
-    //     SELECT oi.prod_id, oi.quantity, p.prod_name, p.price, p.image
-    //     FROM order_items oi
-    //     JOIN product p ON oi.prod_id = p.prod_id
-    //     WHERE oi.order_id = ?
-    // ");
-    // if (!$stmt->execute([$orderId])) {
-    //     throw new Exception("Failed to fetch order items.");
-    // }
+    // Fetch order items
+    $stmt = $_db->prepare("
+        SELECT oi.prod_id, oi.quantity, p.prod_name, p.price, p.image
+        FROM order_items oi
+        JOIN product p ON oi.prod_id = p.prod_id
+        WHERE oi.order_id = ?
+    ");
+    if (!$stmt->execute([$orderId])) {
+        throw new Exception("Failed to fetch order items.");
+    }
 
     // $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
     // if (!$items) {
@@ -94,6 +95,7 @@ try {
 } catch (Exception $e) {
     error_log("Order Confirmation Error: " . $e->getMessage());
     echo "<p><strong>DEBUG:</strong> " . htmlspecialchars($e->getMessage()) . "</p>";
+    header("Location: products.php");
     exit();
 }
 
