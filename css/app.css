@@ -4621,9 +4621,15 @@
         box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         text-align: center;
     }
+    
+    .admin-table th, .admin-table td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+        word-wrap: break-word;
+    }
 
     .admin-submit-btn {
-        width: 40%;
         text-decoration: none;
         padding: 12px;
         background-color: #000000;
