@@ -196,6 +196,19 @@ if (isset($_POST['complete_order'])) {
             $afterPointsTotal = $total;
         }
 
+        foreach ($cartItems as $item) {
+            $stockCheck = $_db->prepare("
+                SELECT prod_id, prod_name, quantity
+                FROM product
+                WHERE prod_id = ?");
+            $stockCheck->execute([$item['prod_id']]);
+            $productStock = $stockCheck->fetch(PDO::FETCH_ASSOC);
+
+            if ($productStock['quantity'] < $item['quantity']) {
+                throw new Exception("Insufficient stock for " . htmlspecialchars($item['prod_name']));
+            }
+        }
+
         // Store checkout total in session
         $_SESSION['checkout_total'] = $afterPointsTotal;
 
@@ -233,10 +246,52 @@ if (isset($_POST['complete_order'])) {
                 $item['quantity'],
                 $item['price']
             ]);
+
+            // Update product stock 
+            $updateStockStmt = $_db->prepare("
+                UPDATE product
+                SET quantity = quantity - ?
+                WHERE prod_id = ? AND quantity >= ? 
+            ");
+            $updateStockStmt->execute([
+                $item['quantity'],
+                $item['prod_id'],
+                $item['quantity']
+            ]);
+
+            $updateCheck = $_db->prepare("
+                SELECT prod_name, quantity
+                FROM product
+                WHERE prod_id = ?
+            ");
+            $updateCheck->execute([$item['prod_id']]);
+            $productInfo = $updateCheck->fetch(PDO::FETCH_ASSOC);
+
+            error_log("Updated stock for product ID: " . $item['prod_id'] . " to " . $productInfo['quantity'] . "\n");
         }
 
         // Commit transaction before redirecting
         $_db->commit();
+
+        if (!empty($selectedItems)) {
+            // If specific items were selected
+            $placeholders = implode(',', array_fill(0, count($selectedItems), '?'));
+            $clearCartStmt = $_db->prepare("
+                DELETE ci FROM cart_item ci
+                JOIN shopping_cart sc ON ci.cart_id = sc.cart_id
+                WHERE sc.cust_id = ? AND ci.prod_id IN ($placeholders)
+            ");
+            $clearCartParams = array_merge([$custId], $selectedItems);
+            $clearCartStmt->execute($clearCartParams);
+        } else {
+            // If all items were purchased
+            $clearCartStmt = $_db->prepare("
+                DELETE ci FROM cart_item ci
+                JOIN shopping_cart sc ON ci.cart_id = sc.cart_id
+                WHERE sc.cust_id = ?
+            ");
+            $clearCartStmt->execute([$custId]);
+        }
 
         // Handle different payment methods
         if ($paymentMethod === 'Debit/Credit Card') {
@@ -377,11 +432,11 @@ include '../_head.php';
                                 <?php
                                     // Decode JSON image data
                                     $productImages = json_decode($item['image'], true) ?: [];
-                                    $firstImage = !empty($productImages) ? $productImages[0] : 'default.jpg';
+                                    $firstImage = !empty($productImages) ? $productImages[0] : 'no-image.png';
                                 ?>
                                 <div class="order-item">
                                     <div class="item-image">
-                                        <img src="/images/products/<?= htmlspecialchars($firstImage) ?>" 
+                                        <img src="../images/products/<?= htmlspecialchars($firstImage) ?>" 
                                             alt="<?= htmlspecialchars($item['prod_name']) ?>">
                                         <span class="item-quantity"><?= $item['quantity'] ?></span>
                                     </div>

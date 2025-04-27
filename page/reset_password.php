@@ -84,7 +84,7 @@ include '../_head.php';
 <div class="reset-password-container">
     <div class="reset-form-wrapper">
         <div class="form-card">
-            <h1>Reset Your Password</h1>
+            <h1><i class="fas fa-edit" style="padding-right: 20px;"></i>Reset Your Password</h1>
             
             <?php if ($success): ?>
                 <div class="success-container">

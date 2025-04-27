@@ -80,14 +80,9 @@ $(document).ready(function() {
             console.error("Delete product modal not found");
             return;
         }
-        $(deleteProductModal).find('.modal-body strong').text(productName);
-        $(deleteProductForm).find('#prod_id').val(productId);
-        
-        deleteProductModal.style.display = "block";
-        setTimeout(() => {
-            deleteProductModal.classList.add("show");
-        }, 10);
-        document.body.style.overflow = "hidden";
+        $('#deleteProductName').text(productName);
+        $('#deleteProductId').val(productId);
+    
         // // Open delete modal
         openModal(deleteProductModal);
     });
@@ -159,28 +154,41 @@ $(document).ready(function() {
         });
     });
     
-    // Delete product form submission
-    $('#deleteProductForm').on('submit', function(e) {
-        e.preventDefault();
+    // // Delete product form submission
+    // $('#deleteProductForm').on('submit', function(e) {
+    //     e.preventDefault();
         
-        $.ajax({
-            url: $(this).attr('action'),
-            type: 'POST',
-            data: $(this).serialize(),
-            success: function(response) {
-                if (response.success) {
-                    alert(response.message);
-                    closeModal(deleteProductModal);
-                    window.location.reload();
-                } else {
-                    alert('Error: ' + response.message);
-                }
-            },
-            error: function() {
-                alert('An error occurred while trying to delete the product.');
-            }
-        });
-    }); 
+    //     const form = this;
+    //     const formData = $(form).serialize();
+        
+    //     $.ajax({
+    //         url: $(form).attr('action'),
+    //         type: 'POST',
+    //         data: formData,
+    //         success: function(response) {
+    //             // Try to parse as JSON, but gracefully handle if it's not
+    //             try {
+    //                 const jsonResponse = typeof response === 'object' ? response : JSON.parse(response);
+    //                 if (jsonResponse.success) {
+    //                     alert(jsonResponse.message);
+    //                 } else {
+    //                     alert('Error: ' + (jsonResponse.message || 'Unknown error'));
+    //                 }
+    //             } catch (e) {
+    //                 // Not JSON - likely HTML response after redirect
+    //                 console.log("Non-JSON response received");
+    //             }
+                
+    //             // Close modal and reload regardless
+    //             closeModal(deleteProductModal);
+    //             window.location.reload();
+    //         },
+    //         error: function(xhr, status, error) {
+    //             alert('An error occurred while trying to delete the product.');
+    //             console.error("AJAX error:", xhr.responseText);
+    //         }
+    //     });
+    // });
 });
 
 

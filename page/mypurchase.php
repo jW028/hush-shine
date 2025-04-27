@@ -1,6 +1,13 @@
 <?php
 require '../_base.php';
 
+// If user is admin, bring them back to index
+if (isset($_SESSION['admin_id']) && !empty($_SESSION['admin_id'])) {
+    // User is logged in as admin
+    header("Location: ../index.php");
+    exit();
+}
+
 // Check if user is logged in
 if (!isset($_SESSION['cust_id']) || empty($_SESSION['cust_id'])) {
     header("Location: ../page/login.php");
@@ -165,13 +172,19 @@ include '../_head.php';
                     <div class="purchase-order-img">
                         <?php foreach ($items as $item): ?>
                             <?php
-                                // Decode JSON image data
-                                $productImages = json_decode($item['image'], true) ?: [];
-                                $firstImage = !empty($productImages) ? $productImages[0] : 'default.jpg';
+                            $productImage = '../images/no-image.png'; // Default image
+                            if (!empty($item['image_url'])) {
+                                $imageData = json_decode($item['image_url'], true);
+                                if ($imageData) {
+                                    $imageFile = is_array($imageData) ? $imageData[0] : $imageData;
+                                    $productImage = '../images/products/' . $imageFile;
+                                    if (!file_exists($productImage)) {
+                                        $productImage = '../images/no-image.png';
+                                    }
+                                }
+                            }
                             ?>
-                            <img src="/images/products/<?= htmlspecialchars($firstImage) ?>" 
-                                alt="Product Image" 
-                                class="mypurchase-product-image">
+                            <img src="<?= htmlspecialchars($productImage) ?>" alt="Product Image" class="mypurchase-product-image">
                         <?php endforeach; ?>
                     </div>
                     <div class="purchase-order-card-body">

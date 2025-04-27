@@ -2,6 +2,12 @@
 require '../_base.php';
 //-----------------------------------------------------------------------------
 
+if (isset($_SESSION['admin_id']) && !empty($_SESSION['admin_id'])) {
+    // User is logged in as admin
+    header("Location: ../index.php");
+    exit();
+}
+
 // Handle deletion of cart item
 // Handle AJAX requests for deleting items
 // if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_item') {
@@ -11,11 +17,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Handle quantity updates
     if (isset($_POST['action']) && $_POST['action'] === 'update_quantity') {
+        
+
         // Check if user is logged in
         if (!isset($_SESSION['cust_id']) || empty($_SESSION['cust_id'])) {
             header("Location: ../page/login.php");
             exit();
-        }
+        } 
+
 
         // Check required parameters
         if (!isset($_POST['product_id']) || !isset($_POST['quantity'])) {
