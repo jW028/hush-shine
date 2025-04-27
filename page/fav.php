@@ -219,10 +219,6 @@ include '../_head.php';
         document.getElementById('modal-image').src = newSrc;
     }
 
-    // Add to cart functionality
-    // Fix the addToCart function in your JavaScript
-// Replace this section of code:
-
 function addToCart() {
     const productId = $('.product.active').data('id') || $('#modal-favorite-btn').data('product-id');
     const quantity = parseInt($('#quantity').val());

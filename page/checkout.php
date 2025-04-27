@@ -10,6 +10,7 @@ if (!isset($_SESSION['cust_id'])) {
 $custId = $_SESSION['cust_id'];
 $error = null;
 $success = null;
+$formData = [];
 
 // Get user details
 try {
@@ -42,7 +43,7 @@ try {
             FROM orders o
             WHERE o.cust_id = ? AND o.status != 'Cancelled') AS total_used
     ");
-    $rewardStmt->execute([$custId, $custId]);
+    $rewardStmt->execute([$custId, $custId,$custId]);
     $rewardResult = $rewardStmt->fetch(PDO::FETCH_ASSOC);
     // Calculate available points (earned minus used)
     $rewardPoints = floatval($rewardResult['total_earned']) - floatval($rewardResult['total_used']);
@@ -95,8 +96,9 @@ $afterPointsTotal = $total;
 
 // Handle reward points application
 if (isset($_POST['apply_reward_points']) && !empty($_POST['points'])) {
-    $pointsToUse = floatval($_POST['points']); // Convert input to a float for validation
 
+    $pointsToUse = floatval($_POST['points']);
+    
     // Validate reward points
     if ($pointsToUse <= 0) {
         $error = "Reward points must be greater than 0.";
@@ -116,26 +118,27 @@ if (isset($_POST['apply_reward_points']) && !empty($_POST['points'])) {
         // Store applied reward points in the session
         $_SESSION['applied_reward_points'] = $pointsToUse;
         $_SESSION['checkout_total'] = $afterPointsTotal; // Update the session total
+        $_SESSION['successMessage'] = "Reward points applied successfully."; 
 
-        $success = "Reward points applied successfully.";
+        header("Location: checkout.php");
+        exit();
     }
-    // Prevent form resubmission by redirecting back to the checkout page
-    header("Location: checkout.php");
-    exit();
 }
+
+$formData = $_SESSION['checkout_form_data'] ?? [];
 
 if (isset($_POST['remove_reward_points'])) {
     unset($_SESSION['applied_reward_points']);
     $appliedPoints = 0;
     $_SESSION['checkout_total'] = $total; // Reset the session total
-    $success = "Reward points removed.";
+    $_SESSION['successMessage'] = "Reward points removed.";
 
-    // Prevent form resubmission by redirecting back to the checkout page
     header("Location: checkout.php");
     exit();
 }
+
 // Process checkout form submission when the complete order button is clicked
-elseif (isset($_POST['complete_order'])) {
+if (isset($_POST['complete_order'])) {
     try {
         // Clear applied reward points for the new order
         unset($_SESSION['applied_reward_points']);
@@ -179,7 +182,7 @@ elseif (isset($_POST['complete_order'])) {
         $_db->beginTransaction();
 
         // Calculate reward points 
-        $rewardPoints = $afterPointsTotal * 0.01;
+        $rewardPointsget = $afterPointsTotal * 0.01;
 
         // Insert the order into the database
         $orderStmt = $_db->prepare("
@@ -190,7 +193,7 @@ elseif (isset($_POST['complete_order'])) {
             $custId,
             $afterPointsTotal, // Total after applying reward points
             $appliedPoints,    // Reward points used
-            $rewardPoints,     // Reward points earned
+            $rewardPointsget,     // Reward points earned
             $_POST['address'],
             $paymentMethod
         ]);
@@ -261,10 +264,11 @@ include '../_head.php';
             </div>
         <?php endif; ?>
 
-        <?php if (isset($success)): ?>
+        <?php if (isset($_SESSION['successMessage'])): ?>
             <div class="alert alert-success">
-                <i class="fas fa-check-circle"></i> <?= htmlspecialchars($success) ?>
+                <i class="fas fa-check-circle"></i> <?= htmlspecialchars($_SESSION['successMessage']) ?>
             </div>
+            <?php unset($_SESSION['successMessage']); ?>
         <?php endif; ?>
 
         <form method="POST" class="checkout-post-method">
@@ -279,7 +283,8 @@ include '../_head.php';
                                 <label for="name">Full Name</label>
                                 <div class="input-with-icon">
                                     <i class="fas fa-user"></i>
-                                    <input type="text" id="name" name="name" value="<?= htmlspecialchars($user['cust_name'] ?? '') ?>" required>
+                                    <input type="text" id="name" name="name" value="<?= htmlspecialchars($formData['name'] ?? ($user['cust_name'] ?? '')) ?>" required>
+
                                 </div>
                             </div>
                         </div>
@@ -289,7 +294,8 @@ include '../_head.php';
                                 <label for="email">Email</label>
                                 <div class="input-with-icon">
                                     <i class="fas fa-envelope"></i>
-                                    <input type="email" id="email" name="email" value="<?= htmlspecialchars($user['email'] ?? '') ?>" required>
+                                    <input type="email" id="email" name="email" 
+                                    value="<?= htmlspecialchars($formData['email'] ?? ($user['email'] ?? '')) ?>" required>
                                 </div>
                             </div>
                         </div>
@@ -300,7 +306,7 @@ include '../_head.php';
                                 <div class="input-with-icon">
                                     <i class="fas fa-map-marker-alt"></i>
                                     <textarea id="address" name="address" required minlength="10" 
-                                        placeholder="Enter your full shipping address"><?= htmlspecialchars($user['address'] ?? '') ?></textarea>
+                                    placeholder="Enter your full shipping address"><?= htmlspecialchars($formData['address'] ?? ($user['address'] ?? '')) ?></textarea>
                                 </div>
                             </div>
                         </div>
@@ -312,8 +318,9 @@ include '../_head.php';
                         
                         <div class="payment-cards">
                             <label class="payment-option">
-                                <input type="radio" name="payment_method" value="Debit/Credit Card" required checked>
-                                <div class="payment-content">
+                            <input type="radio" name="payment_method" value="Debit/Credit Card" required 
+                            <?= (!isset($formData['payment_method']) || $formData['payment_method'] == 'Debit/Credit Card') ? 'checked' : '' ?>>
+                        <div class="payment-content">
                                     <div class="payment-icon">
                                         <i class="fab fa-cc-stripe"></i>
                                     </div>
@@ -327,8 +334,8 @@ include '../_head.php';
                             </label>
 
                             <label class="payment-option">
-                                <input type="radio" name="payment_method" value="DuitNow QR">
-                                <div class="payment-content">
+                            <input type="radio" name="payment_method" value="DuitNow QR" 
+                            <?= (isset($formData['payment_method']) && $formData['payment_method'] == 'DuitNow QR') ? 'checked' : '' ?>> <div class="payment-content">
                                     <div class="payment-icon">
                                         <i class="fas fa-qrcode"></i>
                                     </div>

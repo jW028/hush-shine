@@ -16,7 +16,7 @@ try {
             SUM(CASE WHEN status = 'Pending' THEN 1 ELSE 0 END) AS pending_orders,
             SUM(CASE WHEN status IN ('Confirmed', 'Processing', 'Shipped', 'Delivered') THEN 1 ELSE 0 END) AS order_in_process,
             SUM(CASE WHEN status = 'Received' THEN 1 ELSE 0 END) AS completed_orders,
-            SUM(CASE WHEN status IN ('Approved', 'Rejected', 'Request Pending') AS refunded_orders
+            SUM(CASE WHEN status IN ('Request Pending, Refunded') AS refunded_orders
         FROM orders
         WHERE cust_id = ?
     ");
@@ -37,7 +37,7 @@ $baseQuery = "FROM orders WHERE cust_id = ?";
 $params = [$custId];
 
 if ($status_filter === 'Refunded') {
-    $baseQuery .= " AND status IN ('Request Pending', 'Approved', 'Rejected')";
+    $baseQuery .= " AND status IN ('Request Pending','Refunded')";
 } elseif ($status_filter === 'OrderInProcess') {
     $baseQuery .= " AND status IN ('Confirmed', 'Processing', 'Shipped', 'Delivered')";
 } elseif ($status_filter !== 'all') {
@@ -107,6 +107,9 @@ include '../_head.php';
         </a>
         <a href="mypurchase.php?status=Refunded" class="purchase-stat-tab <?= $status_filter === 'Refunded' ? 'active' : '' ?>">
             <div class="purchase-stat-label">Return/Refund</div>
+        </a>
+        <a href="mypurchase.php?status=Cancelled" class="purchase-stat-tab <?= $status_filter === 'Cancelled' ? 'active' : '' ?>">
+            <div class="purchase-stat-label">Cancelled</div>
         </a>
     </div>
 
