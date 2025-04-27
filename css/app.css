@@ -2862,8 +2862,7 @@
 
     /* Shopping Cart CSS */
     .cart-page-container {
-        /* margin-top: 150px; */
-        margin: 100px auto;
+        margin: 180px auto;
         width: 90%;
         padding: 0 20px;
         max-width: 1240px;
