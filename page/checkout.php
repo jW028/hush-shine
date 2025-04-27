@@ -319,6 +319,15 @@ if ($appliedPoints > 0) {
     $afterPointsTotal = $total;
 }
 
+// Check if coming from a completed order
+if (isset($_SERVER['HTTP_REFERER'])) {
+    $referer = parse_url($_SERVER['HTTP_REFERER'], PHP_URL_PATH);
+    if (strpos($referer, 'order_confirmation.php') !== false) {
+        header("Location: products.php");
+        exit();
+    }
+}
+
 $_title = 'Checkout';
 include '../_head.php';
 ?>

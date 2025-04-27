@@ -61,7 +61,6 @@ CREATE TABLE `cart_item` (
 --
 
 INSERT INTO `cart_item` (`cart_id`, `prod_id`, `quantity`) VALUES
-('CR01', 'P007', 1),
 ('CR01', 'P011', 2),
 ('CR02', 'P003', 1),
 ('CR04', 'P006', 1),
@@ -69,7 +68,6 @@ INSERT INTO `cart_item` (`cart_id`, `prod_id`, `quantity`) VALUES
 ('CR06', 'P002', 2),
 ('CR07', 'P005', 1),
 ('CR08', 'P003', 5),
-('CR08', 'P007', 1),
 ('CR08', 'P011', 1),
 ('CR08', 'P018', 1),
 ('CR09', 'P002', 1),
