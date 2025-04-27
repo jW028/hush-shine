@@ -328,22 +328,22 @@ $isAdminSection = strpos($_SERVER['REQUEST_URI'], '/admin/') !== false;
 
                 <div class = "right-nav">
                     <a href="#" onclick="toggleSidebar()"><i class = "fas fa-user"></i></a>
-                    <?php if (isset($_SESSION['cust_id'])): ?>
-                        <a href="/page/order_history.php"><i class="fas fa-clock-rotate-left"></i></a>
-                    <?php endif; ?>
                     <a href="/page/mypurchase.php"><i class = "fas fa-truck-fast"></i></a>
                     <a href="/page/cart.php" class="cart-link">
                         <i class = "fas fa-cart-shopping"></i>
                         <span class="cart-count" id="cart-count-badge">
-                            <!-- TODO -->
-                            <?php
-                            // For testing - hardcode user C0001
-                            $custId = $_SESSION['cust_id'];
-                            $count = 0;
-                            
-                            if ($custId) {
-                                try {
+                        <?php
+                        $custId = $_SESSION['cust_id'] ?? null;
+                        $count = 0;
+                        if ($custId) {
+                            try {
+                                // Ensure we have a database connection
+                                if (!isset($_db) || !$_db) {
+                                    // If $_db is not available, get it from the global scope or create a new connection
                                     global $_db;
+                                }
+                                
+                                if ($_db) {
                                     $stmt = $_db->prepare("
                                         SELECT SUM(ci.quantity) as total_items
                                         FROM cart_item ci
@@ -352,26 +352,17 @@ $isAdminSection = strpos($_SERVER['REQUEST_URI'], '/admin/') !== false;
                                     ");
                                     $stmt->execute([$custId]);
                                     $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-                                    if (!$result || !isset($result['total_items'])) {
-                                        error_log("No cart items found for user: $custId or query returned null");
-                                        $count = 0;
-                                    } else {
-                                        $count = $result['total_items'];
-                                    }
-                                    
-                                } catch (Exception $e) {
-                                    error_log("Cart count error: " . $e->getMessage());
-                                    $count = 0;
+                                    $count = $result['total_items'] ?? 0;
                                 }
+                            } catch (Exception $e) {
+                                error_log("Cart count error: " . $e->getMessage());
                             }
-                            
-                            echo $count > 0 ? "$count" : "";
-                            ?>
-                        </span>
+                        }
+                        echo $count > 0 ? "$count" : "";
+                        ?>
+                    </span>
                     </a>
                 </div>
-
             </div>
 
             <nav class = "bottom-nav">
@@ -379,7 +370,7 @@ $isAdminSection = strpos($_SERVER['REQUEST_URI'], '/admin/') !== false;
                 <a href="/page/products.php?category=CT01" data-cat="CT01" class="category-link">Necklaces</a>
                 <a href="/page/products.php?category=CT02" data-cat="CT02" class="category-link">Bracelets</a>
                 <a href="/page/products.php?category=CT03" data-cat="CT03" class="category-link">Rings</a>
-                <a href="/page/products.php?category=CT05" data-cat="CT05" class="category-link">Watches</a>
+                <a href="/page/products.php?category=CT05" data-cat="CT05" class="category-link">Pendants</a>
                 <a href="/page/products.php?category=*" data-cat="*" class="category-link">All Products</a>
             </nav>
         </header>

@@ -104,6 +104,16 @@ try {
 
 ?>
             <div class="admin-main">
+            <?php if (isset($_SESSION['message'])): ?>
+            <div class="message <?= $_SESSION['message_type'] ?? 'info' ?>">
+                <?= htmlspecialchars($_SESSION['message']) ?>
+            </div>
+            <?php 
+            // Clear the message after displaying it
+            unset($_SESSION['message']);
+            unset($_SESSION['message_type']);
+            ?>
+            <?php endif; ?>
                 <div class="admin-title">
                     <h2>Product List</h2>   
                     <div class="button-group">
@@ -214,26 +224,6 @@ try {
                     Showing <?= count($products) ?> of <?= $totalItems ?> products
                 </div>
             </div>
-
-            <?php if (isset($_SESSION['message'])) : ?>
-                <div class="message <?= $_SESSION['message_type'] ?>">
-                    <?= $_SESSION['message'] ?>
-                </div>
-                <?php
-                unset($_SESSION['message']);
-                unset($_SESSION['message_type']);
-                ?>
-                <?php endif; ?>
-
-                <?php if (isset($_SESSION['message'])) : ?>
-                    <div class="message <?= $_SESSION['message_type'] ?>">
-                        <?= $_SESSION['message'] ?>
-                    </div>
-                    <?php
-                    unset($_SESSION['message']);
-                    unset($_SESSION['message_type']);
-                    ?>
-                <?php endif; ?>
 
                 <div class="table-responsive">
                     <table class="admin-table">
@@ -425,22 +415,31 @@ try {
         </div>
     </div>
 
-<div id="deleteProductModal" class="modal">
-        <div class="admin-modal-content">
-            <div class="modal-header">
-                <h2>Delete Product</h2>
-                <span class="close">&times;</span>
+    <div id="deleteProductModal" class="modal">
+    <div class="admin-modal-content">
+        <div class="modal-header">
+            <h2>Delete Product</h2>
+            <span class="close">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to delete the product <strong id="deleteProductName"></strong>?</p>
+            <div class="delete-warning">
+                <p><i class="fas fa-exclamation-triangle"></i> Warning:</p>
+                <ul>
+                    <li>If the product exists in any customer's cart, deletion will be prevented.</li>
+                    <li>If the product has been ordered, it will be marked as discontinued instead of being deleted.</li>
+                    <li>This action cannot be undone.</li>
+                </ul>
             </div>
-            <div class="modal-body">
-            <p>Are you sure you want to delete the product <strong><?= htmlspecialchars($product['prod_name']) ?></strong>?</p>
-            <p>This action cannot be undone.</p>
             <form action="delete_product.php" method="POST" id="deleteProductForm">
-                <input type="hidden" name="prod_id" id="prod_id" value="<?= htmlspecialchars($product['prod_id']) ?>">
+                <input type="hidden" name="prod_id" id="deleteProductId">
 
                 <div class="form-group btn">
                     <button type="submit" class="admin-submit-btn danger">Delete Product</button>
                     <button type="button" class="admin-submit-btn secondary close-modal">Cancel</button>
                 </div>
+            </form>
         </div>
     </div>
+</div>
     

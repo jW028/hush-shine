@@ -268,9 +268,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
                                 <a href="view_order.php?id=<?= $order['order_id'] ?>" class="btn btn-sm">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <a href="print_order.php?id=<?= $order['order_id'] ?>" class="btn btn-sm btn-info" target="_blank">
-                                    <i class="fas fa-print"></i>
-                                </a>
                             </td>
                         </tr>
                     <?php endforeach; ?>

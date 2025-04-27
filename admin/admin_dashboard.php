@@ -109,7 +109,7 @@ function getCategoryPopularity() {
 }
 
 // Get recent orders
-function getRecentOrders($limit = 10) {
+function getRecentOrders() {
     global $_db;
     
     try {
@@ -118,10 +118,10 @@ function getRecentOrders($limit = 10) {
                  FROM orders o 
                  LEFT JOIN customer c ON o.cust_id = c.cust_id
                  ORDER BY o.order_date DESC
-                 LIMIT ?";
+                 LIMIT 10";
                  
         $stmt = $_db->prepare($query);
-        $stmt->execute([$limit]);
+        $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
         error_log("Error fetching recent orders: " . $e->getMessage());
@@ -200,11 +200,33 @@ function getDashboardStats() {
     }
 }
 
+function debugOutput($title, $data) {
+    echo '<div style="margin: 10px; padding: 15px; background-color: #f8f9fa; border: 1px solid #ddd; border-radius: 5px;">';
+    echo '<h4 style="margin-top: 0; color: #007bff;">' . htmlspecialchars($title) . '</h4>';
+    
+    if (is_array($data) || is_object($data)) {
+        echo '<pre style="background-color: #eee; padding: 10px; overflow: auto; max-height: 300px;">';
+        print_r($data);
+        echo '</pre>';
+    } else {
+        echo '<p style="margin-bottom: 0;">' . htmlspecialchars($data) . '</p>';
+    }
+    
+    echo '</div>';
+}
+
 // Get top-selling products
 function getTopProducts($limit = 5) {
     global $_db;
-    
     try {
+        // First, check all order statuses in the database
+        $status_query = "SELECT status, COUNT(*) as count FROM orders GROUP BY status";
+        $status_stmt = $_db->query($status_query);
+        $statuses = $status_stmt->fetchAll(PDO::FETCH_ASSOC);
+        error_log("Order statuses in database: " . json_encode($statuses));
+        
+        
+        // Now use the exact status string from the database
         $query = "SELECT p.prod_id, p.prod_name, p.image, 
                  SUM(oi.quantity) as quantity_sold,
                  SUM(oi.price * oi.quantity) as revenue
@@ -214,11 +236,36 @@ function getTopProducts($limit = 5) {
                  WHERE o.status = 'Received'
                  GROUP BY p.prod_id, p.prod_name, p.image
                  ORDER BY quantity_sold DESC
-                 LIMIT ?";
+                 LIMIT 5";
                  
         $stmt = $_db->prepare($query);
-        $stmt->execute([$limit]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt->execute();
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        error_log("getTopProducts query returned " . count($result) . " rows");
+        
+        // If no results with 'Received' status, try 'Confirmed' status
+        if (empty($result)) {
+            error_log("No results with 'Received' status, trying 'Confirmed' status");
+            $fallback_query = "SELECT p.prod_id, p.prod_name, p.image, 
+                             SUM(oi.quantity) as quantity_sold,
+                             SUM(oi.price * oi.quantity) as revenue
+                             FROM order_items oi
+                             JOIN product p ON oi.prod_id = p.prod_id
+                             JOIN orders o ON oi.order_id = o.order_id
+                             WHERE o.status = 'Confirmed'
+                             GROUP BY p.prod_id, p.prod_name, p.image
+                             ORDER BY quantity_sold DESC
+                             LIMIT ?";
+                             
+            $fallback_stmt = $_db->prepare($fallback_query);
+            $fallback_stmt->execute([$limit]);
+            $result = $fallback_stmt->fetchAll(PDO::FETCH_ASSOC);
+            error_log("Fallback query returned " . count($result) . " rows");
+        }
+        
+        // Return the results (or empty array if nothing found)
+        return $result;
     } catch (PDOException $e) {
         error_log("Error fetching top products: " . $e->getMessage());
         return [];
@@ -226,17 +273,17 @@ function getTopProducts($limit = 5) {
 }
 
 // Get low stock products
-function getLowStockProducts($threshold = 5) {
+function getLowStockProducts() {
     global $_db;
     
     try {
         $query = "SELECT prod_id, prod_name, quantity, price, cat_id
                  FROM product
-                 WHERE quantity <= ?
+                 WHERE quantity <= 10
                  ORDER BY quantity ASC";
                  
         $stmt = $_db->prepare($query);
-        $stmt->execute([$threshold]);
+        $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
         error_log("Error fetching low stock products: " . $e->getMessage());
@@ -446,23 +493,9 @@ $categoryQuantitiesJSON = json_encode($categoryQuantities);
                         </thead>
                         <tbody>
                             <?php foreach ($topProducts as $product): ?>
-                                <?php 
-                                    $productImage = '../images/no-image.png'; // Default image
-                                    if (!empty($product['image'])) {
-                                        $imageData = json_decode($product['image'], true);
-                                        if ($imageData) {
-                                            $imageFile = is_array($imageData) ? $imageData[0] : $imageData;
-                                            $productImage = '../images/products/' . $imageFile;
-                                            if (!file_exists($productImage)) {
-                                                $productImage = '../images/no-image.png';
-                                            }
-                                        }
-                                    }
-                                ?>
                                 <tr>
                                     <td class="product-cell">
                                         <div class="product-info">
-                                            <img src="<?= $productImage ?>" alt="<?= htmlspecialchars($product['prod_name']) ?>" class="product-thumb">
                                             <span><?= htmlspecialchars($product['prod_name']) ?></span>
                                         </div>
                                     </td>
@@ -506,7 +539,7 @@ $categoryQuantitiesJSON = json_encode($categoryQuantities);
                                     </td>
                                     <td>RM <?= number_format($product['price'], 2) ?></td>
                                     <td>
-                                        <a href="edit_product.php?id=<?= $product['prod_id'] ?>" class="btn btn-sm btn-primary">
+                                        <a href="view_product.php?id=<?= $product['prod_id'] ?>" class="btn btn-sm btn-primary">
                                             <i class="fas fa-plus"></i> Restock
                                         </a>
                                     </td>
@@ -638,5 +671,3 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-
-<?php include '../_foot.php'; ?>

@@ -8,7 +8,7 @@ require '_base.php';
 
 
 // ----------------------------------------------------------------------------
-$_title = '';
+$_title = 'Home';
 include '_head.php';
 ?>
 <div class = "slider">

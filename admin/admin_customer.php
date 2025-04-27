@@ -9,7 +9,7 @@ $_adminContext = true;
 // Pagination parameters
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 if ($page < 1) $page = 1;
-$itemsPerPage = 3; // Customers per page
+$itemsPerPage = 10; // Customers per page
 $offset = ($page - 1) * $itemsPerPage;
 
 // Search and filter parameters
@@ -230,7 +230,7 @@ try {
                                 <a href="view_customer.php?id=<?= $customer['cust_id'] ?>" class="btn" title="View Customer">
                                     <i class="fas fa-eye"></i> 
                                 </a>
-                                <a href="block_customer.php?id=<?= $customer['cust_id'] ?>" class="btn <?= $customer['status'] === 'blocked' ? 'btn-warning' : 'btn-danger' ?>" title="<?= $customer['status'] === 'blocked' ? 'Manage Block Status' : 'Block Customer' ?>">
+                                <a href="view_customer.php?id=<?= $customer['cust_id'] ?>" class="btn <?= $customer['status'] === 'blocked' ? 'btn-warning' : 'btn-danger' ?>" title="<?= $customer['status'] === 'blocked' ? 'Manage Block Status' : 'Block Customer' ?>">
                                     <i class="fas <?= $customer['status'] === 'blocked' ? 'fa-unlock' : 'fa-ban' ?>"></i>
                                 </a>
                             </td>

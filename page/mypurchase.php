@@ -1,6 +1,13 @@
 <?php
 require '../_base.php';
 
+// If user is admin, bring them back to index
+if (isset($_SESSION['admin_id']) && !empty($_SESSION['admin_id'])) {
+    // User is logged in as admin
+    header("Location: ../index.php");
+    exit();
+}
+
 // Check if user is logged in
 if (!isset($_SESSION['cust_id']) || empty($_SESSION['cust_id'])) {
     header("Location: ../page/login.php");
