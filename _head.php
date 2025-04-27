@@ -55,6 +55,128 @@ $isAdminSection = strpos($_SERVER['REQUEST_URI'], '/admin/') !== false;
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 </head>
 <body>
+<?php 
+    // Display success message if user just logged in (within the last 2 seconds)
+    if (isset($_SESSION['login_success']) && isset($_SESSION['login_time']) && time() - $_SESSION['login_time'] < 2):
+        // Clear the flags so the message only shows once
+        unset($_SESSION['login_success']);
+        unset($_SESSION['login_time']);
+        
+        $user_type = $_SESSION['user'] === 'admin' ? 'Administrator' : 'Customer';
+        $user_name = $_SESSION['user'] === 'admin' ? $_SESSION['admin_name'] : $_SESSION['cust_name'];
+    ?>
+    <div id="login-success-toast" class="success-toast">
+        <div class="toast-content">
+            <div class="toast-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="toast-message">
+                <strong>Welcome back, <?= htmlspecialchars($user_name) ?>!</strong>
+                <span>You've successfully logged in as <?= htmlspecialchars($user_type) ?>.</span>
+            </div>
+        </div>
+        <button class="toast-close" onclick="closeToast()">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    <script>
+        // Auto-close the toast after 5 seconds
+        setTimeout(function() {
+            closeToast();
+        }, 5000);
+        
+        function closeToast() {
+            document.getElementById('login-success-toast').classList.add('fade-out');
+            setTimeout(function() {
+                document.getElementById('login-success-toast').style.display = 'none';
+            }, 300);
+        }
+    </script>
+    <?php endif; ?>
+
+    <?php
+    if (isset($_SESSION['reset_email_sent']) && isset($_SESSION['reset_time']) && time() - $_SESSION['reset_time'] < 3):
+        // Clear the flags so the message only shows once
+        $reset_email = $_SESSION['reset_email'] ?? '';
+        unset($_SESSION['reset_email_sent']);
+        unset($_SESSION['reset_email']);
+        unset($_SESSION['reset_time']);
+    ?>
+    <div id="reset-email-toast" class="success-toast reset-email-toast">
+        <div class="toast-content">
+            <div class="toast-icon">
+                <i class="fas fa-envelope"></i>
+            </div>
+            <div class="toast-message">
+                <strong>Password Reset Email Sent</strong>
+                <span>Check your email (<?= htmlspecialchars($reset_email) ?>) for a link to reset your password. The link will expire in 10 minutes.</span>
+            </div>
+        </div>
+        <button class="toast-close" onclick="closeResetToast()">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+
+    <script>
+        // Auto-close the reset toast after 10 seconds
+        setTimeout(function() {
+            closeResetToast();
+        }, 10000);
+        
+        function closeResetToast() {
+            var toast = document.getElementById('reset-email-toast');
+            if (toast) {
+                toast.classList.add('fade-out');
+                setTimeout(function() {
+                    toast.style.display = 'none';
+                }, 300);
+            }
+        }
+    </script>
+    <?php endif; ?>
+
+    <?php 
+    // Display logout success message
+    if (isset($_SESSION['logout_success']) && isset($_SESSION['logout_time']) && time() - $_SESSION['logout_time'] < 2):
+        // Clear the flags so the message only shows once
+        $logout_name = $_SESSION['logout_name'] ?? 'User';
+        unset($_SESSION['logout_success']);
+        unset($_SESSION['logout_time']);
+        unset($_SESSION['logout_name']);
+    ?>
+    <div id="logout-success-toast" class="success-toast logout-toast">
+        <div class="toast-content">
+            <div class="toast-icon">
+                <i class="fas fa-sign-out-alt"></i>
+            </div>
+            <div class="toast-message">
+                <strong>Successfully Logged Out</strong>
+                <span>You've been successfully logged out.</span>
+            </div>
+        </div>
+        <button class="toast-close" onclick="closeLogoutToast()">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+
+    <script>
+        // Auto-close the logout toast after 5 seconds
+        setTimeout(function() {
+            closeLogoutToast();
+        }, 5000);
+        
+        function closeLogoutToast() {
+            var toast = document.getElementById('logout-success-toast');
+            if (toast) {
+                toast.classList.add('fade-out');
+                setTimeout(function() {
+                    toast.style.display = 'none';
+                }, 300);
+            }
+        }
+    </script>
+    <?php endif; ?>
+
     <?php if (isset($_SESSION['user']) && $_SESSION['user'] == "admin" && $_adminContext): ?>
         <script src="/js/admin.js"></script>
         <header class="admin-header">

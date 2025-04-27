@@ -156,6 +156,26 @@ include '_head.php';
         </video>
     </div>
 </div>
+
+<!-- YouTube Video Section -->
+<div class="youtube-section" data-aos="fade-up">
+    <div class="youtube-container">
+        <h2>Watch Our Story</h2>
+        <div class="video-wrapper">
+            <iframe 
+                width="560" 
+                height="315" 
+                src="https://www.youtube.com/embed/ivzPXht4C5E?si=-ABdoIwU8Z31xiiM" 
+                title="YouTube video player" 
+                frameborder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                referrerpolicy="strict-origin-when-cross-origin" 
+                allowfullscreen>
+            </iframe>
+        </div>
+    </div>
+</div>
+
 <?php
 include '_foot.php';
 

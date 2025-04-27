@@ -24,9 +24,10 @@ function getSalesData($period, $month = null, $year = null) {
         case 'day':
             // Last 30 days
             $query = "SELECT DATE(order_date) as label, 
-                      SUM(total_amount) as value 
+                      SUM(COALESCE(total_amount, 0)) as value 
                       FROM orders 
-                      WHERE order_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) 
+                      WHERE order_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+                      AND status = 'Received'
                       GROUP BY DATE(order_date) 
                       ORDER BY label";
             break;
@@ -35,9 +36,10 @@ function getSalesData($period, $month = null, $year = null) {
             // Monthly data for selected year
             $query = "SELECT MONTH(order_date) as month_num, 
                       MONTHNAME(order_date) as label, 
-                      SUM(total_amount) as value 
+                      SUM(COALESCE(total_amount, 0)) as value 
                       FROM orders 
-                      WHERE YEAR(order_date) = ? 
+                      WHERE YEAR(order_date) = ?
+                      AND status = 'Received'
                       GROUP BY MONTH(order_date), MONTHNAME(order_date) 
                       ORDER BY MONTH(order_date)";
             $params = [$year];
@@ -46,8 +48,9 @@ function getSalesData($period, $month = null, $year = null) {
         case 'year':
             // Yearly data
             $query = "SELECT YEAR(order_date) as label, 
-                      SUM(total_amount) as value 
-                      FROM orders 
+                      SUM(COALESCE(total_amount, 0)) as value 
+                      FROM orders
+                      WHERE status = 'Received'
                       GROUP BY YEAR(order_date) 
                       ORDER BY YEAR(order_date)";
             break;
@@ -56,9 +59,10 @@ function getSalesData($period, $month = null, $year = null) {
             // Default to monthly
             $query = "SELECT MONTH(order_date) as month_num, 
                       MONTHNAME(order_date) as label, 
-                      SUM(total_amount) as value 
+                      SUM(COALESCE(total_amount, 0)) as value 
                       FROM orders 
-                      WHERE YEAR(order_date) = ? 
+                      WHERE YEAR(order_date) = ?
+                      AND status = 'Received'
                       GROUP BY MONTH(order_date), MONTHNAME(order_date) 
                       ORDER BY MONTH(order_date)";
             $params = [$currentYear];
@@ -84,6 +88,7 @@ function getCategoryPopularity() {
     
     try {
         // Join orders, order items, products and categories to get sales by category
+        // Only count orders with 'Received' status
         $query = "SELECT c.cat_name as label, 
                  SUM(oi.quantity) as quantity,
                  SUM(oi.price * oi.quantity) as value
@@ -91,6 +96,7 @@ function getCategoryPopularity() {
                  JOIN product p ON oi.prod_id = p.prod_id
                  JOIN category c ON p.cat_id = c.cat_id
                  JOIN orders o ON oi.order_id = o.order_id
+                 WHERE o.status = 'Received'
                  GROUP BY c.cat_name
                  ORDER BY value DESC";
                  
@@ -137,20 +143,34 @@ function getDashboardStats() {
             'avg_order_value' => 0,
             'pending_orders' => 0
         ];
-        
-        // Total sales (all time)
-        $stmt = $_db->query("SELECT SUM(total_amount) as total FROM orders WHERE payment_status = 'Paid'");
+
+        // Total sales (only from Received orders)
+        $stmt = $_db->query("SELECT SUM(total_amount) as total FROM orders WHERE status = 'Received'");
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         $stats['total_sales'] = $result['total'] ?? 0;
+
+        // Update average order value calculation to also only include Received orders
+        // Orders count (for avg calculation - only counting received orders)
+        $stmt = $_db->query("SELECT COUNT(*) as count FROM orders WHERE status = 'Received'");
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stats['received_orders_count'] = $result['count'] ?? 0;
+
+        // Calculate average order value based on received orders
+        $stats['avg_order_value'] = $stats['received_orders_count'] > 0 ? 
+            $stats['total_sales'] / $stats['received_orders_count'] : 0;
+
+        // This month's sales (only from Received orders)
+        $stmt = $_db->prepare("SELECT SUM(total_amount) as total FROM orders 
+                            WHERE MONTH(order_date) = ? AND YEAR(order_date) = ? 
+                            AND status = 'Received'");
+        $stmt->execute([$currentMonth, $currentYear]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stats['monthly_sales'] = $result['total'] ?? 0;
         
         // Orders count
         $stmt = $_db->query("SELECT COUNT(*) as count FROM orders");
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         $stats['orders_count'] = $result['count'] ?? 0;
-        
-        // Calculate average order value
-        $stats['avg_order_value'] = $stats['orders_count'] > 0 ? 
-            $stats['total_sales'] / $stats['orders_count'] : 0;
         
         // Customers count
         $stmt = $_db->query("SELECT COUNT(*) as count FROM customer");
@@ -166,12 +186,6 @@ function getDashboardStats() {
         $stmt = $_db->query("SELECT COUNT(*) as count FROM orders WHERE status = 'Pending'");
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         $stats['pending_orders'] = $result['count'] ?? 0;
-        
-        // This month's sales
-        $stmt = $_db->prepare("SELECT SUM(total_amount) as total FROM orders WHERE MONTH(order_date) = ? AND YEAR(order_date) = ?");
-        $stmt->execute([$currentMonth, $currentYear]);
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        $stats['monthly_sales'] = $result['total'] ?? 0;
         
         // This month's orders count
         $stmt = $_db->prepare("SELECT COUNT(*) as count FROM orders WHERE MONTH(order_date) = ? AND YEAR(order_date) = ?");
@@ -196,6 +210,8 @@ function getTopProducts($limit = 5) {
                  SUM(oi.price * oi.quantity) as revenue
                  FROM order_items oi
                  JOIN product p ON oi.prod_id = p.prod_id
+                 JOIN orders o ON oi.order_id = o.order_id
+                 WHERE o.status = 'Received'
                  GROUP BY p.prod_id, p.prod_name, p.image
                  ORDER BY quantity_sold DESC
                  LIMIT ?";
@@ -245,13 +261,13 @@ $categoryQuantities = [];
 
 foreach ($salesData as $data) {
     $chartLabels[] = $data['label'];
-    $chartValues[] = $data['value'];
+    $chartValues[] = floatval($data['value'] ?? 0);
 }
 
 foreach ($categoryData as $data) {
     $categoryLabels[] = $data['label'];
-    $categoryValues[] = floatval($data['value']);
-    $categoryQuantities[] = intval($data['quantity']);
+    $categoryValues[] = floatval($data['value'] ?? 0);
+    $categoryQuantities[] = intval($data['quantity'] ?? 0);
 }
 
 // Convert to JSON for JavaScript
@@ -542,7 +558,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     beginAtZero: true,
                     ticks: {
                         callback: function(value) {
-                            return 'RM ' + value.toLocaleString();
+                            return 'RM ' + parseFloat(value).toLocaleString();
                         }
                     }
                 }
@@ -551,7 +567,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 tooltip: {
                     callbacks: {
                         label: function(context) {
-                            return 'Revenue: RM ' + context.parsed.y.toLocaleString();
+                            return 'Revenue: RM ' + parseFloat(context.parsed.y).toLocaleString();
                         }
                     }
                 },
@@ -609,10 +625,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     callbacks: {
                         label: function(context) {
                             const label = context.label || '';
-                            const value = context.parsed || 0;
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const value = parseFloat(context.parsed) || 0;
+                            const total = context.dataset.data.reduce((a, b) => parseFloat(a) + parseFloat(b), 0);
                             const percentage = Math.round((value * 100) / total) + '%';
-                            return label + ': RM ' + value.toLocaleString() + ' (' + percentage + ')';
+                            return label + ': RM ' + value.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' (' + percentage + ')';
                         }
                     }
                 }

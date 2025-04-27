@@ -83,6 +83,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_returning) {
                 
                 // Redirect to login page
                 $_SESSION['success_message'] = "Registration successful! You can now log in.";
+                $_SESSION['register_success'] = true;
+                $_SESSION['register_time'] = time();
                 header("Location: login.php");
                 exit;
             }

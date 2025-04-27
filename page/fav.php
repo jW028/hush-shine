@@ -120,21 +120,31 @@ include '../_head.php';
                 <?php endif; ?>
                 
                 <div class="column-container">
-                    <div class="product-container">
-                        <div class="product-actions">
-                            <button class="favorite-btn active" data-product-id="<?= htmlspecialchars($product['prod_id']) ?>">
-                                <i class="fas fa-heart"></i>
-                            </button>
-                        </div>
-                        <a class="product" href="products.php?id=<?= htmlspecialchars($product['prod_id']) ?>&category=<?= htmlspecialchars($product['cat_id']) ?>"
-                            data-id="<?= htmlspecialchars($product['prod_id']) ?>"
-                            data-name="<?= htmlspecialchars($product['prod_name']) ?>" 
-                            data-desc="<?= htmlspecialchars($product['prod_desc']) ?>" 
-                            data-price="<?= number_format($product['price'], 2) ?>" 
-                            data-image="<?= htmlspecialchars($product['image']) ?>"
-                            data-cat-id="<?= htmlspecialchars($product['cat_id']) ?>">
-                            
-                            <img class="product-image" src="/images/product_img/<?= htmlspecialchars($product['image']) ?>" alt="<?= htmlspecialchars($product['prod_name']) ?>">
+                    <a class="product" href="product_details.php?id=<?= $product['prod_id'] ?>"
+                        data-id="<?= htmlspecialchars($product['prod_id']) ?>"
+                        data-name="<?= htmlspecialchars($product['prod_name']) ?>" 
+                        data-desc="<?= htmlspecialchars($product['prod_desc']) ?>" 
+                        data-price="<?= number_format($product['price'], 2) ?>" 
+                        data-image="<?= htmlspecialchars($firstImage) ?>"
+                        data-cat-id="<?= htmlspecialchars($product['cat_id']) ?>">
+                        <div class="product-container">
+                            <div class="product-actions">
+                                <button class="favorite-btn active" data-product-id="<?= htmlspecialchars($product['prod_id']) ?>">
+                                    <i class="fas fa-heart"></i>
+                                </button>
+                            </div>
+                            <?php
+                                // Extract the first image
+                                if ($product && !empty($product['image'])) {
+                                    $productImages = json_decode($product['image']) ?: [];
+                                    $firstImage = !empty($productImages) ? $productImages[0] : 'default-product-image.jpg';                            
+                                } else {
+                                    $firstImage = 'default_image.webp'; // Fallback image if no images are found
+                                }
+                            ?>
+
+                                
+                            <img class="product-image" src="/images/products/<?= htmlspecialchars($firstImage) ?>" alt="<?= htmlspecialchars($product['prod_name']) ?>">
                             <div class="prod-description">
                                 <p><?= htmlspecialchars($product['prod_name']) ?></p>
                             </div>
@@ -142,8 +152,8 @@ include '../_head.php';
                                 <span class="price">RM <?= number_format($product['price'], 2) ?></span>
                                 <span class="view-details">View Details</span>
                             </div>
-                        </a>
-                    </div>
+                        </div>
+                    </a>
                 </div>
             <?php endforeach; ?>
         </div>

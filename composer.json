@@ -1,6 +1,7 @@
 {
     "require": {
         "stripe/stripe-php": "^16.6",
-        "tecnickcom/tc-lib-pdf": "^8.0"
+        "tecnickcom/tc-lib-pdf": "^8.0",
+        "endroid/qr-code": "^6.0"
     }
 }

@@ -171,77 +171,79 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
   // JS for product details
-  let modal = document.getElementById("product-modal");
-  let modalImage = document.getElementById("modal-image");
-  let modalName = document.getElementById("modal-name");
-  let modalDesc = document.getElementById("modal-desc");
-  let modalPrice = document.getElementById("modal-price");
-  let addToCartBtn = document.querySelector('.add-to-cart');
-  let closeBtn = document.querySelector(".close");
-  // let cancelBtn = document.querySelector(".cancel");
-  let currentProduct = null;
+//   let modal = document.getElementById("product-modal");
+//   let modalImage = document.getElementById("modal-image");
+//   let modalName = document.getElementById("modal-name");
+//   let modalDesc = document.getElementById("modal-desc");
+//   let modalPrice = document.getElementById("modal-price");
+//   let addToCartBtn = document.querySelector('.add-to-cart');
+//   let closeBtn = document.querySelector(".close");
+//   // let cancelBtn = document.querySelector(".cancel");
+//   let currentProduct = null;
 
-  document.querySelectorAll(".product").forEach(product => {
-    // Hover Effect on Product
-    product.addEventListener("mouseenter", function () {
-      this.classList.add("hovered");
-    });
-    product.addEventListener("mouseleave", function () {
-      this.classList.remove("hovered");
-    });
+//   document.querySelectorAll(".product").forEach(product => {
+//     // Hover Effect on Product
+//     product.addEventListener("mouseenter", function () {
+//       this.classList.add("hovered");
+//     });
+//     product.addEventListener("mouseleave", function () {
+//       this.classList.remove("hovered");
+//     });
     
 
-        // Event when user Click Product    WITH DATABASE
-        product.addEventListener("click", function (event) {
-          event.preventDefault(); // Prevent default link behavior
+//         // Event when user Click Product    WITH DATABASE
+//         product.addEventListener("click", function (event) {
+//           event.preventDefault(); // Prevent default link behavior
 
-          let productId = this.dataset.id;
+//           let productId = this.dataset.id;
 
-          currentProduct = {
-              id: productId,
-              name: this.dataset.name,
-              desc: this.dataset.desc,
-              price: this.dataset.price,
-              image: this.dataset.image
-          };
+//           currentProduct = {
+//               id: productId,
+//               name: this.dataset.name,
+//               desc: this.dataset.desc,
+//               price: this.dataset.price,
+//               image: this.dataset.image
+//           };
 
-          // Update modal
-          modalName.textContent = currentProduct.name;
-          modalDesc.textContent = currentProduct.desc;
-          modalPrice.textContent = 'RM ' + currentProduct.price;
-          modalImage.src = '/images/prod_img/' + currentProduct.image;
+//           // Update modal
+//           modalName.textContent = currentProduct.name;
+//           modalDesc.textContent = currentProduct.desc;
+//           modalPrice.textContent = 'RM ' + currentProduct.price;
+//           modalImage.src = '/images/prod_img/' + currentProduct.image;
 
-          // Update the first preview image dynamically
-          let previewImages = document.querySelectorAll(".preview");
+//           // Update the first preview image dynamically
+//           let previewImages = document.querySelectorAll(".preview");
 
-          // Remove "active" class from all preview images
-          document.querySelectorAll(".preview").forEach(img => img.classList.remove("active"));
+//           // Remove "active" class from all preview images
+//           document.querySelectorAll(".preview").forEach(img => img.classList.remove("active"));
 
-          if (previewImages.length > 0) {
-              previewImages[0].src = '/images/prod_img/' + currentProduct.image;
-              previewImages[0].setAttribute("onclick", `changeImage(this, '/images/prod_img/${currentProduct.image}')`);
-              previewImages[0].classList.add("active"); // Ensure it's active
-          }
+//           if (previewImages.length > 0) {
+//               previewImages[0].src = '/images/prod_img/' + currentProduct.image;
+//               previewImages[0].setAttribute("onclick", `changeImage(this, '/images/prod_img/${currentProduct.image}')`);
+//               previewImages[0].classList.add("active"); // Ensure it's active
+//           }
           
-          // Show the modal
-          // modal.style.display = "block";
-          modal.style.display = "flex";
-          setTimeout(() => {
-              modal.classList.add("show");
-          }, 10); // Delay for CSS transition
-      });
+//           // Show the modal
+//           // modal.style.display = "block";
+//           modal.style.display = "flex";
+//           setTimeout(() => {
+//               modal.classList.add("show");
+//           }, 10); // Delay for CSS transition
+//       });
 
-  });
+//   });
 
-  function resetQuantity() {
-      quantityInput.value = 1;
-  }
+//   function resetQuantity() {
+//       quantityInput.value = 1;
+//   }
 
   const quantityInput = document.getElementById('quantity');
   const minusBtn = document.querySelector('.qty-btn.minus');
   const plusBtn = document.querySelector('.qty-btn.plus');
-  
-  // Quantity buttons functionality
+  const maxStock = parseInt(quantityInput.getAttribute('max')) || 99;
+
+
+//   // Quantity buttons functionality
   minusBtn.addEventListener('click', function() {
       let value = parseInt(quantityInput.value);
       if (value > 1) {
@@ -251,89 +253,92 @@ document.addEventListener('DOMContentLoaded', function() {
   
   plusBtn.addEventListener('click', function() {
       let value = parseInt(quantityInput.value);
-      if (value < 99) {
+      if (value < maxStock) {
           quantityInput.value = value + 1;
+      } else {
+        alert(`Only ${maxStock} items available in stock`);
       }
   });
   
-  // Ensure valid quantity input
+//   // Ensure valid quantity input
   quantityInput.addEventListener('change', function() {
       let value = parseInt(this.value);
       if (isNaN(value) || value < 1) {
           this.value = 1;
-      } else if (value > 99) {
-          this.value = 99;
+      } else if (value > maxStock) {
+          this.value = maxStock;
+          alert(`Only ${maxStock} items available in stock`);
       }
   });
 
-  addToCartBtn.addEventListener("click", function() {
-      if (!currentProduct) {
-          alert("Please select a product first");
-          return;
-      }
+//   addToCartBtn.addEventListener("click", function() {
+//       if (!currentProduct) {
+//           alert("Please select a product first");
+//           return;
+//       }
       
-      const quantity = parseInt(document.getElementById('quantity').value) || 1;
-      const btn = this;
-      btn.disabled = true;
-      btn.textContent = "Adding...";
+//       const quantity = parseInt(document.getElementById('quantity').value) || 1;
+//       const btn = this;
+//       btn.disabled = true;
+//       btn.textContent = "Adding...";
       
-      fetch(window.location.href, {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
-              'X-Requested-With': 'XMLHttpRequest'
-          },
-          body: `product_id=${currentProduct.id}&quantity=${quantity}&action=add_to_cart`
-      })    
+//       fetch(window.location.href, {
+//           method: 'POST',
+//           headers: {
+//               'Content-Type': 'application/x-www-form-urlencoded',
+//               'X-Requested-With': 'XMLHttpRequest'
+//           },
+//           body: `product_id=${currentProduct.id}&quantity=${quantity}&action=add_to_cart`
+//       })    
 
-      .then(response => response.json())
-      .then(data => {
-          if (data.success) {
-              btn.textContent = "✓ Added!";
-              // Create particles from button to cart
-              createParticles(btn, quantity * 2); // More particles for larger quantities
-              refreshCartCount();
-              // Close modal after delay
-              setTimeout(() => {
-                  modal.classList.remove("show");
-                  setTimeout(() => {
-                      modal.style.display = "none";
-                      resetQuantity();
-                      btn.textContent = "Add to Cart";
-                      btn.disabled = false;
-                  }, 300);
-              }, 1000);
-          } else {
-              throw new Error(data.message || "Failed to add to cart");
-          }
-      })
-      .catch(error => {
-          console.error('Error:', error);
-          alert(error.message);
-          btn.textContent = "Add to Cart";
-          btn.disabled = false;
-      });
-  });
+//       .then(response => response.json())
+//       .then(data => {
+//           if (data.success) {
+//               btn.textContent = "✓ Added!";
+//               // Create particles from button to cart
+//               createParticles(btn, quantity * 2); // More particles for larger quantities
+//               refreshCartCount();
+//               // Close modal after delay
+//               setTimeout(() => {
+//                   modal.classList.remove("show");
+//                   setTimeout(() => {
+//                       modal.style.display = "none";
+//                       resetQuantity();
+//                       btn.textContent = "Add to Cart";
+//                       btn.disabled = false;
+//                   }, 300);
+//               }, 1000);
+//           } else {
+//               throw new Error(data.message || "Failed to add to cart");
+//           }
+//       })
+//       .catch(error => {
+//           console.error('Error:', error);
+//           alert(error.message);
+//           btn.textContent = "Add to Cart";
+//           btn.disabled = false;
+//       });
+//   });
 
-  // Close modal when clicking "X"
-  closeBtn.addEventListener("click", function () {
-      modal.classList.remove("show");
-      setTimeout(() => {
-          modal.style.display = "none";
-          resetQuantity();
-      }, 300);    // Match transition duration
-  });
+//   // Close modal when clicking "X"
+//   closeBtn.addEventListener("click", function () {
+//       modal.classList.remove("show");
+//       setTimeout(() => {
+//           modal.style.display = "none";
+//           resetQuantity();
+//       }, 300);    // Match transition duration
+//   });
 
-  // Close modal when clicking outside of it
-  window.addEventListener("click", function (event) {
-      if (event.target == modal) {
-          modal.classList.remove("show");
-          this.setTimeout(() => {
-              modal.style.display = "none";
-              resetQuantity();
-          }, 300);
-      }
-  }); 
+//   // Close modal when clicking outside of it
+//   window.addEventListener("click", function (event) {
+//       if (event.target == modal) {
+//           modal.classList.remove("show");
+//           this.setTimeout(() => {
+//               modal.style.display = "none";
+//               resetQuantity();
+//           }, 300);
+//       }
+//   }); 
 
   window.addEventListener("load", function () {
     const urlParams = new URLSearchParams(window.location.search);
@@ -661,43 +666,43 @@ async function fetchCartCount() {
     });
 }
 
-function createParticles(fromElement, count = 3) {
-    const cartIcon = document.querySelector('.cart-link');
-    if (!cartIcon) return;
+// function createParticles(fromElement, count = 3) {
+//     const cartIcon = document.querySelector('.cart-link');
+//     if (!cartIcon) return;
     
-    // Get positions
-    const fromRect = fromElement.getBoundingClientRect();
-    const toRect = cartIcon.getBoundingClientRect();
+//     // Get positions
+//     const fromRect = fromElement.getBoundingClientRect();
+//     const toRect = cartIcon.getBoundingClientRect();
     
-    // Create particles
-    for (let i = 0; i < count; i++) {
-        const particle = document.createElement('div');
-        particle.className = 'cart-particle';
+//     // Create particles
+//     for (let i = 0; i < count; i++) {
+//         const particle = document.createElement('div');
+//         particle.className = 'cart-particle';
         
-        // Random starting position near the clicked element
-        const startX = fromRect.left + fromRect.width/2 + (Math.random() * 20 - 10);
-        const startY = fromRect.top + fromRect.height/2 + (Math.random() * 20 - 10);
+//         // Random starting position near the clicked element
+//         const startX = fromRect.left + fromRect.width/2 + (Math.random() * 20 - 10);
+//         const startY = fromRect.top + fromRect.height/2 + (Math.random() * 20 - 10);
         
-        // Calculate path to cart icon
-        const deltaX = toRect.left - startX + toRect.width/2;
-        const deltaY = toRect.top - startY + toRect.height/2;
+//         // Calculate path to cart icon
+//         const deltaX = toRect.left - startX + toRect.width/2;
+//         const deltaY = toRect.top - startY + toRect.height/2;
         
-        // Set initial position and animation target
-        particle.style.left = `${startX}px`;
-        particle.style.top = `${startY}px`;
-        particle.style.setProperty('--tx', `${deltaX}px`);
-        particle.style.setProperty('--ty', `${deltaY}px`);
+//         // Set initial position and animation target
+//         particle.style.left = `${startX}px`;
+//         particle.style.top = `${startY}px`;
+//         particle.style.setProperty('--tx', `${deltaX}px`);
+//         particle.style.setProperty('--ty', `${deltaY}px`);
         
-        // Randomize appearance
-        particle.style.backgroundColor = `hsl(${Math.random() * 60 + 350}, 100%, 60%)`;
-        particle.style.width = `${6 + Math.random() * 4}px`;
-        particle.style.height = particle.style.width;
+//         // Randomize appearance
+//         particle.style.backgroundColor = `hsl(${Math.random() * 60 + 350}, 100%, 60%)`;
+//         particle.style.width = `${6 + Math.random() * 4}px`;
+//         particle.style.height = particle.style.width;
         
-        // Add to DOM and auto-remove after animation
-        document.body.appendChild(particle);
-        setTimeout(() => particle.remove(), 800);
-    }
-}
+//         // Add to DOM and auto-remove after animation
+//         document.body.appendChild(particle);
+//         setTimeout(() => particle.remove(), 800);
+//     }
+// }
 
 // Function to update cart badge
 function updateCartBadge(count) {
@@ -875,4 +880,32 @@ $(document).ready(function() {
     });
 });
 
+// Sound effect for checkout button
+document.addEventListener('DOMContentLoaded', function() {
+    // Select the checkout button and audio element
+    const checkoutButton = document.querySelector('button[name="complete_order"]');
+    const buttonSound = document.getElementById('buttonSound');
 
+    if (checkoutButton && buttonSound) {
+        checkoutButton.addEventListener('click', function(e) {
+            // Prevent the default form submission temporarily
+            e.preventDefault();
+
+            // Play the sound
+            buttonSound.currentTime = 0;
+            buttonSound.volume = 0.5;
+            
+            // Play sound and submit form
+            buttonSound.play().then(function() {
+                // Small delay to let sound play
+                setTimeout(function() {
+                    e.target.form.submit();
+                }, 100);
+            }).catch(function(error) {
+                console.log('Sound playback failed:', error);
+                // Submit form anyway if sound fails
+                e.target.form.submit();
+            });
+        });
+    }
+});

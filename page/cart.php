@@ -220,9 +220,18 @@ include '../_head.php';
                     </thead>
                     <tbody>
                         <?php foreach ($cartItems as $item): ?>
+                            <?php
+                                // Extract the first image
+                                if ($item && !empty($item['image'])) {
+                                    $productImages = json_decode($item['image']) ?: [];
+                                    $firstImage = !empty($productImages) ? $productImages[0] : 'default-product-image.jpg';                            
+                                } else {
+                                    $firstImage = 'default_image.webp'; // Fallback image if no images are found
+                                }
+                            ?>
                             <tr>                           
                                 <td><input type="checkbox" value="<?= $item['prod_id'] ?>" class="item-checkbox"></td>
-                                <td><img src="/images/product_img/<?= htmlspecialchars($item['image']) ?>" class="cart-product-img"></td>
+                                <td><img src="/images/products/<?= htmlspecialchars($firstImage) ?>" class="cart-product-img"></td>
                                 <td><?= htmlspecialchars($item['prod_name']) ?></td>
                                 <td> 
                                     <div class="quantity-control"> 
