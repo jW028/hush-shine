@@ -18,34 +18,6 @@ $totalAmount = $_SESSION['checkout_total'];
 $custId = $_SESSION['cust_id'];
 $orderId = $_SESSION['order_id'];
 
-// // Get cart items for display
-// try {
-//     // Get order items instead of cart items
-//     $query = "
-//         SELECT oi.prod_id, oi.quantity, oi.price, p.prod_name, p.image 
-//         FROM order_items oi
-//         JOIN product p ON oi.prod_id = p.prod_id
-//         WHERE oi.order_id = ?
-//     ";
-    
-//     $stmt = $_db->prepare($query);
-//     $stmt->execute([$orderId]);
-//     $cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-//     // Calculate totals
-//     $subtotal = 0;
-//     foreach ($cartItems as $item) {
-//         $subtotal += $item['price'] * $item['quantity'];
-//     }
-//     $tax = $subtotal * 0.06;
-//     $total = $subtotal + $tax;
-
-// } catch (Exception $e) {
-//     error_log("Stripe Error: " . $e->getMessage());
-//     $cartItems = [];
-//     $subtotal = $tax = $total = 0;
-// }
-
 try {
     // Always fetch from existing order to avoid recalculation
     $orderQuery = $_db->prepare("SELECT total_amount, reward_used FROM orders WHERE order_id = ? AND cust_id = ?");
@@ -103,12 +75,17 @@ include '../_head.php';
                     
                     <div class="order-items">
                         <?php foreach ($cartItems as $item): ?>
+                            <?php
+                                // Decode JSON image data
+                                $productImages = json_decode($item['image'], true) ?: [];
+                                $firstImage = !empty($productImages) ? $productImages[0] : 'default.jpg';
+                            ?>
                             <div class="order-item">
-                            <div class="item-image">
-                                <img src="/images/prod_img/<?= htmlspecialchars($item['image']) ?>" 
-                                    alt="<?= htmlspecialchars($item['prod_name']) ?>">
-                                <span class="item-quantity"><?= $item['quantity'] ?></span>
-                            </div>
+                                <div class="item-image">
+                                    <img src="/images/products/<?= htmlspecialchars($firstImage) ?>" 
+                                        alt="<?= htmlspecialchars($item['prod_name']) ?>">
+                                    <span class="item-quantity"><?= $item['quantity'] ?></span>
+                                </div>
                                 <div class="item-details">
                                     <h4><?= htmlspecialchars($item['prod_name']) ?></h4>
                                     <p>RM <?= number_format($item['price'], 2) ?></p>

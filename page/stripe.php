@@ -92,12 +92,17 @@ include '../_head.php';
                     
                     <div class="order-items">
                         <?php foreach ($cartItems as $item): ?>
+                            <?php
+                                // Decode JSON image data
+                                $productImages = json_decode($item['image'], true) ?: [];
+                                $firstImage = !empty($productImages) ? $productImages[0] : 'default.jpg';
+                            ?>
                             <div class="order-item">
-                            <div class="item-image">
-                                <img src="/images/prod_img/<?= htmlspecialchars($item['image']) ?>" 
-                                    alt="<?= htmlspecialchars($item['prod_name']) ?>">
-                                <span class="item-quantity"><?= $item['quantity'] ?></span>
-                            </div>
+                                <div class="item-image">
+                                    <img src="/images/products/<?= htmlspecialchars($firstImage) ?>" 
+                                        alt="<?= htmlspecialchars($item['prod_name']) ?>">
+                                    <span class="item-quantity"><?= $item['quantity'] ?></span>
+                                </div>
                                 <div class="item-details">
                                     <h4><?= htmlspecialchars($item['prod_name']) ?></h4>
                                     <p>RM <?= number_format($item['price'], 2) ?></p>

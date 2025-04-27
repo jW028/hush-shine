@@ -121,10 +121,20 @@ if (isset($_POST['apply_reward_points']) && !empty($_POST['points'])) {
         // Store applied reward points in the session
         $_SESSION['applied_reward_points'] = $pointsToUse;
         $_SESSION['checkout_total'] = $afterPointsTotal; // Update the session total
-        $_SESSION['selected_cart_items'] = $_GET['items'] ?? '';
+
+        // Preserve selected items
+        if (isset($_GET['items'])) {
+            $_SESSION['selected_cart_items'] = $_GET['items'];
+        }
         $_SESSION['successMessage'] = "Reward points applied successfully."; 
 
-        header("Location: checkout.php");
+        // Redirect back with items parameter if it exists
+        $redirectUrl = 'checkout.php';
+        if (isset($_GET['items'])) {
+            $redirectUrl .= '?items=' . urlencode($_GET['items']);
+        }
+        
+        header("Location: " . $redirectUrl);
         exit();
     }
 }
@@ -134,10 +144,16 @@ $formData = $_SESSION['checkout_form_data'] ?? [];
 if (isset($_POST['remove_reward_points'])) {
     unset($_SESSION['applied_reward_points']);
     $appliedPoints = 0;
-    $_SESSION['checkout_total'] = $total; // Reset the session total
+    $_SESSION['checkout_total'] = $total;
     $_SESSION['successMessage'] = "Reward points removed.";
 
-    header("Location: checkout.php");
+    // Redirect back with items parameter if it exists
+    $redirectUrl = 'checkout.php';
+    if (isset($_GET['items'])) {
+        $redirectUrl .= '?items=' . urlencode($_GET['items']);
+    }
+    
+    header("Location: " . $redirectUrl);
     exit();
 }
 

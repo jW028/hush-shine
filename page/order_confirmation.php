@@ -148,8 +148,13 @@ include '../_head.php';
 
             <div class="items-list">
                 <?php foreach ($cartItems as $item): ?>
+                    <?php
+                        // Decode JSON image data
+                        $productImages = json_decode($item['image'], true) ?: [];
+                        $firstImage = !empty($productImages) ? $productImages[0] : 'default.jpg';
+                    ?>
                     <div class="item">
-                        <img src="/images/prod_img/<?= htmlspecialchars($item['image']) ?>" 
+                        <img src="/images/products/<?= htmlspecialchars($firstImage) ?>" 
                             alt="<?= htmlspecialchars($item['prod_name']) ?>">
                         <div class="item-details">
                             <h4><?= htmlspecialchars($item['prod_name']) ?></h4>

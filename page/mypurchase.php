@@ -145,11 +145,11 @@ include '../_head.php';
                 <?php
                 // Fetch the number of items in the order
                 $itemStmt = $_db->prepare("
-                   SELECT p.image AS image_url, COUNT(*) AS item_count
+                    SELECT p.image, COUNT(*) AS item_count
                     FROM order_items oi
                     INNER JOIN product p ON oi.prod_id = p.prod_id
                     WHERE oi.order_id = ?
-                    GROUP BY p.image  
+                    GROUP BY p.image
                 ");
                 $itemStmt->execute([$order['order_id']]);
                 $items = $itemStmt->fetchAll(PDO::FETCH_ASSOC);
@@ -164,7 +164,14 @@ include '../_head.php';
                     </div>
                     <div class="purchase-order-img">
                         <?php foreach ($items as $item): ?>
-                            <img src="<?= htmlspecialchars($item['image_url']) ?>" alt="Product Image" class="mypurchase-product-image">
+                            <?php
+                                // Decode JSON image data
+                                $productImages = json_decode($item['image'], true) ?: [];
+                                $firstImage = !empty($productImages) ? $productImages[0] : 'default.jpg';
+                            ?>
+                            <img src="/images/products/<?= htmlspecialchars($firstImage) ?>" 
+                                alt="Product Image" 
+                                class="mypurchase-product-image">
                         <?php endforeach; ?>
                     </div>
                     <div class="purchase-order-card-body">
