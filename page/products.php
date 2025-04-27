@@ -243,9 +243,6 @@ include '../_head.php';
             <form action="/page/products.php" method="get" class="product-search-form">
                 <input type="text" name="search" placeholder="Search products..." value="<?= htmlspecialchars($search ?? '') ?>">
                 <button type="submit"><i class="fa fa-search"></i></button>
-                <?php if ($search || $category || $minPrice || $maxPrice || $sort): ?>
-                    <a href="/page/products.php" class="clear-search">Clear All Filters</a>
-                <?php endif; ?>
                 
                 <!-- Preserve other filters when submitting -->
                 <?php if ($category): ?>
@@ -255,6 +252,7 @@ include '../_head.php';
                     <input type="hidden" name="sort" value="<?= htmlspecialchars($sort) ?>">
                 <?php endif; ?>
             </form>
+            <a href="/page/products.php">Clear All Filters</a>
         </div>
         
         <div class="filter-sort-container">
