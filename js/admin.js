@@ -208,3 +208,107 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// File Upload with Drag and Drop
+document.addEventListener('DOMContentLoaded', function() {
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('images');
+    const imagePreview = document.getElementById('imagePreview');
+    let savedFiles = []; // Array to store the selected files
+
+    if (dropZone && fileInput && imagePreview) {
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+
+        dropZone.addEventListener('drop', handleDrop, false);
+        fileInput.addEventListener('change', handleFiles, false);
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        function highlight(e) {
+            dropZone.classList.add('drag-over');
+        }
+
+        function unhighlight(e) {
+            dropZone.classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            // Add dropped files to saved files array
+            Array.from(files).forEach(file => {
+                if (!savedFiles.some(f => f.name === file.name)) {
+                    savedFiles.push(file);
+                }
+            });
+            
+            updateFileList();
+            displayPreviews();
+        }
+
+        function handleFiles(e) {
+            const files = Array.from(e.target.files);
+            
+            // Add selected files to saved files array
+            files.forEach(file => {
+                if (!savedFiles.some(f => f.name === file.name)) {
+                    savedFiles.push(file);
+                }
+            });
+            
+            updateFileList();
+            displayPreviews();
+        }
+
+        function updateFileList() {
+            const dataTransfer = new DataTransfer();
+            savedFiles.forEach(file => dataTransfer.items.add(file));
+            fileInput.files = dataTransfer.files;
+        }
+
+        function displayPreviews() {
+            imagePreview.innerHTML = ''; // Clear existing previews
+            
+            savedFiles.forEach((file, index) => {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    const div = document.createElement('div');
+                    div.className = 'preview-item';
+                    
+                    reader.onload = function(e) {
+                        div.innerHTML = `
+                            <img src="${e.target.result}" alt="Preview">
+                            <button type="button" class="remove-preview" data-index="${index}">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        `;
+                        
+                        div.querySelector('.remove-preview').addEventListener('click', function() {
+                            const index = parseInt(this.getAttribute('data-index'));
+                            savedFiles.splice(index, 1);
+                            updateFileList();
+                            displayPreviews();
+                        });
+                    };
+                    
+                    reader.readAsDataURL(file);
+                    imagePreview.appendChild(div);
+                }
+            });
+        }
+    }
+});

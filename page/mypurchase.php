@@ -161,7 +161,7 @@ include '../_head.php';
                     </div>
                     <div class="purchase-order-img">
                         <?php foreach ($items as $item): ?>
-                            <img src="<?= htmlspecialchars($item['image_url']) ?>" alt="Product Image" class="product-image">
+                            <img src="<?= htmlspecialchars($item['image_url']) ?>" alt="Product Image" class="mypurchase-product-image">
                         <?php endforeach; ?>
                     </div>
                     <div class="purchase-order-card-body">

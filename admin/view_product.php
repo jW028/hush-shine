@@ -268,13 +268,21 @@ try {
                     <?php endif; ?>
                 </div>
             </div>
-
+            
             <div class="form-group">
                 <label for="images">Upload New Images</label>
-                <input type="file" id="images" name="images[]" class="form-control-file" accept="image/*" multiple>
+                <div class="custom-file" id="dropZone">
+                    <input type="file" id="images" name="images[]" class="custom-file-input" accept="image/*" multiple>
+                    <div class="drop-zone-content">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Drag & drop images here or click to browse</p>
+                        <small class="form-text">Accepted formats: JPG, JPEG, PNG, WEBP. Max size: 2MB</small>
+                    </div>
+                </div>
                 <small class="form-text text-muted">Select multiple images by holding Ctrl (or Cmd on Mac) while clicking.</small>
+                <div class="image-previews" id="imagePreview"></div>
             </div>
-
+    
             <div class="image-previews" id="imagePreview"></div>
             <hr>
             

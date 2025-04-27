@@ -401,11 +401,17 @@ try {
                 
                 <div class="form-group">
                     <label for="images">Product Image</label>
-                    <div class="custom-file">
-                        <input type="file" class="custom-file-input" id="images" name="images[]" accept="image/*" multiple>
-                        <label class="custom-file-label" for="images">Choose file</label>
-                        <small class="form-text">Accepted formats: JPG, JPEG, PNG, WEBP. Max size: 2MB</small>
+                    <div class="custom-file" id="dropZone">
+                        <input type="file" class="custom-file-input hidden" id="images" name="images[]" accept="image/*" multiple>
+                        <label class="custom-file-label" for="images">
+                            <div class="drop-zone-content">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Drag & drop images here or click to browse</p>
+                                <small class="form-text">Accepted formats: JPG, JPEG, PNG, WEBP. Max size: 2MB</small>
+                            </div>
+                        </label>
                     </div>
+                    <div class="image-previews" id="imagePreview"></div>
                 </div>
                 
                 <div class="image-previews" id="imagePreview"></div>
