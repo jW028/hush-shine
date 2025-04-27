@@ -11,6 +11,7 @@ $topProducts = [];
 
 // Get top 5 selling products if best seller filter is active
 if ($isBestSeller) {
+    $showRegularProducts = false;
     try {
         $topProductsStmt = $_db->prepare("
             SELECT 
@@ -27,7 +28,7 @@ if ($isBestSeller) {
             JOIN 
                 product p ON oi.prod_id = p.prod_id
             WHERE 
-                o.status IN ('received')
+                o.status IN ('Confirmed')
             GROUP BY 
                 p.prod_id
             ORDER BY 
@@ -36,11 +37,19 @@ if ($isBestSeller) {
         ");
         $topProductsStmt->execute();
         $topProducts = $topProductsStmt->fetchAll(PDO::FETCH_OBJ);
+
+        If(empty($topProducts)) {
+            $noBestSellersMessage = "No best-selling products found.";
+        }
+
     } catch (Exception $e) {
         error_log("Error fetching top products: " . $e->getMessage());
         $topProducts = [];
+        $noBestSellersMessage = "Error fetching best-selling products.";
     }
-} 
+} else {
+    $showRegularProducts = true;
+}
 
 // Handle AJAX requests FIRST
 if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
@@ -243,6 +252,9 @@ include '../_head.php';
             <form action="/page/products.php" method="get" class="product-search-form">
                 <input type="text" name="search" placeholder="Search products..." value="<?= htmlspecialchars($search ?? '') ?>">
                 <button type="submit"><i class="fa fa-search"></i></button>
+                <?php if ($search || $category || $minPrice || $maxPrice || $sort): ?>
+                    <a href="/page/products.php" class="clear-search">Clear All Filters</a>
+                <?php endif; ?>
                 
                 <!-- Preserve other filters when submitting -->
                 <?php if ($category): ?>
@@ -252,7 +264,6 @@ include '../_head.php';
                     <input type="hidden" name="sort" value="<?= htmlspecialchars($sort) ?>">
                 <?php endif; ?>
             </form>
-            <a href="/page/products.php">Clear All Filters</a>
         </div>
         
         <div class="filter-sort-container">
@@ -316,7 +327,48 @@ include '../_head.php';
         </div>
     </div>
     
-    <?php if ($isBestSeller && !empty($topProducts)): ?>
+    <?php if ($isBestSeller): ?>
+        <div class="top-selling-container">
+            <div class="filter-header">
+                <h2>Top Selling Products</h2>
+                <a href="?<?= http_build_query(array_filter([
+                    'search' => $search,
+                    'category' => $category,
+                    'min_price' => $minPrice,
+                    'max_price' => $maxPrice,
+                    'sort' => $sort,
+                    'page' => $page
+                ])) ?>" class="remove-filter">Show All Products</a>
+            </div>
+            
+            <?php if (!empty($topProducts)): ?>
+                <div class="top-products-grid">
+                    <?php foreach ($topProducts as $product): ?>
+                        <div class="top-product-item">
+                            <a href="product_details.php?id=<?= $product->prod_id ?>">
+                                <?php
+                                    $images = json_decode($product->image) ?: [];
+                                    $firstImage = !empty($images) ? $images[0] : 'default-product-image.jpg';
+                                ?>
+                                <img src="/images/products/<?= htmlspecialchars($firstImage) ?>" 
+                                    alt="<?= htmlspecialchars($product->prod_name) ?>">
+                                <h3><?= htmlspecialchars($product->prod_name) ?></h3>
+                                <div class="product-meta">
+                                    <span class="price">RM <?= number_format($product->price, 2) ?></span>
+                                    <span class="sold-count"><?= $product->total_sold ?> sold</span>
+                                </div>
+                            </a>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php else: ?>
+                <p class="no-products"><?= $noBestSellersMessage ?? 'No best selling products found' ?></p>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
+
+
+    <!-- <?php if ($isBestSeller && !empty($topProducts)): ?>
     <div class="top-selling-container">
         <h2>Top Selling Products</h2>
         
@@ -340,173 +392,128 @@ include '../_head.php';
             <?php endforeach; ?>
         </div>
     </div>
-    <?php endif; ?>
+    <?php endif; ?> -->
 
-    <div class="row-container">
-        <?php if (empty($arr)): ?>
-            <div class="no-products-found">
-                <p>No products found<?= $search ? " for \"" . htmlspecialchars($search) . "\"" : "" ?>.</p>
-            </div>
-        <?php else: ?>
-        <?php endif; ?>
-
-        <?php 
-        $columnCount = 0;
-        $firstProduct = []; // Track the first product of each category
-
-        foreach ($arr as $s): 
-            // Check if this is the first product of its category
-            $productId = htmlspecialchars($s->prod_id);
-            $categoryId = htmlspecialchars($s->cat_id);
-
-            if ($columnCount % 4 == 0 && $columnCount > 0): ?>
-                </div><div class="row-container">
-            <?php endif; ?>
-
-            <div class="column-container">
-                <a class="product" href="product_details.php?id=<?= $productId ?>"
-                    data-id="<?= $productId ?>"
-                    data-name="<?= htmlspecialchars($s->prod_name) ?>" 
-                    data-desc="<?= htmlspecialchars($s->prod_desc) ?>" 
-                    data-price="<?= number_format($s->price, 2) ?>" 
-                    data-image="<?= htmlspecialchars($s->image) ?>"
-                    data-cat-id="<?= $categoryId ?>">
-                    
-                    <div class="product-container">
-                        <div class="product-actions">
-                            <button type="button" class="favorite-btn" data-product-id="<?= htmlspecialchars($s->prod_id) ?>">
-                                <i class="far fa-heart"></i>
-                            </button>
-                        </div>
-                        <?php
-                        // Extract the first image
-                        if ($s && !empty($s->image)) {
-                            $productImages = json_decode($s->image) ?: [];
-                            $firstImage = !empty($productImages) ? $productImages[0] : 'default-product-image.jpg';                            
-                        } else {
-                            $firstImage = 'default_image.webp'; // Fallback image if no images are found
-                        }
-                        ?>
-                        <img class="product-image" src="/images/products/<?= htmlspecialchars($firstImage) ?>" alt="<?= htmlspecialchars($s->prod_name) ?>">
-                        <div class="prod-description">
-                            <p><?= htmlspecialchars($s->prod_name) ?></p>
-                        </div>
-                        <div class="prod-price">
-                            <span class="price">RM <?= number_format($s->price, 2) ?></span>
-                            <span class="view-details">View Details</span>
-                        </div>
-                    </div>
-                </a>
-            </div>
-
-            <?php 
-            $columnCount++;
-        endforeach; ?>
-    </div>
-    <div class="pagination">
-        <?php if ($totalPages > 1): ?>
-            <?php if ($page > 1): ?>
-                <a href="?page=<?= $page - 1 ?><?= $search ? '&search=' . urlencode($search) : '' ?><?= $category ? '&category=' . urlencode($category) : '' ?><?= $sort ? '&sort=' . urlencode($sort) : '' ?><?= isset($_GET['min_price']) ? '&min_price=' . urlencode($_GET['min_price']) : '' ?><?= isset($_GET['max_price']) ? '&max_price=' . urlencode($_GET['max_price']) : '' ?>">&laquo; Previous</a>
+    <?php if ($showRegularProducts): ?>
+        <div class="row-container">
+            <?php if (empty($arr)): ?>
+                <div class="no-products-found">
+                    <p>No products found<?= $search ? " for \"" . htmlspecialchars($search) . "\"" : "" ?>.</p>
+                </div>
+            <?php else: ?>
             <?php endif; ?>
 
             <?php 
-            $range = 2;
-            $startPage = max(1, $page - $range);
-            $endPage = min($totalPages, $page + $range);
-            
-            if ($startPage > 1) {
-                echo "<a href=\"?page=1" . ($search ? '&search=' . urlencode($search) : '') . ($category ? '&category=' . urlencode($category) : '') . ($sort ? '&sort=' . urlencode($sort) : '') . (isset($_GET['min_price']) ? '&min_price=' . urlencode($_GET['min_price']) : '') . (isset($_GET['max_price']) ? '&max_price=' . urlencode($_GET['max_price']) : '') . "\">1</a>";
-                if ($startPage > 2) {
-                    echo "<span class=\"ellipsis\">...</span>";
-                }
-            }
+            $columnCount = 0;
+            $firstProduct = []; // Track the first product of each category
 
-            for ($i = $startPage; $i <= $endPage; $i++) {
-                $params = [
-                    'page' => $i,
-                    'search' => $search,
-                    'category' => $category,
-                    'sort' => $sort,
-                    'min_price' => $_GET['min_price'] ?? null,
-                    'max_price' => $_GET['max_price'] ?? null
-                ];
-                $queryString = http_build_query(array_filter($params));
-                
-                echo '<a href="?' . $queryString . '"';
-                echo ($i == $page) ? ' class="active"' : '';
-                echo '>' . $i . '</a>';
-            }
+            foreach ($arr as $s): 
+                // Check if this is the first product of its category
+                $productId = htmlspecialchars($s->prod_id);
+                $categoryId = htmlspecialchars($s->cat_id);
 
-            if ($endPage < $totalPages) {
-                if ($endPage < $totalPages - 1) {
-                    echo "<span class=\"ellipsis\">...</span>";
-                }
-                $params = [
-                    'page' => $totalPages,
-                    'search' => $search,
-                    'category' => $category,
-                    'sort' => $sort,
-                    'min_price' => $_GET['min_price'] ?? null,
-                    'max_price' => $_GET['max_price'] ?? null
-                ];
-                $queryString = http_build_query(array_filter($params));
-                echo "<a href=\"?$queryString\">$totalPages</a>";
-            }
-            ?>
+                if ($columnCount % 4 == 0 && $columnCount > 0): ?>
+                    </div><div class="row-container">
+                <?php endif; ?>
 
-            <?php if ($page < $totalPages): ?>
-                <a href="?page=<?= $page + 1 ?><?= $search ? '&search=' . urlencode($search) : '' ?><?= $category ? '&category=' . urlencode($category) : '' ?><?= $sort ? '&sort=' . urlencode($sort) : '' ?><?= isset($_GET['min_price']) ? '&min_price=' . urlencode($_GET['min_price']) : '' ?><?= isset($_GET['max_price']) ? '&max_price=' . urlencode($_GET['max_price']) : '' ?>">Next &raquo;</a>
-            <?php endif; ?>
-        <?php endif; ?>
-    </div>
-</div>
-
-<!-- Product Detail Pop-up Modal -->
-<div id="product-modal" class="products-modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <div class="wrap-product-detail">
-
-            <div class="product-detail-img">
-                <div class="main-image-container">
-                    <img id="modal-image" src="/images/image1.jpg" alt="Product Image">
-                </div>                
-                <div class="preview-container">
-                    <!-- <img class="preview active" src="/images/image1.jpg" alt="Preview 1" onclick="changeImage(this, '/images/image1.jpg')">
-                    <img class="preview" src="/images/image2.jpg" alt="Preview 2" onclick="changeImage(this, '/images/image2.jpg')">
-                    <img class="preview" src="/images/image3.jpg" alt="Preview 3" onclick="changeImage(this, '/images/image3.jpg')"> -->
-                    <img class="preview active" src="/images/products/blue_ring1.jpg" alt="Preview 1" onclick="changeImage(this, '/images/products/blue_ring1.jpg')">
-                    <img class="preview" src="/images/products/Red_ring2.jpg" alt="Preview 2" onclick="changeImage(this, '/images/products/Red_ring2.jpg')">
-                    <img class="preview" src="/images/products/heart_ear2.webp" alt="Preview 3" onclick="changeImage(this, '/images/products/heart_ear2.webp')">
-                </div>
-            </div>
-
-            <div class="product-detail-button">
-                <div class="product-detail">
-                    <div class="product-detail-header">
-                        <h2 id="modal-name"></h2>
-                    </div>
-                    <p id="modal-desc"></p>
-                    <h3 id="modal-price"></h3>
-                    <div class="quantity-selector">
-                        <label for="quantity">Quantity: </label>
-                        <div class="product-quantity-control">
-                            <button type="button" class="qty-btn minus">-</button>
-                            <input type="number" id="quantity" name="quantity" value="1" min="1" max="99">
-                            <button type="button" class="qty-btn plus">+</button>
+                <div class="column-container">
+                    <a class="product" href="product_details.php?id=<?= $productId ?>"
+                        data-id="<?= $productId ?>"
+                        data-name="<?= htmlspecialchars($s->prod_name) ?>" 
+                        data-desc="<?= htmlspecialchars($s->prod_desc) ?>" 
+                        data-price="<?= number_format($s->price, 2) ?>" 
+                        data-image="<?= htmlspecialchars($s->image) ?>"
+                        data-cat-id="<?= $categoryId ?>">
+                        
+                        <div class="product-container">
+                            <div class="product-actions">
+                                <button type="button" class="favorite-btn" data-product-id="<?= htmlspecialchars($s->prod_id) ?>">
+                                    <i class="far fa-heart"></i>
+                                </button>
+                            </div>
+                            <?php
+                            // Extract the first image
+                            if ($s && !empty($s->image)) {
+                                $productImages = json_decode($s->image) ?: [];
+                                $firstImage = !empty($productImages) ? $productImages[0] : 'default-product-image.jpg';                            
+                            } else {
+                                $firstImage = 'default_image.webp'; // Fallback image if no images are found
+                            }
+                            ?>
+                            <img class="product-image" src="/images/products/<?= htmlspecialchars($firstImage) ?>" alt="<?= htmlspecialchars($s->prod_name) ?>">
+                            <div class="prod-description">
+                                <p><?= htmlspecialchars($s->prod_name) ?></p>
+                            </div>
+                            <div class="prod-price">
+                                <span class="price">RM <?= number_format($s->price, 2) ?></span>
+                                <span class="view-details">View Details</span>
+                            </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
-                <div class="add-or-cancel" action="add_to_cart.php" >
-                <button type="submit" name="add_to_cart" onclick="addToCart()" class="add-to-cart">Add to Cart</button>
-                    <!-- <button class="cancel">Cancel</button> -->
-                </div>
-                <button type="button" class="modal-favorite-btn" id="modal-favorite-btn">
-                            <i class="far fa-heart"></i>
-                </button>
-            </div>
+
+                <?php 
+                $columnCount++;
+            endforeach; ?>
         </div>
-    </div>
+
+        <div class="pagination">
+            <?php if ($totalPages > 1): ?>
+                <?php if ($page > 1): ?>
+                    <a href="?page=<?= $page - 1 ?><?= $isBestSeller ? '&filter=best_seller' : '' ?><?= $search ? '&search=' . urlencode($search) : '' ?><?= $category ? '&category=' . urlencode($category) : '' ?><?= $sort ? '&sort=' . urlencode($sort) : '' ?><?= isset($_GET['min_price']) ? '&min_price=' . urlencode($_GET['min_price']) : '' ?><?= isset($_GET['max_price']) ? '&max_price=' . urlencode($_GET['max_price']) : '' ?>">&laquo; Previous</a>
+                <?php endif; ?>
+
+                <?php 
+                $range = 2;
+                $startPage = max(1, $page - $range);
+                $endPage = min($totalPages, $page + $range);
+                
+                if ($startPage > 1) {
+                    echo "<a href=\"?page=1" . ($search ? '&search=' . urlencode($search) : '') . ($category ? '&category=' . urlencode($category) : '') . ($sort ? '&sort=' . urlencode($sort) : '') . (isset($_GET['min_price']) ? '&min_price=' . urlencode($_GET['min_price']) : '') . (isset($_GET['max_price']) ? '&max_price=' . urlencode($_GET['max_price']) : '') . "\">1</a>";
+                    if ($startPage > 2) {
+                        echo "<span class=\"ellipsis\">...</span>";
+                    }
+                }
+
+                for ($i = $startPage; $i <= $endPage; $i++) {
+                    $params = [
+                        'page' => $i,
+                        'search' => $search,
+                        'category' => $category,
+                        'sort' => $sort,
+                        'min_price' => $_GET['min_price'] ?? null,
+                        'max_price' => $_GET['max_price'] ?? null
+                    ];
+                    $queryString = http_build_query(array_filter($params));
+                    
+                    echo '<a href="?' . $queryString . '"';
+                    echo ($i == $page) ? ' class="active"' : '';
+                    echo '>' . $i . '</a>';
+                }
+
+                if ($endPage < $totalPages) {
+                    if ($endPage < $totalPages - 1) {
+                        echo "<span class=\"ellipsis\">...</span>";
+                    }
+                    $params = [
+                        'page' => $totalPages,
+                        'search' => $search,
+                        'category' => $category,
+                        'sort' => $sort,
+                        'min_price' => $_GET['min_price'] ?? null,
+                        'max_price' => $_GET['max_price'] ?? null
+                    ];
+                    $queryString = http_build_query(array_filter($params));
+                    echo "<a href=\"?$queryString\">$totalPages</a>";
+                }
+                ?>
+
+                <?php if ($page < $totalPages): ?>
+                    <a href="?page=<?= $page + 1 ?><?= $search ? '&search=' . urlencode($search) : '' ?><?= $category ? '&category=' . urlencode($category) : '' ?><?= $sort ? '&sort=' . urlencode($sort) : '' ?><?= isset($_GET['min_price']) ? '&min_price=' . urlencode($_GET['min_price']) : '' ?><?= isset($_GET['max_price']) ? '&max_price=' . urlencode($_GET['max_price']) : '' ?>">Next &raquo;</a>
+                <?php endif; ?>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
 </div>
 
 <script>
@@ -624,8 +631,7 @@ include '../_head.php';
 
 .top-products-grid {
     display: grid;
-    /* grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); */
-    grid-template-columns: repeat(4, 1fr); 
+    grid-template-columns: repeat(3, 1fr); 
     gap: 20px;
     margin: 0 auto;
     max-width: 1200px;
@@ -633,7 +639,7 @@ include '../_head.php';
 
 .top-product-item {
     width: 250px;
-    height: 300px;
+    height: 350px;
     background: white;
     border-radius: 8px;
     overflow: hidden;
@@ -653,7 +659,7 @@ include '../_head.php';
 
 .top-product-item img {
     width: 100%;
-    height: 180px;
+    height: 260px;
     object-fit: cover;
     border-bottom: 1px solid #eee;
 }
@@ -683,6 +689,33 @@ include '../_head.php';
     padding: 3px 8px;
     border-radius: 10px;
 }
+
+.filter-header {
+    display: grid;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.remove-filter {
+    background: #eee;
+    padding: 5px 10px;
+    border-radius: 4px;
+    width: 150px;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.remove-filter:hover {
+    background-color: #ddd;
+}
+
+.no-products {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+}
+
 </style>
 
 <?php
