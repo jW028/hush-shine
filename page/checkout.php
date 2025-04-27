@@ -56,6 +56,9 @@ try {
 try {
     // Get selected items from query string if present
     $selectedItems = isset($_GET['items']) ? explode(',', $_GET['items']) : [];
+    if (empty($selectedItems) && isset($_SESSION['selected_cart_items'])) {
+        $selectedItems = explode(',', $_SESSION['selected_cart_items']);
+    }
 
     $query = "
         SELECT ci.prod_id, ci.quantity, p.prod_name, p.price, p.image 
@@ -118,6 +121,7 @@ if (isset($_POST['apply_reward_points']) && !empty($_POST['points'])) {
         // Store applied reward points in the session
         $_SESSION['applied_reward_points'] = $pointsToUse;
         $_SESSION['checkout_total'] = $afterPointsTotal; // Update the session total
+        $_SESSION['selected_cart_items'] = $_GET['items'] ?? '';
         $_SESSION['successMessage'] = "Reward points applied successfully."; 
 
         header("Location: checkout.php");
@@ -142,6 +146,7 @@ if (isset($_POST['complete_order'])) {
     try {
         // Clear applied reward points for the new order
         unset($_SESSION['applied_reward_points']);
+        unset($_SESSION['selected_cart_items']);
 
         // Validate required fields
         $required = ['name', 'email', 'address', 'payment_method'];
