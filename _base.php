@@ -37,7 +37,7 @@ function auth(...$roles) {
             return;
         }
     }
-    redirect('login.php');
+    redirect('/page/login.php');
 }
 
 // Is GET request?
@@ -199,7 +199,7 @@ function save_photo($f, $folder, $width = 200, $height = 200) {
 }
 
 function is_phone($value) {
-    return preg_match('/^\d{3}-\d{7,8}$/', $value) === 1;
+    return preg_match('/^\d{3}-?\d{7,8}$/', $value) === 1;
 }
 
 function html_password($key, $attr = '') {

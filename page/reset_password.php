@@ -141,7 +141,7 @@ include '../_head.php';
                         <button type="submit" class="admin-submit-btn password-reset">
                             <i class="fas fa-save"></i> Update Password
                         </button>
-                        <a href="<?= $_SESSION['user'] === 'admin' ? '../admin/admin_dashboard.php' : '../index.php' ?>" class="secondary-link">
+                        <a href="profile.php" class="secondary-link">
                             <i class="fas fa-arrow-left"></i> Cancel
                         </a>
                     </div>
