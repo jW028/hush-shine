@@ -146,7 +146,7 @@ if (is_post() && isset($_POST['form_type']) && $_POST['form_type'] === 'update_p
             <div class="profile-menu">
                 <a href="/page/profile.php" class="active"><i class="fas fa-user"></i> Personal Information</a>
                 <a href="/page/reset_password.php"><i class="fas fa-key"></i> Change Password</a>
-                <a href="/page/mypurchases.php"><i class="fas fa-shopping-bag"></i> Order History</a>
+                <a href="/page/mypurchase.php"><i class="fas fa-shopping-bag"></i> Order History</a>
                 <a href="/page/logout.php"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
             </div>
         </div>
