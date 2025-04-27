@@ -380,6 +380,7 @@ $isAdminSection = strpos($_SERVER['REQUEST_URI'], '/admin/') !== false;
                 <a href="/page/products.php?category=CT03" data-cat="CT03" class="category-link">Rings</a>
                 <a href="/page/products.php?category=CT05" data-cat="CT05" class="category-link">Watches</a>
                 <a href="/page/products.php?category=*" data-cat="*" class="category-link">All Products</a>
+                <a href="/page/products.php?filter=best_seller" data-filter="best_seller" class="category-link">Best Seller</a>
             </nav>
         </header>
 

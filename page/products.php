@@ -3,8 +3,46 @@
 require '../_base.php';
 //-----------------------------------------------------------------------------
 
-// Handle AJAX requests FIRST
+// Check if best seller filter is active
+$isBestSeller = isset($_GET['filter']) && $_GET['filter'] === 'best_seller';
 
+// Initialize topProducts variable
+$topProducts = [];
+
+// Get top 5 selling products if best seller filter is active
+if ($isBestSeller) {
+    try {
+        $topProductsStmt = $_db->prepare("
+            SELECT 
+                p.prod_id,
+                p.prod_name,
+                p.price,
+                p.image,
+                p.cat_id,
+                SUM(oi.quantity) as total_sold
+            FROM 
+                order_items oi
+            JOIN 
+                orders o ON oi.order_id = o.order_id
+            JOIN 
+                product p ON oi.prod_id = p.prod_id
+            WHERE 
+                o.status IN ('received')
+            GROUP BY 
+                p.prod_id
+            ORDER BY 
+                total_sold DESC
+            LIMIT 5
+        ");
+        $topProductsStmt->execute();
+        $topProducts = $topProductsStmt->fetchAll(PDO::FETCH_OBJ);
+    } catch (Exception $e) {
+        error_log("Error fetching top products: " . $e->getMessage());
+        $topProducts = [];
+    }
+} 
+
+// Handle AJAX requests FIRST
 if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
     header('Content-Type: application/json');
     
@@ -87,6 +125,7 @@ if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQU
         exit;
     }
 }
+
 
 $search = $_GET['search'] ?? null;
 $category = $_GET['category'] ?? null;
@@ -260,6 +299,32 @@ include '../_head.php';
             </div>
         </div>
     </div>
+    
+    <?php if ($isBestSeller && !empty($topProducts)): ?>
+    <div class="top-selling-container">
+        <h2>Top Selling Products</h2>
+        
+        <div class="top-products-grid">
+            <?php foreach ($topProducts as $product): ?>
+                <div class="top-product-item">
+                    <a href="product_details.php?id=<?= $product->prod_id ?>">
+                        <?php
+                            $images = json_decode($product->image) ?: [];
+                            $firstImage = !empty($images) ? $images[0] : 'default-product-image.jpg';
+                        ?>
+                        <img src="/images/products/<?= htmlspecialchars($firstImage) ?>" 
+                            alt="<?= htmlspecialchars($product->prod_name) ?>">
+                        <h3><?= htmlspecialchars($product->prod_name) ?></h3>
+                        <div class="product-meta">
+                            <span class="price">RM <?= number_format($product->price, 2) ?></span>
+                            <span class="sold-count"><?= $product->total_sold ?> sold</span>
+                        </div>
+                    </a>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+    <?php endif; ?>
 
     <div class="row-container">
         <?php if (empty($arr)): ?>
@@ -468,6 +533,85 @@ include '../_head.php';
     }
 });
 </script>
+
+<style> 
+/* Top Selling Products Styles */
+.top-selling-container {
+    margin: 30px 0;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+.top-selling-container h2 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #333;
+    font-size: 24px;
+}
+
+.top-products-grid {
+    display: grid;
+    /* grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); */
+    grid-template-columns: repeat(4, 1fr); 
+    gap: 20px;
+    margin: 0 auto;
+    max-width: 1200px;
+}
+
+.top-product-item {
+    width: 250px;
+    height: 300px;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+    text-align: center;
+}
+
+.top-product-item a{
+    text-decoration: none;
+}
+
+.top-product-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.top-product-item img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-bottom: 1px solid #eee;
+}
+
+.top-product-item h3 {
+    padding: 10px 15px;
+    font-size: 16px;
+    margin: 0;
+    color: #333;
+}
+
+.top-product-item .product-meta {
+    padding: 0 15px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.top-product-item .price {
+    font-size: 15px;
+}
+
+.top-product-item .sold-count {
+    font-size: 13px;
+    color: #666;
+    background: #f0f0f0;
+    padding: 3px 8px;
+    border-radius: 10px;
+}
+</style>
 
 <?php
 include '../_foot.php';
