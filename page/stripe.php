@@ -114,7 +114,6 @@ if (!isset($_SESSION['applied_reward_points'])) {
 // }
 
 try {
-    // Always fetch from existing order to avoid recalculation
     $orderQuery = $_db->prepare("SELECT total_amount, reward_used FROM orders WHERE order_id = ? AND cust_id = ?");
     $orderQuery->execute([$orderId, $custId]);
     $order = $orderQuery->fetch(PDO::FETCH_ASSOC);

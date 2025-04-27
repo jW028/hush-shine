@@ -362,7 +362,7 @@ CREATE TABLE `return_refund_requests` (
 DELIMITER $$
 CREATE TRIGGER `after_refund_completed` AFTER UPDATE ON `return_refund_requests` FOR EACH ROW BEGIN
     -- Check if the status is updated to 'Refund Completed'
-    IF NEW.status = 'Approved' AND OLD.status != 'Approved' THEN
+    IF NEW.status = 'Refunded' AND OLD.status != 'Refunded' THEN
         -- Insert reward points into the reward_points table
         INSERT INTO reward_points (cust_id, order_id, points, description, created_at)
         SELECT NEW.cust_id, NEW.order_id, o.total_amount, CONCAT('Refund for Order #', NEW.order_id), NOW()

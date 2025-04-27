@@ -199,32 +199,59 @@ include '../_head.php';
     <div class="order-summary-section">
         <div class="order-status">
             <h3>Order Status: <span class="status-badge status-<?= strtolower($order['status']) ?>"><?= htmlspecialchars($order['status']) ?></span></h3>
+            <?php if ($order['status'] === 'Refunded'): ?>
+                <div class="refund_noti">Payment is refunded as reward points</div>
+            <?php endif; ?>
             <div class="status-progression-container">
-        <div class="status-track">
-            <?php
-            $statuses = ['Confirmed', 'Processing', 'Shipped', 'Delivered'];
-            if (in_array($order['status'], $statuses)):
-                $currentStatusIndex = array_search($order['status'], $statuses);
-                foreach ($statuses as $index => $status): ?>
-                    <div class="status-step <?= $index <= $currentStatusIndex ? 'active' : '' ?>">
-                        <div class="status-dot"></div>
-                        <div class="status-label"><?= htmlspecialchars($status) ?></div>
-                    </div>
-                    <?php if ($index < count($statuses) - 1): ?>
-                        <div class="status-line"></div>
-                    <?php endif; ?>
-                <?php endforeach;
-            endif; ?>
-        </div>
-        </div>
+                <h4>Status Progression</h4>
+                <div class="status-track">
+                    <?php
+                    // Define the status progression paths
+                    $statuses = [];
+                    $headerText = '';
+
+                    if ($order['status'] === 'Refunded') {
+                        $statuses = ['Confirmed', 'Processing', 'Shipped', 'Delivered', 'Request Pending', 'Refunded'];
+                        $headerText = 'Refund/Return Flow';
+                    } elseif ($order['status'] === 'Request Pending') {
+                        $statuses = ['Confirmed', 'Processing', 'Shipped', 'Delivered', 'Request Pending'];
+                        $headerText = 'Refund/Return Flow';
+                    } elseif ($order['status'] === 'Cancelled') {
+                        $statuses = ['Cancelled'];
+                        $headerText = 'Order Cancellation Flow';
+                    } else {
+                        $statuses = ['Confirmed', 'Processing', 'Shipped', 'Delivered', 'Received'];
+                        $headerText = 'Order Fulfillment Flow';
+                    }
+
+                    // Display the status progression
+                    $currentStatusIndex = array_search($order['status'], $statuses);
+                    foreach ($statuses as $index => $status): 
+                        // Determine if the step is active or the current status
+                        $isActive = $order['status'] !== 'Pending' && $index <= $currentStatusIndex;
+                        $isCurrent = $status === $order['status'];
+                        $statusClass = in_array($status, ['Request Pending', 'Refunded', 'Cancelled']) ? 'issue-status' : '';
+                    ?>
+                        <div class="status-step <?= $isActive ? 'active' : '' ?> <?= $isCurrent ? 'current' : '' ?> <?= $statusClass ?>">
+                            <div class="status-dot"></div>
+                            <div class="status-label"><?= htmlspecialchars($status) ?></div>
+                        </div>
+                        <?php if ($index < count($statuses) - 1): ?>
+                            <div class="status-line"></div>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+                </div>
+                <p class="status-header"><?= htmlspecialchars($headerText) ?></p>
+            </div>
             <p>Order Date: <?= date('F j, Y g:i A', strtotime($order['order_date'])) ?></p>
         </div>
         
         <?php if ($order['status'] === 'Pending'): ?>
             <div class="custView-order-actions">
-                <form method="POST" class="custView-action-form">
+                <form method="POST" class="custView-action-form" id="cancelOrderForm">
                     <input type="hidden" name="order_id" value="<?= $orderId ?>">
-                    <button type="submit" name="cancel_order" class="custView-btn btn-danger">Cancel Order</button>
+                    <input type="hidden" name="cancel_order" value="1">
+                    <button type="button" id="cancelOrderButton" class="custView-btn btn-danger">Cancel Order</button>
                 </form>
                 <form method="POST" class="custView-action-form">
                     <input type="hidden" name="order_id" value="<?= $orderId ?>">
@@ -233,6 +260,15 @@ include '../_head.php';
                 </form>
             </div>
         <?php endif; ?>
+
+        <script>
+            document.getElementById('cancelOrderButton').addEventListener('click', function () {
+                const confirmation = confirm("Are you sure you want to cancel this order?");
+                if (confirmation) {
+                        document.getElementById('cancelOrderForm').submit();
+                }
+            });
+        </script>
 
         <?php if ($order['status'] === 'Delivered'): ?>
             <div class="custView-order-actions">
@@ -405,6 +441,17 @@ include '../_head.php';
                 <?php endforeach; ?>
             </div>
         </div>
+        <?php endif; ?>
+        <?php if ($order['status'] !== 'Pending'&& $order['status'] !== 'Cancelled'): ?>
+            <div class="confirmation-actions" style="margin-top: 30px; text-align: center;">
+                <a href="custGenerate_invoice.php?id=<?= $orderId ?>" class="admin-submit-btn" target="_blank">
+                    <i class="fas fa-file-pdf"></i> Download Invoice
+                </a>
+
+                <a href="custGenerate_invoice.php?id=<?= $orderId ?>&email=1" class="admin-submit-btn secondary">
+                    <i class="fas fa-envelope"></i> Send Invoice to Email
+                </a>
+            </div>
         <?php endif; ?>
     </div>
 </div>

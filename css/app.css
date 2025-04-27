@@ -5139,13 +5139,19 @@ input[type="number"] {
     opacity: 0.9;
 }
 
-/* mypurchase page */
+/* Order Cards */
+.purchase-order-cards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
 
-.mypurchase-page {
-    max-width: 900px;
-    margin: 120px auto;
-    padding: 2rem;
-    font-family: 'Segoe UI', sans-serif;
+.purchase-order-card {
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 1rem;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .purchase-order-card-header {
@@ -5209,7 +5215,7 @@ input[type="number"] {
     font-size: 1rem;
     color: #666;
 }
-/* 
+
 /* cust_viewOrder */
 .custView-order-details-page {
     max-width: 1100px;
@@ -5220,13 +5226,17 @@ input[type="number"] {
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
+.refund_noti{
+    color: #37b37d;
+    font-weight: bold;
+}
+
 .custView-page-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 30px;
 }
-
 
 .custView-page-header h2 {
     margin: 0;
@@ -5239,9 +5249,130 @@ input[type="number"] {
     font-size: 14px;
 }
 
+.custView-order-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 15px;
+}
 
-.custView-order-summary-section {
-    margin-bottom: 30px;
+.custView-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.custView-order-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 20px;
+}
+
+.full-width {
+    grid-column: 1 / -1;
+}
+
+.custView-detail-card {
+    background: #fafafa;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 16px 20px;
+}
+
+.custView-detail-card h3 {
+    margin-top: 0;
+    font-size: 18px;
+    margin-bottom: 12px;
+}
+
+.custView-card-content p,
+.custView-card-content address {
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.custView-order-items-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.custView-order-items-table th,
+.custView-order-items-table td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.custView-product-cell {
+    display: flex;
+    align-items: center;
+}
+
+.custView-product-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.custView-product-thumb {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.custView-text-right {
+    text-align: right;
+}
+
+.custView-return-form {
+    margin-top: 12px;
+}
+
+.custView-form-group {
+    margin-bottom: 15px;
+}
+
+.custView-form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.custView-form-group textarea,
+.custView-form-group input[type="file"] {
+    width: 100%;
+    padding: 8px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    resize: vertical;
+}
+
+@media (max-width: 768px) {
+    .custView-order-details-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .custView-page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .custView-product-info {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .custView-order-actions {
+        flex-direction: column;
+    }
 }
 
 .puchase-order-card {
