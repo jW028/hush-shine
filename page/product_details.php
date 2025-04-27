@@ -36,6 +36,22 @@ $stmt = $_db->prepare("
 $stmt->execute([$product->cat_id, $productId]);
 $relatedProducts = $stmt->fetchAll();
 
+// Get reviews for this product from database
+try {
+    $stmt = $_db->prepare("
+        SELECT r.*, c.cust_name 
+        FROM prod_reviews r
+        JOIN customer c ON r.cust_id = c.cust_id
+        WHERE r.prod_id = ?
+        ORDER BY r.created_at DESC
+    ");
+    $stmt->execute([$productId]);
+    $reviews = $stmt->fetchAll();
+} catch (Exception $e) {
+    error_log("Error fetching reviews: " . $e->getMessage());
+    $reviews = [];
+}
+
 // Handle AJAX requests
 if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
     header('Content-Type: application/json');
@@ -256,6 +272,43 @@ include '../_head.php';
         </div>
     </div>
     <?php endif; ?>
+
+    <div class="reviews-container">
+        <h2 class="review-section-title">Customer Reviews</h2>
+        
+        <?php if (!empty($reviews)): ?>
+            <div class="reviews-grid">
+                <?php foreach ($reviews as $review): ?>
+                    <div class="review-card">
+                        <div class="review-meta">
+                            <div class="reviewer-avatar">
+                                <?= strtoupper(substr($review->cust_name, 0, 1)) ?>
+                            </div>
+                            <div class="reviewer-info">
+                                <div class="reviewer-name"><?= htmlspecialchars($review->cust_name) ?></div>
+                                <div class="review-date"><?= date('M j, Y', strtotime($review->created_at)) ?></div>
+                            </div>
+                        </div>
+                        
+                        <div class="review-rating">
+                            <?php for ($i = 1; $i <= 5; $i++): ?>
+                                <span class="star <?= $i <= $review->rating ? 'filled' : '' ?>">★</span>
+                            <?php endfor; ?>
+                        </div>
+                        
+                        <div class="review-content">
+                            <p><?= nl2br(htmlspecialchars($review->review)) ?></p>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php else: ?>
+            <div class="no-reviews">
+                <div class="no-reviews-icon">✏️</div>
+                <p>No reviews yet for this product</p>
+            </div>
+        <?php endif; ?>
+    </div>
 </div>
 
 <script>
@@ -654,9 +707,13 @@ function createParticles(sourceElement, count = 20) {
 }
 
 .product-description h3 {
-    font-size: 18px;
+    font-size: 20px;
     margin-bottom: 10px;
     color: #444;
+}
+
+.product-description p {
+    font-size: 16px;
 }
 
 /* Product Actions */
@@ -926,6 +983,112 @@ function createParticles(sourceElement, count = 20) {
         grid-template-columns: 1fr 1fr;
     }
 }
+
+/*Product Review*/
+
+.reviews-container {
+    margin-top: 60px;
+    padding-top: 40px;
+    border-top: 1px solid #f0f0f0;
+    font-size: 14px;
+}
+
+.review-section-title {
+    font-size: 24px;
+    margin-bottom: 30px;
+    color: #333;
+    font-weight: 600;
+}
+
+.reviews-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 25px;
+}
+
+.review-card {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    border: 1px solid #eee;
+}
+
+.review-meta {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.reviewer-avatar {
+    width: 40px;
+    height: 40px;
+    background: #0066cc;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-right: 12px;
+    font-size: 18px;
+}
+
+.reviewer-info {
+    line-height: 1.3;
+}
+
+.reviewer-name {
+    font-weight: 600;
+    color: #333;
+}
+
+.review-date {
+    font-size: 13px;
+    color: #888;
+}
+
+.review-rating {
+    margin-bottom: 12px;
+}
+
+.review-rating .star {
+    color: #ccc;
+    font-size: 18px;
+}
+
+.review-rating .star.filled {
+    color: #ffb400;
+}
+
+.review-content {
+    color: #555;
+    line-height: 1.6;
+}
+
+.review-content p {
+    margin: 0;
+}
+
+.no-reviews {
+    text-align: center;
+    padding: 40px 20px;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+.no-reviews-icon {
+    font-size: 40px;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+.no-reviews p {
+    color: #666;
+    font-size: 16px;
+    margin: 0;
+}
+
 </style>
 <?php
 include '../_foot.php';
