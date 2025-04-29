@@ -19,16 +19,32 @@ if (!$orderId) {
 }
 
 try {
-    // Verify this order belongs to the logged-in customer
-    $orderStmt = $_db->prepare("
-        SELECT o.*, sp.payment_intent_id, sp.status as payment_status
-        FROM orders o
-        LEFT JOIN stripe_payments sp ON o.order_id = sp.order_id
-        WHERE o.order_id = ? AND o.cust_id = ?
-    ");
+    // First check if the stripe_payments table exists
+    $checkTableStmt = $_db->prepare("SHOW TABLES LIKE 'stripe_payments'");
+    $checkTableStmt->execute();
+    $tableExists = $checkTableStmt->rowCount() > 0;
+    
+    // Modify query based on table existence
+    if ($tableExists) {
+        $orderStmt = $_db->prepare("
+            SELECT o.*, sp.payment_intent_id, sp.status as payment_status
+            FROM orders o
+            LEFT JOIN stripe_payments sp ON o.order_id = sp.order_id
+            WHERE o.order_id = ? AND o.cust_id = ?
+        ");
+    } else {
+        // Fallback query without stripe_payments join
+        $orderStmt = $_db->prepare("
+            SELECT o.*
+            FROM orders o
+            WHERE o.order_id = ? AND o.cust_id = ?
+        ");
+    }
+    
     $orderStmt->execute([$orderId, $custId]);
     $order = $orderStmt->fetch(PDO::FETCH_ASSOC);
     
+    // Rest of your code remains the same
     if (!$order) {
         // Order not found or doesn't belong to this customer
         header('Location: mypurchase.php');
