@@ -173,8 +173,8 @@ include '../_head.php';
                         <?php foreach ($items as $item): ?>
                             <?php
                             $productImage = '../images/no-image.png'; // Default image
-                            if (!empty($item['image_url'])) {
-                                $imageData = json_decode($item['image_url'], true);
+                            if (!empty($item['image'])) {
+                                $imageData = json_decode($item['image'], true);
                                 if ($imageData) {
                                     $imageFile = is_array($imageData) ? $imageData[0] : $imageData;
                                     $productImage = '../images/products/' . $imageFile;
