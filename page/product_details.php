@@ -85,9 +85,24 @@ if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQU
 
                     // Create new cart if doesn't exist
                     if (!$cart) {
-                        $stmt = $_db->prepare("INSERT INTO shopping_cart (cust_id, created_at) VALUES (?, NOW())");
-                        $stmt->execute([$custId]);
-                        $cartId = $_db->lastInsertId();
+                        // Generate a sequential cart ID
+                        $stmt = $_db->prepare("SELECT MAX(cart_id) AS last_cart_id FROM shopping_cart");
+                        $stmt->execute();
+                        $lastCartId = $stmt->fetchColumn();
+
+                        if ($lastCartId) {
+                            // Extract the numeric part of the last cart ID and increment it
+                            $lastNumber = (int)substr($lastCartId, 2);
+                            $newNumber = $lastNumber + 1;
+                            $cartId = 'CR' . str_pad($newNumber, 2, '0', STR_PAD_LEFT);
+                        } else {
+                            // If no cart exists, start with CR01
+                            $cartId = 'CR01';
+                        }
+
+                        // Insert the new cart ID into the database
+                        $stmt = $_db->prepare("INSERT INTO shopping_cart (cart_id, cust_id) VALUES (?, ?)");
+                        $stmt->execute([$cartId, $custId]);
                     } else {
                         $cartId = $cart->cart_id;
                     }

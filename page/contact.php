@@ -112,17 +112,6 @@ include '../_head.php';
             </div>
         </div>
     </div>
-<!-- <div class="contact-banner">
-    <img src="images/contact.jpg">
-    <div class="contact-banner-text">
-        <h1>Hush & Shine Jewelry</h1>
-        <p>There&rsquo;s no question too small or request
-          too big for our Tiffany client advisors. 
-          From choosing an engagement ring or gift to 
-          providing in-store or virtual appointments, 
-          we&rsquo;re always at your service. </p>
-    </div>
-</div> -->
 
 <div class="aboutus" data-aos="fade-up">
     <h3 class="aboutus_title" data-aos="fade-down">About Us</h3>

@@ -6235,7 +6235,7 @@
     
     .profile-page-container {
         max-width: 1200px;
-        margin: 150px auto;
+        margin-left: 300px;
         padding: 40px 20px;
         font-family: 'Santral', sans-serif;
     }

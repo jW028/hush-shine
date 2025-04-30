@@ -20,52 +20,60 @@ $selectedYear = $_GET['year'] ?? $currentYear;
 function getSalesData($period, $month = null, $year = null) {
     global $_db, $currentYear, $currentMonth;
     
+    $received_status = getRevenueStatusCondition();
+    
     switch ($period) {
         case 'day':
-            // Last 30 days
-            $query = "SELECT DATE(order_date) as label, 
-                      SUM(COALESCE(total_amount, 0)) as value 
-                      FROM orders 
-                      WHERE order_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
-                      AND status = 'Received'
-                      GROUP BY DATE(order_date) 
+            // Last 30 days using order_items
+            $query = "SELECT DATE(o.order_date) as label, 
+                      SUM(oi.price * oi.quantity) as value 
+                      FROM orders o 
+                      JOIN order_items oi ON o.order_id = oi.order_id
+                      WHERE o.order_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+                      AND o.status = ?
+                      GROUP BY DATE(o.order_date) 
                       ORDER BY label";
+            $params = [$received_status];
             break;
             
         case 'month':
             // Monthly data for selected year
-            $query = "SELECT MONTH(order_date) as month_num, 
-                      MONTHNAME(order_date) as label, 
-                      SUM(COALESCE(total_amount, 0)) as value 
-                      FROM orders 
-                      WHERE YEAR(order_date) = ?
-                      AND status = 'Received'
-                      GROUP BY MONTH(order_date), MONTHNAME(order_date) 
-                      ORDER BY MONTH(order_date)";
-            $params = [$year];
+            $query = "SELECT MONTH(o.order_date) as month_num, 
+                      MONTHNAME(o.order_date) as label, 
+                      SUM(oi.price * oi.quantity) as value 
+                      FROM orders o 
+                      JOIN order_items oi ON o.order_id = oi.order_id
+                      WHERE YEAR(o.order_date) = ?
+                      AND o.status = ?
+                      GROUP BY MONTH(o.order_date), MONTHNAME(o.order_date) 
+                      ORDER BY MONTH(o.order_date)";
+            $params = [$year, $received_status];
             break;
             
         case 'year':
             // Yearly data
-            $query = "SELECT YEAR(order_date) as label, 
-                      SUM(COALESCE(total_amount, 0)) as value 
-                      FROM orders
-                      WHERE status = 'Received'
-                      GROUP BY YEAR(order_date) 
-                      ORDER BY YEAR(order_date)";
+            $query = "SELECT YEAR(o.order_date) as label, 
+                      SUM(oi.price * oi.quantity) as value 
+                      FROM orders o
+                      JOIN order_items oi ON o.order_id = oi.order_id
+                      WHERE o.status = ?
+                      GROUP BY YEAR(o.order_date) 
+                      ORDER BY YEAR(o.order_date)";
+            $params = [$received_status];
             break;
             
         default:
             // Default to monthly
-            $query = "SELECT MONTH(order_date) as month_num, 
-                      MONTHNAME(order_date) as label, 
-                      SUM(COALESCE(total_amount, 0)) as value 
-                      FROM orders 
-                      WHERE YEAR(order_date) = ?
-                      AND status = 'Received'
-                      GROUP BY MONTH(order_date), MONTHNAME(order_date) 
-                      ORDER BY MONTH(order_date)";
-            $params = [$currentYear];
+            $query = "SELECT MONTH(o.order_date) as month_num, 
+                      MONTHNAME(o.order_date) as label, 
+                      SUM(oi.price * oi.quantity) as value 
+                      FROM orders o 
+                      JOIN order_items oi ON o.order_id = oi.order_id
+                      WHERE YEAR(o.order_date) = ?
+                      AND o.status = ?
+                      GROUP BY MONTH(o.order_date), MONTHNAME(o.order_date) 
+                      ORDER BY MONTH(o.order_date)";
+            $params = [$currentYear, $received_status];
     }
     
     try {
@@ -75,33 +83,93 @@ function getSalesData($period, $month = null, $year = null) {
         } else {
             $stmt->execute();
         }
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Debug total
+        $total = 0;
+        foreach ($result as $row) {
+            $total += floatval($row['value']);
+        }
+        error_log("Total from sales data: $total");
+        
+        return $result;
     } catch (PDOException $e) {
         error_log("Error fetching sales data: " . $e->getMessage());
         return [];
     }
 }
 
+function getRevenueStatusCondition() {
+    global $_db;
+    
+    // Check all statuses first to debug
+    $status_check = $_db->query("SELECT status, COUNT(*) as count FROM orders GROUP BY status");
+    $statuses = $status_check->fetchAll(PDO::FETCH_ASSOC);
+    error_log("Order statuses in database: " . json_encode($statuses));
+    
+    // Use the correct status from what's actually in the database
+    $received_status = 'Received'; // Default value
+    foreach ($statuses as $status_row) {
+        // Case insensitive comparison to find the closest match to "received"
+        if (strtolower($status_row['status']) == 'received' || 
+            strtolower($status_row['status']) == 'completed') {
+            $received_status = $status_row['status']; // Use the exact case from database
+            break;
+        }
+    }
+    
+    return $received_status;
+}
+
 // Get category popularity data
+// Add this right after the getCategoryPopularity function
 function getCategoryPopularity() {
     global $_db;
     
     try {
-        // Join orders, order items, products and categories to get sales by category
-        // Only count orders with 'Received' status
-        $query = "SELECT c.cat_name as label, 
-                 SUM(oi.quantity) as quantity,
-                 SUM(oi.price * oi.quantity) as value
-                 FROM order_items oi
-                 JOIN product p ON oi.prod_id = p.prod_id
-                 JOIN category c ON p.cat_id = c.cat_id
-                 JOIN orders o ON oi.order_id = o.order_id
-                 WHERE o.status = 'Received'
-                 GROUP BY c.cat_name
-                 ORDER BY value DESC";
+        $received_status = getRevenueStatusCondition();
+        
+        error_log("Using status: '$received_status' for category query");
+        
+        // Use parameters in query to avoid SQL injection and handle case sensitivity
+        $query = "SELECT 
+                c.cat_name as label,
+                SUM(oi.quantity) as quantity,
+                SUM(oi.price * oi.quantity) as value
+            FROM 
+                category c
+                JOIN product p ON c.cat_id = p.cat_id
+                JOIN order_items oi ON p.prod_id = oi.prod_id
+                JOIN orders o ON oi.order_id = o.order_id
+            WHERE 
+                o.status = ?
+            GROUP BY 
+                c.cat_id, c.cat_name
+            ORDER BY 
+                value DESC";
+        
+        error_log("Category popularity query with status: $received_status");
                  
-        $stmt = $_db->query($query);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt = $_db->prepare($query);
+        $stmt->execute([$received_status]);
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Debug the results
+        error_log("getCategoryPopularity returned " . count($result) . " rows");
+        
+        // Calculate total for debugging
+        $total = 0;
+        foreach ($result as $row) {
+            $total += floatval($row['value']);
+        }
+        error_log("Total from category data: $total");
+        
+        // If no data found with the received status, try with all statuses
+        if (empty($result)) {
+            // Fallback logic...
+        }
+        
+        return $result;
     } catch (PDOException $e) {
         error_log("Error fetching category data: " . $e->getMessage());
         return [];
@@ -144,14 +212,24 @@ function getDashboardStats() {
             'pending_orders' => 0
         ];
 
+        $received_status = getRevenueStatusCondition();
+
         // Total sales (only from Received orders)
-        $stmt = $_db->query("SELECT SUM(total_amount) as total FROM orders WHERE status = 'Received'");
+        // Total sales using order_items calculation (consistent with category data)
+        $stmt = $_db->prepare("SELECT SUM(oi.price * oi.quantity) as total 
+                    FROM order_items oi 
+                    JOIN orders o ON oi.order_id = o.order_id 
+                    WHERE o.status = ?");
+        $stmt->execute([$received_status]);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         $stats['total_sales'] = $result['total'] ?? 0;
 
-        // Update average order value calculation to also only include Received orders
+        // Log the total for debugging
+        error_log("Total sales calculated: " . $stats['total_sales']);
+
         // Orders count (for avg calculation - only counting received orders)
-        $stmt = $_db->query("SELECT COUNT(*) as count FROM orders WHERE status = 'Received'");
+        $stmt = $_db->prepare("SELECT COUNT(*) as count FROM orders WHERE status = ?");
+        $stmt->execute([$received_status]);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         $stats['received_orders_count'] = $result['count'] ?? 0;
 
@@ -159,11 +237,14 @@ function getDashboardStats() {
         $stats['avg_order_value'] = $stats['received_orders_count'] > 0 ? 
             $stats['total_sales'] / $stats['received_orders_count'] : 0;
 
-        // This month's sales (only from Received orders)
-        $stmt = $_db->prepare("SELECT SUM(total_amount) as total FROM orders 
-                            WHERE MONTH(order_date) = ? AND YEAR(order_date) = ? 
-                            AND status = 'Received'");
-        $stmt->execute([$currentMonth, $currentYear]);
+        // This month's sales using same calculation method
+        $stmt = $_db->prepare("SELECT SUM(oi.price * oi.quantity) as total 
+                              FROM order_items oi 
+                              JOIN orders o ON oi.order_id = o.order_id 
+                              WHERE o.status = ? 
+                              AND MONTH(o.order_date) = ? 
+                              AND YEAR(o.order_date) = ?");
+        $stmt->execute([$received_status, $currentMonth, $currentYear]);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         $stats['monthly_sales'] = $result['total'] ?? 0;
         
